@@ -1,0 +1,95 @@
+<div
+  id="claudeModal"
+  class="modal-overlay claude-modal-overlay"
+  aria-hidden="true"
+  style="display: none"
+>
+  <div
+    class="modal-content claude-modal-content"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="claudeModalTitle"
+  >
+    <div class="claude-app claude-app--modal" id="claudeApp">
+      <aside class="claude-sidebar" id="claudeSidebar">
+        <div class="sidebar-top">
+          <button class="btn-new-chat" id="btnNewChat" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Nueva conversación
+          </button>
+        </div>
+
+        <div class="conversations-list" id="conversationsList">
+          <p class="empty-text">Cargando conversaciones…</p>
+        </div>
+
+      </aside>
+
+      <main class="claude-main">
+        <div class="chat-scroll" id="chatScroll">
+          <div class="chat-thread" id="chatThread">
+            <div class="welcome-section" id="welcomeSection">
+              <div class="welcome-logo claude-ai-logo">✦</div>
+              <h2>Bienvenido al Asistente Inteligente de Transworld</h2>
+              <p>Soy un asistente inteligente de tareas operativas, te ayudo a procesar, organizar y modificar información existente de forma más rápida.</p>
+              <div class="quick-actions">
+                <button class="quick-action" type="button" data-prompt="Ayúdame a redactar un correo profesional sobre ">📝 Redactar un correo</button>
+                <button class="quick-action" type="button" data-prompt="Resume y explica los puntos clave del siguiente texto: ">🔍 Resumir un texto</button>
+                <button class="quick-action" type="button" data-prompt="Explícame de forma sencilla cómo funciona ">📚 Explicar un concepto</button>
+                <button class="quick-action" type="button" data-action="extract">📄 Extraer datos de un documento</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer-area">
+          <div class="composer" id="composer">
+            <div class="attachment-chip" id="attachmentChip" hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              <span id="attachmentName"></span>
+              <button id="btnRemoveAttachment" type="button" title="Quitar">✕</button>
+            </div>
+
+            <textarea id="messageInput" class="message-input" placeholder="Escribe tu mensaje..." rows="1"></textarea>
+
+            <div class="composer-controls">
+              <div class="composer-left">
+                <button class="icon-btn" id="btnAttach" type="button" title="Adjuntar archivo (PDF, Word, Excel, imagen, texto)">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                </button>
+                <button class="icon-btn" id="btnExtract" type="button" title="Extraer datos estructurados de un documento">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+                </button>
+                <div id="modelControlSlot"></div>
+              </div>
+              <button id="sendBtn" class="btn-send" type="button" disabled title="Enviar">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="composer-hint">Los modelos de IA pueden cometer errores. Verifica la información importante.</p>
+          <p class="composer-usage" id="dailyUsage" hidden></p>
+        </div>
+
+        <input type="file" id="fileInputChat" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm,.png,.jpg,.jpeg,.webp,.gif,.txt,.csv,.md,.json" />
+        <input type="file" id="fileInputExtract" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm,.png,.jpg,.jpeg,.webp" />
+      </main>
+    </div>
+
+    <div
+      id="claudeLimitsNotice"
+      class="claude-limits-notice claude-limits-notice--in-modal"
+      aria-hidden="true"
+      hidden
+    >
+      <div class="claude-limits-notice__backdrop" data-limits-dismiss></div>
+      <div class="claude-limits-notice__panel" role="dialog" aria-labelledby="claudeLimitsTitle">
+        <div class="claude-limits-notice__badge">Marcha blanca</div>
+        <h3 id="claudeLimitsTitle">Límites del asistente</h3>
+        <p id="claudeLimitsIntro"></p>
+        <ul id="claudeLimitsList" class="claude-limits-notice__list"></ul>
+        <button type="button" class="claude-limits-notice__btn" data-limits-dismiss>Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>

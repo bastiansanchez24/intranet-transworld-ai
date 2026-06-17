@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= formatPageTitle(titulo || "Iniciar sesión") %></title>
   <link rel="stylesheet" href="/css/login.css">
+  <script>document.documentElement.setAttribute('data-theme','light');</script>
   <% if ((locals.view || 'login') === 'register') { %>
   <link rel="stylesheet" href="/css/profile-photo-crop.css">
   <link rel="stylesheet" href="/css/phone-chile.css">
@@ -33,7 +34,7 @@
 
         <% if (activeView !== 'register') { %>
         <div class="login-split__brand">
-          <img src="/img/favicon2.png" alt="Transworld" class="login-split__logo">
+          <img src="/img/favicon.png" alt="Transworld" class="login-split__logo">
         </div>
         <% } %>
 
@@ -77,6 +78,8 @@
                   name="username"
                   class="login-field__input"
                   autocomplete="username"
+                  placeholder="Ej: mgonzalez"
+                  title="Ingresa solo el usuario, sin dominio"
                   required
                   <% if (activeView === 'login') { %>autofocus<% } %>
                 >
@@ -117,7 +120,6 @@
 
           <div class="login-split__links">
             <a href="/register">Crear cuenta</a>
-            <span class="login-split__links-sep">|</span>
             <a href="/forgot-password">¿Olvidaste tu contraseña?</a>
           </div>
         </div>
@@ -313,7 +315,6 @@
                 <input type="hidden" name="email" value="<%= email || '' %>">
                 <button type="submit" class="login-split__link-btn">Reenviar código</button>
               </form>
-              <span class="login-split__links-sep">|</span>
               <a href="/login">Volver al inicio de sesión</a>
             </div>
           <% } %>
@@ -403,24 +404,6 @@
           <article class="login-carousel__slide is-active" data-slide="0">
             <svg class="login-carousel__icon" viewBox="0 0 56 56" fill="none" aria-hidden="true">
               <rect width="56" height="56" rx="14" fill="rgba(125,211,252,0.15)"/>
-              <rect x="14" y="16" width="28" height="26" rx="4" stroke="#7dd3fc" stroke-width="2"/>
-              <path d="M14 22h28" stroke="#7dd3fc" stroke-width="2"/>
-              <circle cx="20" cy="19" r="1.5" fill="#7dd3fc"/>
-              <circle cx="25" cy="19" r="1.5" fill="#7dd3fc"/>
-              <path d="M28 32c0-2 1.5-3 4-3s4 1 4 3" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
-              <path d="M24 38c1.5-4 3.5-6 8-6s6.5 2 8 6" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
-              <path d="M38 28l3-5 3 5" stroke="#34d399" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div class="login-carousel__text">
-              <span class="login-carousel__badge">¡Novedad en la Intranet!</span>
-              <p class="login-carousel__title">Gestiona tus vacaciones en un clic.</p>
-              <a href="/register" class="login-carousel__link">Conoce más &gt;</a>
-            </div>
-          </article>
-
-          <article class="login-carousel__slide" data-slide="1">
-            <svg class="login-carousel__icon" viewBox="0 0 56 56" fill="none" aria-hidden="true">
-              <rect width="56" height="56" rx="14" fill="rgba(125,211,252,0.15)"/>
               <rect x="12" y="18" width="32" height="22" rx="3" stroke="#7dd3fc" stroke-width="2"/>
               <path d="M12 24h32" stroke="#7dd3fc" stroke-width="2"/>
               <path d="M18 30h8M18 34h12" stroke="#7dd3fc" stroke-width="1.5" stroke-linecap="round"/>
@@ -428,13 +411,13 @@
               <path d="M38 32l1.5 1.5L42 30" stroke="#34d399" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <div class="login-carousel__text">
-              <span class="login-carousel__badge">Soporte interno</span>
-              <p class="login-carousel__title">Abre tickets de TI y sigue su estado en tiempo real.</p>
-              <a href="/login" class="login-carousel__link">Conoce más &gt;</a>
+              <span class="login-carousel__badge">Soporte</span>
+              <p class="login-carousel__title">¿Necesitas ayuda? Estamos contigo</p>
+              <p class="login-carousel__desc">Abre tickets de soporte, sigue su avance y recibe respuesta del equipo sin salir de la intranet.</p>
             </div>
           </article>
 
-          <article class="login-carousel__slide" data-slide="2">
+          <article class="login-carousel__slide" data-slide="1">
             <svg class="login-carousel__icon" viewBox="0 0 56 56" fill="none" aria-hidden="true">
               <rect width="56" height="56" rx="14" fill="rgba(125,211,252,0.15)"/>
               <path d="M18 38V26l10-6 10 6v12" stroke="#7dd3fc" stroke-width="2" stroke-linejoin="round"/>
@@ -443,22 +426,47 @@
             </svg>
             <div class="login-carousel__text">
               <span class="login-carousel__badge">Capacitación</span>
-              <p class="login-carousel__title">Accede a cursos técnicos y certificaciones internas.</p>
-              <a href="/login" class="login-carousel__link">Conoce más &gt;</a>
+              <p class="login-carousel__title">Aprende y crece en tu rol</p>
+              <p class="login-carousel__desc">Accede a cursos profesionales y certificaciones para fortalecer tus habilidades técnicas y de liderazgo.</p>
+            </div>
+          </article>
+
+          <article class="login-carousel__slide" data-slide="2">
+            <svg class="login-carousel__icon" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+              <rect width="56" height="56" rx="14" fill="rgba(125,211,252,0.15)"/>
+              <rect x="14" y="16" width="28" height="26" rx="4" stroke="#7dd3fc" stroke-width="2"/>
+              <path d="M14 22h28" stroke="#7dd3fc" stroke-width="2"/>
+              <path d="M18 28h16M18 32h12M18 36h8" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div class="login-carousel__text">
+              <span class="login-carousel__badge">Noticias</span>
+              <p class="login-carousel__title">Siempre al día con la empresa</p>
+              <p class="login-carousel__desc">Entérate de las últimas noticias, comunicados y anuncios importantes desde un solo lugar.</p>
+            </div>
+          </article>
+
+          <article class="login-carousel__slide" data-slide="3">
+            <svg class="login-carousel__icon" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+              <rect width="56" height="56" rx="14" fill="rgba(125,211,252,0.15)"/>
+              <path d="M28 14l2.5 7.5H38l-6 4.5 2.5 7.5L28 29l-6.5 4.5 2.5-7.5-6-4.5h7.5L28 14z" stroke="#7dd3fc" stroke-width="1.5" stroke-linejoin="round"/>
+              <circle cx="28" cy="38" r="6" stroke="#34d399" stroke-width="2"/>
+              <path d="M25 38h6M28 35v6" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div class="login-carousel__text">
+              <span class="login-carousel__badge">Inteligencia artificial</span>
+              <p class="login-carousel__title">Tu copiloto para proyectos</p>
+              <p class="login-carousel__desc">Usa inteligencia artificial para idear, redactar y avanzar más rápido en tus tareas del día a día.</p>
             </div>
           </article>
 
         </div>
 
         <div class="login-carousel__controls">
-          <button type="button" class="login-carousel__play" id="carouselPlayPause" aria-label="Pausar carrusel" title="Pausar carrusel">
-            <svg id="carouselPauseIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-            <svg id="carouselPlayIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M8 5v14l11-7z"/></svg>
-          </button>
           <div class="login-carousel__dots" role="tablist" aria-label="Diapositivas del carrusel">
             <button type="button" class="login-carousel__dot is-active" data-slide-to="0" role="tab" aria-selected="true" aria-label="Diapositiva 1"></button>
             <button type="button" class="login-carousel__dot" data-slide-to="1" role="tab" aria-selected="false" aria-label="Diapositiva 2"></button>
             <button type="button" class="login-carousel__dot" data-slide-to="2" role="tab" aria-selected="false" aria-label="Diapositiva 3"></button>
+            <button type="button" class="login-carousel__dot" data-slide-to="3" role="tab" aria-selected="false" aria-label="Diapositiva 4"></button>
           </div>
         </div>
       </div>
@@ -571,12 +579,8 @@
     (function initLoginCarousel() {
       const slides = document.querySelectorAll('.login-carousel__slide');
       const dots = document.querySelectorAll('.login-carousel__dot');
-      const playBtn = document.getElementById('carouselPlayPause');
-      const pauseIcon = document.getElementById('carouselPauseIcon');
-      const playIcon = document.getElementById('carouselPlayIcon');
-      if (!slides.length || !playBtn) return;
+      if (!slides.length) return;
       let current = 0;
-      let playing = true;
       let timer = null;
       const INTERVAL = 6000;
 
@@ -594,35 +598,15 @@
       }
 
       function startAutoplay() {
-        stopAutoplay();
-        timer = setInterval(nextSlide, INTERVAL);
-        playing = true;
-        pauseIcon.style.display = '';
-        playIcon.style.display = 'none';
-        playBtn.setAttribute('aria-label', 'Pausar carrusel');
-        playBtn.title = 'Pausar carrusel';
-      }
-
-      function stopAutoplay() {
         if (timer) clearInterval(timer);
-        timer = null;
-        playing = false;
-        pauseIcon.style.display = 'none';
-        playIcon.style.display = '';
-        playBtn.setAttribute('aria-label', 'Reproducir carrusel');
-        playBtn.title = 'Reproducir carrusel';
+        timer = setInterval(nextSlide, INTERVAL);
       }
 
       dots.forEach((dot) => {
         dot.addEventListener('click', () => {
           showSlide(Number(dot.dataset.slideTo));
-          if (playing) startAutoplay();
+          startAutoplay();
         });
-      });
-
-      playBtn.addEventListener('click', () => {
-        if (playing) stopAutoplay();
-        else startAutoplay();
       });
 
       startAutoplay();
@@ -672,6 +656,66 @@
           e.preventDefault();
           passwordInput.focus();
         }
+      });
+    })();
+
+    (function initUsernameFields() {
+      const ALLOWED_DOMAINS = new Set([
+        'transworld.cl', 'gmail.com', 'icloud.com', 'outlook.com',
+        'outlook.cl', 'hotmail.com', 'hotmail.cl', 'yahoo.com', 'yahoo.cl'
+      ]);
+
+      function parseUsernameInput(value) {
+        const raw = String(value || '').trim().toLowerCase();
+        const at = raw.indexOf('@');
+        if (at === -1) return { username: raw, domain: null };
+        const username = raw.slice(0, at);
+        const domain = raw.slice(at + 1);
+        return {
+          username,
+          domain: ALLOWED_DOMAINS.has(domain) ? domain : null
+        };
+      }
+
+      function sanitizeUsernameField(input) {
+        const row = input.closest('.login-username-row');
+        const domainSelect = row ? row.querySelector('select[name="domain"]') : null;
+
+        function apply() {
+          const parsed = parseUsernameInput(input.value);
+          if (input.value !== parsed.username) {
+            input.value = parsed.username;
+          }
+          if (parsed.domain && domainSelect) {
+            domainSelect.value = parsed.domain;
+          }
+        }
+
+        input.addEventListener('input', apply);
+        input.addEventListener('change', apply);
+
+        input.addEventListener('paste', function (e) {
+          e.preventDefault();
+          const text = (e.clipboardData || window.clipboardData).getData('text');
+          const parsed = parseUsernameInput(text);
+          input.value = parsed.username;
+          if (parsed.domain && domainSelect) {
+            domainSelect.value = parsed.domain;
+          }
+        });
+
+        input.addEventListener('keydown', function (e) {
+          if (e.key === '@') e.preventDefault();
+        });
+
+        if (input.value) apply();
+        window.setTimeout(apply, 100);
+        window.setTimeout(apply, 500);
+      }
+
+      ['login-username', 'reg-username'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) sanitizeUsernameField(el);
       });
     })();
 

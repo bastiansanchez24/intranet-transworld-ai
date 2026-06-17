@@ -170,6 +170,7 @@
     display: flex;
     gap: 15px;
     align-items: center;
+    flex-wrap: wrap;
     margin-top: 25px;
   }
   
@@ -191,6 +192,150 @@
     background-color: #d97706;
   }
 
+  .btn-correo {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-correo:hover {
+    background-color: #218838;
+  }
+
+  .btn-destacar {
+    background-color: #003a70;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-destacar:hover {
+    background-color: #002a52;
+  }
+  .btn-destacar--activa {
+    background-color: #f59e0b;
+  }
+  .btn-destacar--activa:hover {
+    background-color: #d97706;
+  }
+
+  .badge-destacada {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+  }
+
+  .alerta-flash {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .alerta-flash--ok {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+  .alerta-flash--error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.is-open {
+    display: flex;
+  }
+  .modal-content {
+    background: #fff;
+    border-radius: 10px;
+    padding: 28px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #64748b;
+    line-height: 1;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .modal-actions form,
+  .modal-actions button {
+    flex: 1;
+  }
+  .btn-modal-secundario {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e0;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .btn-modal-primario {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .btn-modal-primario:hover {
+    background: #218838;
+  }
+
   /* RESPONSIVE */
   @media (max-width: 768px) {
     .noticia-body {
@@ -208,6 +353,37 @@
 <div class="detalle-contenedor">
   <a href="/noticias" class="link-volver">← Volver a Noticias</a>
 
+  <% if (typeof ok !== 'undefined' && ok === 'correo_enviado') { %>
+    <div class="alerta-flash alerta-flash--ok">
+      Aviso enviado por correo<%= destinatarios ? ' a ' + destinatarios + ' colaborador(es)' : '' %>.
+    </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error === 'sin_destinatarios') { %>
+    <div class="alerta-flash alerta-flash--error">
+      No hay usuarios con correo registrado para enviar el aviso.
+    </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error === 'correo_fallido') { %>
+    <div class="alerta-flash alerta-flash--error">
+      No se pudo enviar el aviso por correo. Inténtalo de nuevo.
+    </div>
+  <% } %>
+  <% if (typeof ok !== 'undefined' && ok === 'destacada_marcada') { %>
+    <div class="alerta-flash alerta-flash--ok">
+      Esta noticia ahora aparece destacada en el inicio con su portada.
+    </div>
+  <% } %>
+  <% if (typeof ok !== 'undefined' && ok === 'destacada_quitada') { %>
+    <div class="alerta-flash alerta-flash--ok">
+      La noticia ya no está destacada en el inicio.
+    </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error === 'destacada_fallida') { %>
+    <div class="alerta-flash alerta-flash--error">
+      No se pudo actualizar la noticia destacada. Inténtalo de nuevo.
+    </div>
+  <% } %>
+
   <article class="noticia-card">
     
     <% if (noticia.imagen) { %>
@@ -219,6 +395,10 @@
     <div class="noticia-body">
       
       <h1 class="noticia-titulo"><%= noticia.titulo %></h1>
+
+      <% if (noticia.destacada) { %>
+        <div class="badge-destacada" aria-label="Noticia destacada en el inicio">★ Destacada en el inicio</div>
+      <% } %>
       
       <% if (noticia.subtitulo) { %>
         <h3 class="noticia-subtitulo"><%= noticia.subtitulo %></h3>
@@ -278,6 +458,31 @@
             Editar Noticia
           </a>
 
+          <% if (noticia.destacada) { %>
+            <form action="/noticias/destacar/<%= noticia.id %>" method="POST" style="margin: 0;">
+              <input type="hidden" name="quitar" value="1">
+              <button type="submit" class="btn-destacar btn-destacar--activa">
+                Quitar destacada
+              </button>
+            </form>
+          <% } else { %>
+            <form action="/noticias/destacar/<%= noticia.id %>" method="POST"
+                  onsubmit="return confirm('¿Marcar esta noticia como destacada en el inicio? Reemplazará la destacada actual.');"
+                  style="margin: 0;">
+              <button type="submit" class="btn-destacar">
+                Marcar como destacada
+              </button>
+            </form>
+          <% } %>
+
+          <form action="/noticias/enviar-correo/<%= noticia.id %>" method="POST"
+                onsubmit="return confirm('¿Enviar aviso de esta noticia por correo a todos los colaboradores?');"
+                style="margin: 0;">
+            <button type="submit" class="btn-correo">
+              Avisar por correo
+            </button>
+          </form>
+
           <% if (typeof can !== 'undefined' && can.noticias_write) { %>
             <form action="/noticias/eliminar/<%= noticia.id %>" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta noticia de forma permanente?');" style="margin: 0;">
               <button type="submit" class="btn-eliminar">
@@ -291,3 +496,56 @@
     </div>
   </article>
 </div>
+
+<% if (typeof can !== 'undefined' && can.noticias_write && typeof publicada !== 'undefined' && publicada) { %>
+<div class="modal-overlay" id="modal-correo-publicada">
+  <div class="modal-content">
+    <button type="button" class="modal-close" onclick="cerrarModalCorreo()" aria-label="Cerrar">&times;</button>
+    <h3 style="color: #003a70; margin: 0 0 10px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+      Noticia publicada
+    </h3>
+    <p style="color: #475569; line-height: 1.6; margin: 0;">
+      La noticia se guardó correctamente. ¿Deseas enviar un aviso por correo a todos los colaboradores?
+    </p>
+    <div class="modal-actions">
+      <button type="button" class="btn-modal-secundario" onclick="cerrarModalCorreo()">
+        No, gracias
+      </button>
+      <form action="/noticias/enviar-correo/<%= noticia.id %>" method="POST" style="margin: 0;">
+        <button type="submit" class="btn-modal-primario">
+          Sí, enviar aviso
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function abrirModalCorreo() {
+    const modal = document.getElementById('modal-correo-publicada');
+    if (!modal) return;
+    if (window.IntranetModal) {
+      IntranetModal.open('modal-correo-publicada');
+    } else {
+      modal.classList.add('is-open');
+    }
+  }
+
+  function cerrarModalCorreo() {
+    const modal = document.getElementById('modal-correo-publicada');
+    if (!modal) return;
+    if (window.IntranetModal) {
+      IntranetModal.close('modal-correo-publicada');
+    } else {
+      modal.classList.remove('is-open');
+    }
+    if (window.history && window.history.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('publicada');
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', abrirModalCorreo);
+</script>
+<% } %>

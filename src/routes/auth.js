@@ -193,6 +193,13 @@ ${pendingText}`;
   });
 }
 
+function stripEmailLocalPart(usernameOrEmail) {
+  const raw = String(usernameOrEmail || "").trim().toLowerCase();
+  if (!raw) return "";
+  const atIdx = raw.indexOf("@");
+  return atIdx === -1 ? raw : raw.slice(0, atIdx);
+}
+
 function normalizeCorporateEmail(usernameOrEmail, selectedDomain = null) {
   const raw = String(usernameOrEmail || "")
     .trim()
@@ -204,11 +211,13 @@ function normalizeCorporateEmail(usernameOrEmail, selectedDomain = null) {
     if (!ALLOWED_LOGIN_DOMAINS.has(parts[1])) return null;
     return `${parts[0]}@${parts[1]}`;
   }
+  const localPart = stripEmailLocalPart(raw);
+  if (!localPart) return null;
   const domain = String(selectedDomain || "")
     .trim()
     .toLowerCase();
   if (!ALLOWED_LOGIN_DOMAINS.has(domain)) return null;
-  return `${raw}@${domain}`;
+  return `${localPart}@${domain}`;
 }
 
 const uploadProfilePhoto = multer({
@@ -374,7 +383,7 @@ router.post(
     const formData = {
       first_name: req.body.first_name || "",
       last_name: req.body.last_name || "",
-      username: String(req.body.username || "").trim(),
+      username: stripEmailLocalPart(req.body.username),
       domain: String(req.body.domain || "").trim().toLowerCase(),
       telefono: req.body.telefono || "",
       fecha_nacimiento: req.body.fecha_nacimiento || "",

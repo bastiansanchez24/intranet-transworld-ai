@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= formatPageTitle(titulo) %></title>
     <link rel="stylesheet" href="/css/intranet.css">
+    <link rel="stylesheet" href="/css/home.css">
+    <% if (typeof usuario !== 'undefined' && usuario) { %>
+    <link rel="stylesheet" href="/css/claude-fab.css">
+    <link rel="stylesheet" href="/css/claude-chat.css">
+    <% } %>
     <script src="/js/modal.js"></script>
 </head>
 
@@ -106,7 +111,7 @@
         </div>
       </div>
       <div class="nav-item"><a href="/marketing/eventos">GALERÍA</a></div>
-       
+
       <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
         <div class="nav-item"><a href="/apps">APPS</a></div>
       <% } %>
@@ -193,6 +198,15 @@
 
   </div>
 </footer>
+
+<% if (currentUser && typeof titulo === 'string' && titulo.toLowerCase().includes('home')) { %>
+  <%- include('partials/claude-fab') %>
+  <%- include('partials/claude-modal') %>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
+  <script src="/js/claude-chat.js"></script>
+  <script src="/js/claude-modal.js"></script>
+<% } %>
 
 <script>
   document.addEventListener('DOMContentLoaded', async function() {

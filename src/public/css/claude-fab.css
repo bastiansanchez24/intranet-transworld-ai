@@ -1,0 +1,218 @@
+/* Logo IA compartido (mismo símbolo que .welcome-logo en Claude) */
+.claude-ai-logo {
+  font-weight: 700;
+  line-height: 1;
+  font-family: inherit;
+}
+
+/* ---- Navbar (escritorio) ---- */
+.nav-claude-link {
+  display: flex !important;
+  align-items: center;
+  gap: 7px;
+}
+
+.nav-claude-link .claude-ai-logo {
+  font-size: 1.05rem;
+  color: #9fd4ff;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.nav-claude-link:hover .claude-ai-logo {
+  transform: scale(1.15);
+  color: #fff;
+}
+
+/* ---- Navbar (móvil) ---- */
+.mobile-claude-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-claude-link .claude-ai-logo {
+  font-size: 1.1rem;
+  color: #003a70;
+}
+
+/* ---- Botón flotante ---- */
+.claude-fab {
+  position: fixed;
+  bottom: 26px;
+  right: 26px;
+  z-index: 9998;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #003a70 0%, #0055a5 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 6px 24px rgba(0, 58, 112, 0.38);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+}
+
+.claude-fab:hover,
+.claude-fab:focus-visible {
+  transform: scale(1.14);
+  box-shadow: 0 10px 32px rgba(0, 58, 112, 0.48);
+  outline: none;
+}
+
+.claude-fab:active {
+  transform: scale(1.06);
+}
+
+.claude-fab-logo {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.claude-fab-tooltip {
+  position: absolute;
+  right: calc(100% + 16px);
+  top: 50%;
+  transform: translateY(-50%) translateX(10px) scale(0.96);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  background: #1f1e1c;
+  color: #fff;
+  padding: 11px 16px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transition:
+    opacity 0.22s ease,
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.claude-fab-tooltip::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent #1f1e1c;
+}
+
+.claude-fab:hover .claude-fab-tooltip,
+.claude-fab:focus-visible .claude-fab-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0) scale(1);
+}
+
+@media (max-width: 640px) {
+  .claude-fab {
+    bottom: 18px;
+    right: 18px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .claude-fab-logo {
+    font-size: 24px;
+  }
+
+  .claude-fab-tooltip {
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: calc(100% + 14px);
+    transform: translateX(-50%) translateY(8px) scale(0.96);
+    white-space: normal;
+    max-width: 220px;
+    text-align: center;
+  }
+
+  .claude-fab-tooltip::after {
+    right: auto;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    border-color: #1f1e1c transparent transparent transparent;
+  }
+
+  .claude-fab:hover .claude-fab-tooltip,
+  .claude-fab:focus-visible .claude-fab-tooltip {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* ---- Modal Claude ---- */
+.claude-modal-overlay {
+  z-index: 10050;
+  padding: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.claude-modal-content {
+  width: min(1180px, 100%);
+  height: min(92vh, 880px);
+  max-height: 92vh;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--cl-bg, #f7f7f5);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  position: relative;
+}
+
+.claude-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e3e1da;
+  flex-shrink: 0;
+}
+
+.claude-modal-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #003a70;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.claude-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: #76746e;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.claude-modal-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #1f1e1c;
+}
+
+@media (max-width: 640px) {
+  .claude-modal-overlay { padding: 0; }
+  .claude-modal-content {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+}

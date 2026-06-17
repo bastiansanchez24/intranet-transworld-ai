@@ -22,6 +22,7 @@ const marketingRoutes = require("./routes/marketing");
 const docsRoutes = require("./routes/docs");
 const noticiasRoutes = require("./routes/noticias");
 const registroRoutes = require("./routes/registro");
+const claudeRoutes = require("./routes/claude");
 const { ROLES, normalizeRole, isAdministrador } = require("./constants/roles");
 const { formatPageTitle } = require("./utils/pageTitle");
 const { syncUnverifiedUsersToDisabled } = require("./utils/syncDisabledUsers");
@@ -154,6 +155,7 @@ app.use("/sistemas", requireAuth, ticketsRoutes);
 app.use("/marketing", requireAuth, marketingRoutes);
 app.use("/docs", requireAuth, docsRoutes);
 app.use("/noticias", requireAuth, noticiasRoutes);
+app.use("/claude", requireAuth, claudeRoutes);
 
 // Manejo de 404
 app.use((req, res) => {
@@ -260,11 +262,30 @@ async function asegurarCorreoUnico() {
   }
 }
 
+async function asegurarColumnaNoticiasDestacada() {
+  try {
+    await db.query(`
+      ALTER TABLE noticias
+        ADD COLUMN IF NOT EXISTS destacada BOOLEAN NOT NULL DEFAULT false
+    `);
+    await db.query(`
+      CREATE INDEX IF NOT EXISTS idx_noticias_destacada ON noticias (destacada)
+        WHERE destacada = true
+    `);
+  } catch (err) {
+    console.error(
+      "[Noticias] No se pudo asegurar la columna destacada:",
+      err.message,
+    );
+  }
+}
+
 // ================================
 // INICIAR SERVIDOR
 // ================================
 Promise.allSettled([
   asegurarCorreoUnico(),
+  asegurarColumnaNoticiasDestacada(),
   sincronizarUsuariosDeshabilitados(),
 ]).finally(() => {
   app.listen(PORT, () => {

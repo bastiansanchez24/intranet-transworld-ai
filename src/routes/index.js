@@ -23,7 +23,7 @@ let cachedIndicadores = {
   euro: { valor: null, tendencia: "igual" },
   uf: { valor: null, tendencia: "igual" },
 };
-let cachedClima = { temp: "--", icon: "⏳", desc: "Cargando..." };
+let cachedClima = { temp: "--", icon: "⏳", desc: "Cargando...", sunset: null, manana: null };
 let cachedLinkedin = [];
 
 async function updateDataBackground() {
@@ -75,6 +75,66 @@ async function updateDataBackground() {
 updateDataBackground();
 setInterval(updateDataBackground, 15 * 60 * 1000);
 
+function mapNoticiaHomeRow(n) {
+  return {
+    id: n.id,
+    type: "noticia",
+    titulo: n.titulo,
+    subtitulo: n.subtitulo,
+    imagen: n.imagen,
+    link: `/noticias/${n.id}`,
+    fecha: n.fecha_creacion ? new Date(n.fecha_creacion) : new Date(),
+    destacada: Boolean(n.destacada),
+  };
+}
+
+async function fetchNoticiasHome() {
+  let noticiaDestacada = null;
+
+  try {
+    const { rows } = await db.query(
+      `SELECT id, titulo, imagen, subtitulo, fecha_creacion, destacada
+       FROM noticias
+       WHERE destacada = true
+       ORDER BY fecha_creacion DESC
+       LIMIT 1`,
+    );
+    if (rows[0]) {
+      noticiaDestacada = mapNoticiaHomeRow(rows[0]);
+    }
+  } catch (err) {
+    console.warn(
+      "[HOME] Columna destacada no disponible en noticias;",
+      err.message,
+    );
+  }
+
+  let noticiasLista = [];
+  try {
+    const sql = noticiaDestacada
+      ? `SELECT id, titulo, imagen, subtitulo, fecha_creacion
+         FROM noticias
+         WHERE id != $1
+         ORDER BY fecha_creacion DESC
+         LIMIT 8`
+      : `SELECT id, titulo, imagen, subtitulo, fecha_creacion
+         FROM noticias
+         ORDER BY fecha_creacion DESC
+         LIMIT 8`;
+    const params = noticiaDestacada ? [noticiaDestacada.id] : [];
+    const { rows } = await db.query(sql, params);
+    noticiasLista = rows.map((n) => mapNoticiaHomeRow(n));
+  } catch (err) {
+    console.error("[HOME] Error cargando lista de noticias:", err.message);
+  }
+
+  const mixedFeed = noticiaDestacada
+    ? [noticiaDestacada, ...noticiasLista]
+    : noticiasLista;
+
+  return { noticiaDestacada, noticiasLista, mixedFeed };
+}
+
 // ==========================================
 // RUTA: HOME
 // ==========================================
@@ -100,7 +160,7 @@ router.get("/", async (req, res) => {
       SELECT
         TRIM(CONCAT(u.first_name, ' ', COALESCE(u.last_name, ''))) AS nombre,
         COALESCE(at.nombre_area, 'Sin área') AS area,
-
+        u.foto,
         EXTRACT(DAY FROM u.fecha_nacimiento) AS dia
       FROM users u
       LEFT JOIN area_trabajo at ON at.id = u.area_trabajo_id
@@ -109,11 +169,16 @@ router.get("/", async (req, res) => {
       ORDER BY dia ASC, nombre ASC
     `;
     const sqlEventos = `SELECT ef.url as imagen, e.nombre FROM eventos_fotos ef JOIN eventos e ON ef.evento_id = e.id ORDER BY RANDOM() LIMIT 30`;
-    const sqlNoticias = `SELECT id, titulo, imagen, subtitulo, fecha_creacion FROM noticias ORDER BY fecha_creacion DESC LIMIT 10`;
     const sqlEventosPortada = `SELECT nombre, slug, imagen FROM eventos WHERE imagen IS NOT NULL AND imagen != '' ORDER BY fecha_creacion DESC LIMIT 8`;
 
+    const emptyNoticiasHome = {
+      noticiaDestacada: null,
+      noticiasLista: [],
+      mixedFeed: [],
+    };
+
     // FIX: .catch(() => []) en cada query para que un fallo aislado no rompa todo el home
-    const [resultsMes, eventosRows, noticiasRows, eventosPortadas] =
+    const [resultsMes, eventosRows, noticiasHome, eventosPortadas] =
       await Promise.all([
         db
           .query(sqlMes, [mes])
@@ -123,30 +188,14 @@ router.get("/", async (req, res) => {
           .query(sqlEventos)
           .then((r) => r.rows)
           .catch(() => []),
-        db
-          .query(sqlNoticias)
-          .then((r) => r.rows)
-          .catch(() => []),
+        fetchNoticiasHome().catch(() => emptyNoticiasHome),
         db
           .query(sqlEventosPortada)
           .then((r) => r.rows)
           .catch(() => []),
       ]);
 
-    let mixedFeed = [];
-    noticiasRows.forEach((n) => {
-      mixedFeed.push({
-        id: n.id,
-        type: "noticia",
-        titulo: n.titulo,
-        subtitulo: n.subtitulo,
-        imagen: n.imagen,
-        link: `/noticias/${n.id}`,
-        fecha: n.fecha_creacion ? new Date(n.fecha_creacion) : new Date(),
-      });
-    });
-    mixedFeed.sort((a, b) => b.fecha - a.fecha);
-    mixedFeed = mixedFeed.slice(0, 10);
+    const { noticiaDestacada, noticiasLista, mixedFeed } = noticiasHome;
 
     // ==========================================
     // LÓGICA DEL PLATO DEL DÍA
@@ -165,6 +214,14 @@ router.get("/", async (req, res) => {
     const platoHoy = platosRows.find((p) => p.dia_numero === diaActual);
     const platoDelDia = platoHoy ? platoHoy.nombre_plato : "No definido";
 
+    const diaManana = diaActual < 5 ? diaActual + 1 : null;
+    const platoMananaRow = diaManana
+      ? platosRows.find((p) => p.dia_numero === diaManana)
+      : null;
+    const platoManana = diaManana
+      ? (platoMananaRow ? platoMananaRow.nombre_plato : "No definido")
+      : null;
+
     res.render("home", {
       titulo: "Home | Intranet Transworld Chile",
       finanzas: dataFinanciera,
@@ -173,11 +230,13 @@ router.get("/", async (req, res) => {
       diaHoy,
       cumpleaniosMes: resultsMes,
       eventosCarousel: eventosRows,
-      noticiasCarousel: noticiasRows,
       eventosPortadas,
       mixedCarousel: mixedFeed,
+      noticiaDestacada,
+      noticiasLista,
       linkedinFeed: dataLinkedin,
       platoDelDia,
+      platoManana,
       menuSemanal: platosRows,
       user: req.session.user,
     });

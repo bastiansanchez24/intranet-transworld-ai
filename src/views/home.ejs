@@ -1,5 +1,4 @@
 <%
-  // Funciones auxiliares
   function titleCase(s) {
     if (!s) return '';
     const capitalize = (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
@@ -8,238 +7,339 @@
       .split(/\s+/)
       .filter(Boolean)
       .map((word) =>
-        word
-          .split('-')
-          .map((segment) => capitalize(segment))
-          .join('-')
+        word.split('-').map((segment) => capitalize(segment)).join('-')
       )
       .join(' ');
   }
-  
+
   function formatDateShort(dateString) {
     const d = new Date(dateString);
     const dia = d.getDate();
     const mes = d.toLocaleString('es-CL', { month: 'short' });
-    return `${dia}-${mes.replace('.','')}`;
+    return `${dia}-${mes.replace('.', '')}`;
   }
+
+  function getInitials(name) {
+    if (!name) return '?';
+    const parts = String(name).trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return parts[0][0].toUpperCase();
+  }
+
+  function financeTrendClass(tendencia) {
+    if (tendencia === 'alcista') return 'home-finance__item--up';
+    if (tendencia === 'bajista') return 'home-finance__item--down';
+    return 'home-finance__item--equal';
+  }
+
+  function financeTrendSymbol(tendencia) {
+    if (tendencia === 'alcista') return '↑';
+    if (tendencia === 'bajista') return '↓';
+    return '−';
+  }
+
+  const mesCorto = new Date(2000, new Date().getMonth(), 1)
+    .toLocaleString('es-CL', { month: 'short' })
+    .replace('.', '');
 
   const mesNum = new Date().getMonth() + 1;
   let cumpleaniosOrdenados = [];
   if (typeof cumpleaniosMes !== 'undefined' && cumpleaniosMes) {
     cumpleaniosOrdenados = [...cumpleaniosMes].sort((a, b) => {
-      const dHoy = (typeof diaHoy !== 'undefined') ? diaHoy : new Date().getDate(); 
-      const aPasado = a.dia < dHoy; const bPasado = b.dia < dHoy;
+      const dHoy = (typeof diaHoy !== 'undefined') ? diaHoy : new Date().getDate();
+      const aPasado = a.dia < dHoy;
+      const bPasado = b.dia < dHoy;
       if (aPasado !== bPasado) return aPasado ? 1 : -1;
       return a.dia - b.dia;
     });
   }
+
+  const listaNoticias = (typeof noticiasLista !== 'undefined' && noticiasLista) ? noticiasLista : [];
+  const destacada = (typeof noticiaDestacada !== 'undefined' && noticiaDestacada) ? noticiaDestacada : null;
+  const tieneDestacada = Boolean(destacada);
+
+  const nombresDiasMenu = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  let diaActualMenu = new Date().getDay();
+  if (diaActualMenu === 0 || diaActualMenu === 6) diaActualMenu = 1;
 %>
 
 <div class="home-page">
-<div class="home-grid-top">
-  
-  <div class="home-stack">
-    <div class="indicators-row">
-      <a href="https://si3.bcentral.cl/indicadoressiete/secure/Serie.aspx?gcode=PRE_TCO&param=RABmAFYAWQB3AGYAaQBuAEkALQAzADUAbgBNAGgAaAAkADUAVwBQAC4AbQBYADAARwBOAGUAYwBjACMAQQBaAHAARgBhAGcAUABTAGUAdwA1ADQAMQA0AE0AawBLAF8AdQBDACQASABzAG0AXwA2AHQAawBvAFcAZwBKAEwAegBzAF8AbgBMAHIAYgBDAC4ARQA3AFUAVwB4AFIAWQBhAEEAOABkAHkAZwAxAEEARAA=" target="_blank" class="indicator-badge <%= finanzas.dolar.tendencia === 'bajista' ? 'bg-down' : (finanzas.dolar.tendencia === 'alcista' ? 'bg-up' : 'bg-equal') %>">
-        <span>$ USD</span>
-        <span><%= (finanzas.dolar && finanzas.dolar.valor) ?
-          finanzas.dolar.valor : '---' %> <%= finanzas.dolar.tendencia === 'alcista' ? '⬆' : (finanzas.dolar.tendencia === 'bajista' ? '⬇' : '=') %></span>
-      </a>
-      
-      <a href="https://si3.bcentral.cl/IndicadoresSiete/secure/Serie.aspx?gcode=PRE_EUR&param=cgBnAE8AOQBlAGcAIwBiAFUALQBsAEcAYgBOAEkASQBCAEcAegBFAFkAeABkADgASAA2AG8AdgB2AFMAUgBYADIAQwBzAEEARQBMAG8ASgBWADQATABrAGQAZAB1ADIAeQBBAFAAZwBhADIAbABWAHcAXwBXAGgATAAkAFIAVAB1AEIAbAB3AFoAdQBRAFgAZwA5AHgAdgAwACQATwBZADcAMwAuAGIARwBFAFIASwAuAHQA" target="_blank" class="indicator-badge <%= finanzas.euro.tendencia === 'bajista' ? 'bg-down' : (finanzas.euro.tendencia === 'alcista' ? 'bg-up' : 'bg-equal') %>">
-        <span>€ EUR</span>
-        <span><%= (finanzas.euro && finanzas.euro.valor) ?
-          finanzas.euro.valor : '---' %> <%= finanzas.euro.tendencia === 'alcista' ? '⬆' : (finanzas.euro.tendencia === 'bajista' ? '⬇' : '=') %></span>
-      </a>
 
-      <a href="https://si3.bcentral.cl/IndicadoresSiete/secure/Serie.aspx?gcode=UF&param=RABmAFYAWQB3AGYAaQBuAEkALQAzADUAbgBNAGgAaAAkADUAVwBQAC4AbQBYADAARwBOAGUAYwBjACMAQQBaAHAARgBhAGcAUABTAGUAYwBsAEMAMQA0AE0AawBLAF8AdQBDACQASABzAG0AXwA2AHQAawBvAFcAZwBKAEwAegBzAF8AbgBMAHIAYgBDAC4ARQA3AFUAVwB4AFIAWQBhAEEAOABkAHkAZwAxAEEARAA=" target="_blank" class="indicator-badge <%= finanzas.uf.tendencia === 'bajista' ? 'bg-down' : (finanzas.uf.tendencia === 'alcista' ? 'bg-up' : 'bg-equal') %>">
-        <span>UF</span>
-        <span><%= (finanzas.uf && finanzas.uf.valor) ?
-          finanzas.uf.valor : '---' %> <%= finanzas.uf.tendencia === 'alcista' ? '⬆' : (finanzas.uf.tendencia === 'bajista' ? '⬇' : '=') %></span>
-      </a>
-    </div>
+  <!-- Fila superior: indicadores, widgets y accesos rápidos -->
+  <section class="home-dash" aria-label="Panel principal">
 
-    <div class="widgets-row">
-      <div class="widget-box widget-box-interactive" onclick="window.open('https://www.meteored.cl/tiempo-en_Santiago+de+Chile-America+Sur-Chile-Region+Metropolitana+de+Santiago-SCEL-1-18578.html', '_blank')" title="Ver clima detallado">
-        <div class="weather-layout">
-           <div class="weather-icon-big">
-             <%= (typeof clima !== 'undefined') ?
-               clima.icon : '☀️' %>
-           </div>
-           <div class="weather-info-col">
-             <div class="weather-temp-big">
-                <%= (typeof clima !== 'undefined') ?
-                  clima.temp : '--' %>°C
-             </div>
-             <div class="weather-city-small">
-                <%= (typeof clima !== 'undefined' && clima.desc) ?
-                  clima.desc : 'Santiago' %>
-             </div>
-           </div>
-        </div>
+    <div class="home-dash__main">
+      <div class="home-finance" role="list" aria-label="Indicadores financieros">
+        <a href="https://si3.bcentral.cl/indicadoressiete/secure/Serie.aspx?gcode=PRE_TCO&param=RABmAFYAWQB3AGYAaQBuAEkALQAzADUAbgBNAGgAaAAkADUAVwBQAC4AbQBYADAARwBOAGUAYwBjACMAQQBaAHAARgBhAGcAUABTAGUAdwA1ADQAMQA0AE0AawBLAF8AdQBDACQASABzAG0AXwA2AHQAawBvAFcAZwBKAEwAegBzAF8AbgBMAHIAYgBDAC4ARQA3AFUAVwB4AFIAWQBhAEEAOABkAHkAZwAxAEEARAA=" target="_blank" rel="noopener noreferrer" class="home-finance__item <%= financeTrendClass(finanzas.dolar.tendencia) %>" role="listitem">
+          <span class="home-finance__label">Dólar USD</span>
+          <span class="home-finance__value">
+            <span><%= (finanzas.dolar && finanzas.dolar.valor) ? finanzas.dolar.valor : '---' %></span>
+            <span class="home-finance__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.dolar.tendencia) %></span>
+          </span>
+        </a>
+        <a href="https://si3.bcentral.cl/IndicadoresSiete/secure/Serie.aspx?gcode=PRE_EUR&param=cgBnAE8AOQBlAGcAIwBiAFUALQBsAEcAYgBOAEkASQBCAEcAegBFAFkAeABkADgASAA2AG8AdgB2AFMAUgBYADIAQwBzAEEARQBMAG8ASgBWADQATABrAGQAZAB1ADIAeQBBAFAAZwBhADIAbABWAHcAXwBXAGgATAAkAFIAVAB1AEIAbAB3AFoAdQBRAFgAZwA5AHgAdgAwACQATwBZADcAMwAuAGIARwBFAFIASwAuAHQA" target="_blank" rel="noopener noreferrer" class="home-finance__item <%= financeTrendClass(finanzas.euro.tendencia) %>" role="listitem">
+          <span class="home-finance__label">Euro EUR</span>
+          <span class="home-finance__value">
+            <span><%= (finanzas.euro && finanzas.euro.valor) ? finanzas.euro.valor : '---' %></span>
+            <span class="home-finance__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.euro.tendencia) %></span>
+          </span>
+        </a>
+        <a href="https://si3.bcentral.cl/IndicadoresSiete/secure/Serie.aspx?gcode=UF&param=RABmAFYAWQB3AGYAaQBuAEkALQAzADUAbgBNAGgAaAAkADUAVwBQAC4AbQBYADAARwBOAGUAYwBjACMAQQBaAHAARgBhAGcAUABTAGUAYwBsAEMAMQA0AE0AawBLAF8AdQBDACQASABzAG0AXwA2AHQAawBvAFcAZwBKAEwAegBzAF8AbgBMAHIAYgBDAC4ARQA3AFUAVwB4AFIAWQBhAEEAOABkAHkAZwAxAEEARAA=" target="_blank" rel="noopener noreferrer" class="home-finance__item <%= financeTrendClass(finanzas.uf.tendencia) %>" role="listitem">
+          <span class="home-finance__label">UF</span>
+          <span class="home-finance__value">
+            <span><%= (finanzas.uf && finanzas.uf.valor) ? finanzas.uf.valor : '---' %></span>
+            <span class="home-finance__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.uf.tendencia) %></span>
+          </span>
+        </a>
       </div>
 
-      <div class="widget-box widget-box-interactive menu-widget-box" onclick="IntranetModal.open('modalVerMenu')" title="Ver menú de la semana">
-        <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-          <button onclick="event.stopPropagation(); IntranetModal.open('modalPlatos')" class="menu-edit-button" title="Editar Menú de la Semana">✏️</button>
-        <% } %>
-        
-        <span class="menu-widget-icon">🍽️</span>
-        <span class="widget-title menu-widget-title">Menú de hoy</span>
-        <span class="widget-value menu-widget-value"><%= typeof platoDelDia !== 'undefined' ?
-          platoDelDia : 'No definido' %></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="botones-duales-container">
-    <a href="https://www.transworld.cl/" target="_blank" class="btn-dual btn-sitio">
-      <img src="/img/favicon2.png" alt="Transworld" class="btn-dual-img btn-dual-img-large">
-      <span class="btn-dual-text">Sitio Web</span>
-      <span class="btn-dual-sub">transworld.cl</span>
-    </a>
-    <a href="/cursos" class="btn-dual btn-cursos">
-      <img src="/img/LOGO-TRANSWORLD-ACADEMY.png" alt="Transworld Academy" class="btn-dual-img btn-dual-img-large">
-      <span class="btn-dual-text">Cursos</span>
-      <span class="btn-dual-sub btn-dual-sub-muted">Capacitaciones</span>
-    </a>
-  </div>
-</div>
-
-<div class="home-grid-bottom">
-  
-  <div class="home-stack">
-    <div>
-      <h3 class="section-header">NOTICIAS INTERNAS</h3>
-      <div class="news-container">
-        <% if (mixedCarousel && mixedCarousel.length > 0) { %>
-          <% mixedCarousel.slice(0, 5).forEach(news => { %>
-            <a href="<%= news.link %>" class="news-list-item">
-               <div class="news-date-box">
-                 <%= formatDateShort(news.fecha).toUpperCase() %>
+      <div class="home-widgets">
+        <article class="home-glass home-glass--clickable home-widget home-widget--weather" onclick="window.open('https://www.meteored.cl/tiempo-en_Santiago+de+Chile-America+Sur-Chile-Region+Metropolitana+de+Santiago-SCEL-1-18578.html', '_blank')" title="Ver clima detallado">
+          <div class="home-widget__icon" aria-hidden="true">
+            <%= (typeof clima !== 'undefined' && clima) ? clima.icon : '☀️' %>
+          </div>
+          <div class="home-widget__body">
+            <span class="home-widget__label">Clima · <%= (typeof clima !== 'undefined' && clima && clima.ubicacion) ? clima.ubicacion : 'Huechuraba' %></span>
+            <div class="home-widget__headline">
+              <div class="home-widget__value"><%= (typeof clima !== 'undefined' && clima) ? clima.temp : '--' %>°C</div>
+              <% if (typeof clima !== 'undefined' && clima && clima.tempMin != null && clima.tempMax != null) { %>
+                <span class="home-widget__range"><%= clima.tempMin %>° / <%= clima.tempMax %>°</span>
+              <% } %>
+            </div>
+            <div class="home-widget__sub"><%= (typeof clima !== 'undefined' && clima && clima.desc) ? clima.desc : 'Santiago' %></div>
+            <% if (typeof clima !== 'undefined' && clima) { %>
+              <div class="home-widget__details">
+                <% if (clima.feelsLike != null) { %>
+                  <span class="home-widget__detail">Sensación <%= clima.feelsLike %>°</span>
+                <% } %>
+                <% if (clima.humidity != null) { %>
+                  <span class="home-widget__detail">💧 <%= clima.humidity %>%</span>
+                <% } %>
+                <% if (clima.wind != null) { %>
+                  <span class="home-widget__detail">💨 <%= clima.wind %> km/h</span>
+                <% } %>
+                <% if (clima.lluvia != null) { %>
+                  <span class="home-widget__detail">☔ <%= clima.lluvia %>%</span>
+                <% } %>
               </div>
-              <div class="news-title-text" title="<%= news.titulo %>">
-                <%= news.titulo %>
+              <% if (clima.sunrise || clima.sunset) { %>
+                <div class="home-widget__extras home-widget__extras--inline">
+                  <% if (clima.sunrise) { %>
+                    <span class="home-widget__extra">🌄 <%= clima.sunrise %></span>
+                  <% } %>
+                  <% if (clima.sunset) { %>
+                    <span class="home-widget__extra">🌅 <%= clima.sunset %></span>
+                  <% } %>
+                </div>
+              <% } %>
+              <% if (clima.semana && clima.semana.length > 1) { %>
+                <ul class="home-widget__forecast" aria-label="Pronóstico semanal">
+                  <% clima.semana.slice(1, 6).forEach((dia) => { %>
+                    <li class="home-widget__forecast-day">
+                      <span class="home-widget__forecast-label"><%= dia.dia %></span>
+                      <span class="home-widget__forecast-icon" aria-hidden="true"><%= dia.icon %></span>
+                      <span class="home-widget__forecast-temp"><%= dia.tempMin %>°/<%= dia.tempMax %>°</span>
+                    </li>
+                  <% }); %>
+                </ul>
+              <% } %>
+            <% } %>
+          </div>
+        </article>
+
+        <article class="home-glass home-widget home-widget--menu">
+          <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
+            <button type="button" onclick="IntranetModal.open('modalPlatos')" class="home-widget__edit" title="Editar menú semanal" aria-label="Editar menú semanal">✏️</button>
+          <% } %>
+          <div class="home-widget__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          </div>
+          <div class="home-widget__body">
+            <span class="home-widget__label">Menú semanal</span>
+            <ul class="home-menu-week" aria-label="Menú de la semana">
+              <% for (let i = 1; i <= 5; i++) { %>
+                <% const platoDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.dia_numero === i) : null; %>
+                <li class="home-menu-week__day<%= i === diaActualMenu ? ' home-menu-week__day--today' : '' %>">
+                  <span class="home-menu-week__label"><%= nombresDiasMenu[i - 1] %></span>
+                  <span class="home-menu-week__dish"><%= platoDia && platoDia.nombre_plato ? platoDia.nombre_plato : 'No definido' %></span>
+                </li>
+              <% } %>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <aside class="home-quick" aria-label="Accesos rápidos">
+      <a href="https://www.transworld.cl/" target="_blank" rel="noopener noreferrer" class="home-glass home-glass--clickable home-quick__card">
+        <img src="/img/trw_logohor.png" alt="Transworld">
+        <span class="home-quick__title">Sitio Web</span>
+        <span class="home-quick__sub">transworld.cl</span>
+      </a>
+      <a href="/cursos" class="home-glass home-glass--clickable home-quick__card home-quick__card--academy">
+        <img src="/img/LOGO-TRANSWORLD-ACADEMY.png" alt="Transworld Academy">
+        <span class="home-quick__title">Cursos</span>
+        <span class="home-quick__sub">Capacitaciones</span>
+      </a>
+    </aside>
+  </section>
+
+  <!-- Fila inferior: noticias, cumpleaños y comunicaciones -->
+  <section class="home-dash home-dash--bottom" aria-label="Noticias y comunicaciones">
+
+    <div class="home-dash__col">
+      <!-- Noticias -->
+      <section class="home-section home-news" aria-labelledby="home-news-title">
+        <div class="home-section__head">
+          <h2 class="home-section__title" id="home-news-title">Noticias internas</h2>
+          <a href="/noticias" class="home-section__link">Ver todas →</a>
+        </div>
+
+        <div class="home-glass home-news__card">
+          <% if (tieneDestacada) { %>
+            <a href="<%= destacada.link %>" class="home-news__featured">
+              <div class="home-news__featured-media">
+                <img
+                  src="<%= destacada.imagen || '/img/fondo-home.png' %>"
+                  alt="<%= destacada.titulo %>"
+                  class="home-news__featured-img"
+                  loading="eager"
+                  onerror="this.src='/img/fondo-home.png'"
+                >
+                <span class="home-news__featured-badge">Destacada</span>
+                <div class="home-news__featured-body">
+                  <time class="home-news__featured-date" datetime="<%= destacada.fecha.toISOString() %>">
+                    <%= formatDateShort(destacada.fecha) %>
+                  </time>
+                  <h3 class="home-news__featured-title"><%= destacada.titulo %></h3>
+                  <% if (destacada.subtitulo) { %>
+                    <p class="home-news__featured-sub"><%= destacada.subtitulo %></p>
+                  <% } %>
+                </div>
               </div>
             </a>
+          <% } %>
+
+          <% if (listaNoticias.length > 0) { %>
+            <ul class="home-news__list" aria-label="<%= tieneDestacada ? 'Más noticias' : 'Noticias recientes' %>">
+              <% listaNoticias.forEach((news) => { %>
+                <li class="home-news__list-item">
+                  <a href="<%= news.link %>" class="home-news__list-link">
+                    <% if (news.imagen) { %>
+                      <span class="home-news__list-thumb">
+                        <img src="<%= news.imagen %>" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+                      </span>
+                    <% } %>
+                    <span class="home-news__list-date"><%= formatDateShort(news.fecha).toUpperCase() %></span>
+                    <span class="home-news__list-title" title="<%= news.titulo %>"><%= news.titulo %></span>
+                  </a>
+                </li>
+              <% }); %>
+            </ul>
+          <% } else if (!tieneDestacada) { %>
+            <p class="home-news__empty">No hay noticias recientes.</p>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- Cumpleaños -->
+      <section class="home-section home-birthdays" aria-labelledby="home-birthdays-title">
+        <div class="home-section__head">
+          <h2 class="home-section__title" id="home-birthdays-title">Cumpleaños <%= (typeof mesNombre !== 'undefined') ? mesNombre : '' %></h2>
+        </div>
+
+        <div class="home-glass home-birthdays__card">
+          <% if (!cumpleaniosOrdenados || cumpleaniosOrdenados.length === 0) { %>
+            <p class="home-birthdays__empty">No hay cumpleaños registrados.</p>
+          <% } else { %>
+            <% const hoyDia = new Date().getDate(); %>
+            <div id="lista-cumpleanos" class="home-birthdays__list">
+              <% cumpleaniosOrdenados.forEach((p, index) => {
+                const ocultoClass = (index >= 3) ? 'is-hidden' : '';
+                const esHoy = (Number(p.dia) === hoyDia);
+                const iniciales = getInitials(p.nombre);
+              %>
+                <article class="home-birthday item-cumple<%= esHoy ? ' home-birthday--today' : '' %> <%= ocultoClass %>" aria-label="Cumpleaños de <%= titleCase(p.nombre) %>">
+                  <div class="home-birthday__avatar-wrap">
+                    <% if (p.foto) { %>
+                      <img src="<%= p.foto %>" alt="" class="home-birthday__avatar" loading="lazy">
+                    <% } else { %>
+                      <div class="home-birthday__avatar home-birthday__avatar--initials" aria-hidden="true"><%= iniciales %></div>
+                    <% } %>
+                    <% if (esHoy) { %><span class="home-birthday__dot" title="¡Cumpleaños hoy!"></span><% } %>
+                  </div>
+                  <div class="home-birthday__info">
+                    <h3 class="home-birthday__name"><%= titleCase(p.nombre) %></h3>
+                    <p class="home-birthday__area"><%= titleCase(p.area) %></p>
+                  </div>
+                  <div class="home-birthday__date" aria-label="<%= p.dia %> de <%= mesCorto %>">
+                    <span class="home-birthday__date-day"><%= p.dia %></span>
+                    <span class="home-birthday__date-month"><%= mesCorto %></span>
+                  </div>
+                </article>
+              <% }); %>
+            </div>
+            <% if (cumpleaniosOrdenados.length > 3) { %>
+              <button type="button" id="btn-ver-mas-cumple" class="home-birthdays__more" onclick="toggleCumpleanios()">Ver más...</button>
+            <% } %>
+          <% } %>
+        </div>
+      </section>
+    </div>
+
+    <!-- Comunicaciones -->
+    <section class="home-section home-comms" aria-labelledby="home-comms-title">
+      <div class="home-section__head">
+        <h2 class="home-section__title" id="home-comms-title">Comunicaciones</h2>
+      </div>
+
+      <div class="home-glass home-comms__frame" id="homeCommsCarousel">
+        <button type="button" class="home-comms__nav home-comms__nav--prev" onclick="moveLinkedin(-1)" aria-label="Anterior">&#10094;</button>
+        <button type="button" class="home-comms__nav home-comms__nav--next" onclick="moveLinkedin(1)" aria-label="Siguiente">&#10095;</button>
+
+        <% if (typeof linkedinFeed !== 'undefined' && linkedinFeed.length > 0) { %>
+          <% linkedinFeed.forEach((post, index) => { %>
+            <div class="home-comms__slide<%= index === 0 ? ' is-active' : '' %>">
+              <a href="<%= post.enlace_url %>" target="_blank" rel="noopener noreferrer" class="home-comms__link" title="<%= post.texto %>">
+                <% if (post.imagen_url === '/img/fondo-home.png') { %>
+                  <% const parrafos = (post.texto || '').split('\n').filter(p => p.trim().length > 0); %>
+                  <% const textoResumen = parrafos.slice(0, 2).join('<br><br>'); %>
+                  <div class="home-comms__text-card">
+                    <div class="home-comms__text-summary"><%- textoResumen %></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="56" height="56" fill="#0a66c2" class="home-comms__linkedin-icon" aria-hidden="true">
+                      <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"></path>
+                    </svg>
+                    <p class="home-comms__cta">Haga click para ver más...</p>
+                  </div>
+                <% } else { %>
+                  <img src="<%= post.imagen_url %>" alt="Publicación LinkedIn" class="home-comms__img" onerror="this.src='/img/fondo-home.png'">
+                <% } %>
+              </a>
+            </div>
           <% }); %>
         <% } else { %>
-          <p class="home-empty-news">No hay noticias recientes.</p>
-        <% } %>
-        
-        <a href="/noticias" class="btn-ver-mas-news">Ver más</a>
-      </div>
-    </div>
-
-    <div>
-      <h3 class="section-header">CUMPLEAÑOS <%= (typeof mesNombre !== 'undefined') ? mesNombre : '' %></h3>
-      <div class="cumple-container">
-        <% if (!cumpleaniosOrdenados || cumpleaniosOrdenados.length === 0) { %>
-          <p>No hay cumpleaños registrados.</p>
-        <% } else { %>
-          <% 
-            // Obtenemos el número del día de hoy para compararlo
-            const hoyDia = new Date().getDate(); 
-          %>
-          <div id="lista-cumpleanos">
-            <% cumpleaniosOrdenados.forEach((p, index) => { 
-              let ocultoClass = (index >= 3) ? 'is-hidden' : '';
-              // Verificamos si el día coincide
-              let esHoy = (Number(p.dia) === hoyDia);
-            %>
-              <div class="cumple-row item-cumple <%= esHoy ? 'cumple-hoy' : '' %> <%= ocultoClass %>">
-                <div class="cumple-date-col">
-                  <%= p.dia %>/<%= mesNum %>
-                </div>
-          
-                <div class="cumple-info-col">
-                  <div class="cumple-name"><%= titleCase(p.nombre) %></div>
-                  <div class="cumple-dept"><%= titleCase(p.area) %></div>
-                </div>
-              </div>
-            <% }); %>
+          <div class="home-comms__slide is-active">
+            <div class="home-comms__empty">Actualizando comunicaciones...</div>
           </div>
-          
-          <% if (cumpleaniosOrdenados.length > 3) { %>
-            <button id="btn-ver-mas-cumple" class="btn-ver-mas-cumple" onclick="toggleCumpleanios()">
-              Ver más...
-            </button>
-          <% } %>
         <% } %>
       </div>
-    </div>
-  </div>
-
-  <div>
-    <h3 class="section-header">COMUNICACIONES</h3>
-    
-    <div class="linkedin-carousel">
-      <button class="nav-arrow prev" onclick="moveLinkedin(-1)">&#10094;</button>
-      <button class="nav-arrow next" onclick="moveLinkedin(1)">&#10095;</button>
-
-      <% if (typeof linkedinFeed !== 'undefined' && linkedinFeed.length > 0) { %>
-        <% linkedinFeed.forEach((post, index) => { %>
-          <div class="linkedin-slide <%= index === 0 ? 'active' : '' %>">
- 
-            <a href="<%= post.enlace_url %>" target="_blank" class="linkedin-link-full" title="<%= post.texto %>">
-              
-              <% if (post.imagen_url === '/img/fondo-home.png') { %>
-                <% 
-                  // Extraer dinámicamente los 2 primeros párrafos que tengan contenido
-                  let parrafos = (post.texto || '').split('\n').filter(p => p.trim().length > 0);
-                  let textoResumen = parrafos.slice(0, 2).join('<br><br>');
-                %>
-                <div class="linkedin-text-card">
-                  
-                  <div class="linkedin-text-summary">
-                    <%- textoResumen %>
-                  </div>
-
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="70" height="70" fill="#0a66c2" class="linkedin-icon">
-          
-                    <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"></path>
-                  </svg>
-
-                  <p class="linkedin-cta">
-                    Haga click para ver más...
-                  </p>
-                </div>
-              <% } else { %>
-              
-                <img src="<%= post.imagen_url %>" alt="Post LinkedIn" class="linkedin-img-full" onerror="this.src='/img/fondo-home.png'">
-              <% } %>
-
-            </a>
-          </div>
-        <% }); %>
-      <% } else { %>
-        <div class="linkedin-slide active">
-         
-          <div class="linkedin-empty">Actualizando comunicaciones...</div>
-        </div>
-   
-      <% } %>
-    </div>
-  </div>
-
-</div>
+    </section>
+  </section>
 </div>
 
 <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
 <div id="modalPlatos" class="modal-overlay">
   <div class="modal-content2 modal-content2-large">
     <h3>Editar Menú Semanal</h3>
-    
     <form action="/platos/editar" method="POST">
       <% const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']; %>
-      <% for(let i = 1; i <= 5; i++) { %>
+      <% for (let i = 1; i <= 5; i++) { %>
         <% const platoDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.dia_numero === i) : null; %>
         <div class="modal-form-group">
-          <label class="modal-form-label"><%= dias[i-1] %></label>
+          <label class="modal-form-label"><%= dias[i - 1] %></label>
           <input type="text" name="plato_<%= i %>" value="<%= platoDia ? platoDia.nombre_plato : '' %>" required class="modal-form-input">
         </div>
       <% } %>
-      
       <div class="modal-actions-row">
         <button type="button" onclick="IntranetModal.close('modalPlatos')" class="modal-button-secondary">Cancelar</button>
         <button type="submit" class="modal-button-primary">Guardar Menú</button>
@@ -251,22 +351,19 @@
 
 <div id="modalVerMenu" class="modal-overlay">
   <div class="modal-content2">
-    <button onclick="IntranetModal.close('modalVerMenu')" class="modal-content2-close">&times;</button>
+    <button type="button" onclick="IntranetModal.close('modalVerMenu')" class="modal-content2-close" aria-label="Cerrar">&times;</button>
     <h3>Menú de la Semana</h3>
-    
     <div class="modal-list-stack">
-      <% const nombresDiasMenu = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']; %>
-      <% for(let i = 1; i <= 5; i++) { %>
+      <% for (let i = 1; i <= 5; i++) { %>
         <% const pDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.dia_numero === i) : null; %>
         <div class="modal-list-item">
-          <span class="modal-item-label"><%= nombresDiasMenu[i-1] %></span>
+          <span class="modal-item-label"><%= nombresDiasMenu[i - 1] %></span>
           <span class="modal-item-value"><%= pDia && pDia.nombre_plato ? pDia.nombre_plato : 'No definido' %></span>
         </div>
       <% } %>
     </div>
-    
     <div class="modal-footer-center">
-      <button onclick="IntranetModal.close('modalVerMenu')" class="modal-button-primary modal-button-primary-sm">Cerrar</button>
+      <button type="button" onclick="IntranetModal.close('modalVerMenu')" class="modal-button-primary modal-button-primary-sm">Cerrar</button>
     </div>
   </div>
 </div>
@@ -275,41 +372,29 @@
   function toggleCumpleanios() {
     const items = document.querySelectorAll('.item-cumple');
     const btn = document.getElementById('btn-ver-mas-cumple');
-    
-    const hayOcultos = Array.from(items)
-      .slice(3)
-      .some(el => el.classList.contains('is-hidden'));
-
+    const hayOcultos = Array.from(items).slice(3).some(el => el.classList.contains('is-hidden'));
     if (hayOcultos) {
       items.forEach(el => el.classList.remove('is-hidden'));
       btn.innerText = 'Ver menos...';
     } else {
-      items.forEach((el, index) => {
-        if (index >= 3) el.classList.add('is-hidden');
-      });
+      items.forEach((el, index) => { if (index >= 3) el.classList.add('is-hidden'); });
       btn.innerText = 'Ver más...';
     }
   }
 
   let linkedinIndex = 0;
   function moveLinkedin(n) {
-    const slides = document.querySelectorAll('.linkedin-slide');
-    if (slides.length <= 1) return; 
-
-    slides[linkedinIndex].classList.remove('active');
+    const slides = document.querySelectorAll('.home-comms__slide');
+    if (slides.length <= 1) return;
+    slides[linkedinIndex].classList.remove('is-active');
     linkedinIndex += n;
     if (linkedinIndex >= slides.length) linkedinIndex = 0;
     if (linkedinIndex < 0) linkedinIndex = slides.length - 1;
-    slides[linkedinIndex].classList.add('active');
+    slides[linkedinIndex].classList.add('is-active');
   }
 
-  // Script para el modal de Platos y el de Ver Menú
-  window.addEventListener('click', function(event) {
-    if (event.target.id === 'modalPlatos') {
-      IntranetModal.close('modalPlatos');
-    }
-    if (event.target.id === 'modalVerMenu') {
-      IntranetModal.close('modalVerMenu');
-    }
+  window.addEventListener('click', function (event) {
+    if (event.target.id === 'modalPlatos') IntranetModal.close('modalPlatos');
+    if (event.target.id === 'modalVerMenu') IntranetModal.close('modalVerMenu');
   });
 </script>

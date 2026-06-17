@@ -1,43 +1,198 @@
-/* Tokens de diseño — modo claro */
+/* ── Tokens de diseño — Glassmorphism corporativo ── */
+
 :root {
   color-scheme: light;
-  --color-bg: #f0f4f8;
-  --color-bg-image-opacity: 1;
-  --color-surface: #ffffff;
-  --color-surface-muted: #f8fafc;
-  --color-surface-elevated: #ffffff;
-  --color-border: #e0e6ed;
-  --color-border-strong: #cbd5e0;
-  --color-text: #333333;
-  --color-text-muted: #4a5568;
+
+  /* Tipografía */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* Paleta corporativa */
+  --corp-blue: #003a70;
+  --corp-blue-light: #1a5a9e;
+  --corp-blue-dark: #002a52;
+  --corp-green: #aadd55;
+  --corp-green-dark: #6db33f;
+  --corp-green-muted: rgba(170, 221, 85, 0.18);
+
+  /* Superficies base */
+  --color-bg: #eef4fa;
+  --color-bg-image-opacity: 0;
+  --color-surface: rgba(255, 255, 255, 0.55);
+  --color-surface-muted: rgba(255, 255, 255, 0.38);
+  --color-surface-elevated: rgba(255, 255, 255, 0.72);
+  --color-border: rgba(255, 255, 255, 0.65);
+  --color-border-strong: rgba(0, 58, 112, 0.12);
+  --color-text: #1e293b;
+  --color-text-muted: #475569;
   --color-text-subtle: #64748b;
   --color-heading: #003a70;
   --color-link: #003a70;
-  --color-input-bg: #ffffff;
+  --color-input-bg: rgba(255, 255, 255, 0.85);
   --color-input-text: #1a202c;
-  --color-overlay: rgba(0, 0, 0, 0.5);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-card-lg: 0 4px 20px rgba(0, 58, 112, 0.08);
+  --color-overlay: rgba(0, 20, 50, 0.55);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.42);
+  --glass-bg-strong: rgba(255, 255, 255, 0.58);
+  --glass-bg-gradient: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.62) 0%,
+    rgba(255, 255, 255, 0.34) 100%
+  );
+  --glass-blur-filter: blur(20px) saturate(1.4);
+  --glass-bg-dark: rgba(0, 28, 58, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-border-outer: rgba(0, 58, 112, 0.08);
+  --glass-border-subtle: rgba(255, 255, 255, 0.25);
+  --glass-blur: 20px;
+  --glass-blur-strong: 26px;
+  --glass-radius: 16px;
+  --glass-radius-sm: 12px;
+  --glass-shadow: 0 8px 32px rgba(0, 58, 112, 0.1), 0 2px 8px rgba(0, 58, 112, 0.05);
+  --glass-shadow-lg: 0 16px 48px rgba(0, 58, 112, 0.14), 0 4px 12px rgba(0, 58, 112, 0.08);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+
+  /* Fondo global — mesh para notar el esmerilado */
+  --app-background:
+    radial-gradient(ellipse 90% 70% at 100% 100%, rgba(0, 58, 112, 0.48) 0%, rgba(0, 74, 130, 0.22) 40%, transparent 72%),
+    radial-gradient(ellipse 55% 50% at 0% 0%, rgba(170, 221, 85, 0.16) 0%, transparent 58%),
+    radial-gradient(ellipse 45% 40% at 72% 12%, rgba(0, 90, 160, 0.12) 0%, transparent 52%),
+    linear-gradient(165deg, #ffffff 0%, #f4f9fd 38%, #e8f1f9 100%);
+  --bg-gradient: none;
+  --bg-gradient-glow: none;
+
+  /* Sombras */
+  --shadow-card: var(--glass-shadow);
+  --shadow-card-lg: var(--glass-shadow-lg);
+
+  /* Indicadores de estado */
+  --status-up: #6db33f;
+  --status-down: #e85d5d;
+  --status-equal: #64748b;
 }
 
+/* ── Modo oscuro ── */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #0a1628;
+  --color-bg-image-opacity: 0;
+  --color-surface: rgba(15, 30, 55, 0.65);
+  --color-surface-muted: rgba(15, 30, 55, 0.45);
+  --color-surface-elevated: rgba(20, 40, 70, 0.82);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.18);
+  --color-text: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+  --color-heading: #7ec8f8;
+  --color-link: #7ec8f8;
+  --color-input-bg: rgba(20, 40, 70, 0.8);
+  --color-input-text: #f1f5f9;
+  --color-overlay: rgba(0, 5, 15, 0.75);
+
+  --glass-bg: rgba(15, 30, 55, 0.52);
+  --glass-bg-strong: rgba(20, 40, 70, 0.68);
+  --glass-bg-gradient: linear-gradient(
+    145deg,
+    rgba(20, 40, 70, 0.65) 0%,
+    rgba(15, 30, 55, 0.42) 100%
+  );
+  --glass-blur-filter: blur(20px) saturate(1.25);
+  --glass-bg-dark: rgba(5, 15, 30, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-outer: rgba(255, 255, 255, 0.06);
+  --glass-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+  --app-background:
+    radial-gradient(ellipse 85% 65% at 100% 100%, rgba(0, 60, 120, 0.55) 0%, rgba(0, 40, 80, 0.28) 45%, transparent 72%),
+    radial-gradient(ellipse 50% 45% at 0% 0%, rgba(170, 221, 85, 0.1) 0%, transparent 55%),
+    linear-gradient(165deg, #0a1628 0%, #0f2744 50%, #0d1f38 100%);
+  --bg-gradient: none;
+  --bg-gradient-glow: none;
+
+  --corp-green-muted: rgba(170, 221, 85, 0.12);
+}
+
+/* ── Fondo global (intranet; login conserva blanco propio) ── */
+html {
+  min-height: 100%;
+}
+
+body:not(.login-split-page) {
+  background-color: var(--color-bg) !important;
+  background-image: var(--app-background) !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  min-height: 100vh;
+}
+
+main {
+  background: transparent !important;
+}
+
+/* ── Utilidad glass ── */
+.glass-card {
+  background: var(--glass-bg-gradient);
+  backdrop-filter: var(--glass-blur-filter);
+  -webkit-backdrop-filter: var(--glass-blur-filter);
+  border: 1px solid var(--glass-border);
+  outline: 1px solid var(--glass-border-outer);
+  outline-offset: -1px;
+  border-radius: var(--glass-radius);
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-card {
+    background: var(--glass-bg-strong);
+  }
+}
+
+.glass-card--strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+}
+
+.glass-card--dark {
+  background: var(--glass-bg-dark);
+  border-color: var(--glass-border-subtle);
+  color: #ffffff;
+}
+
+/* Botón de tema — oculto */
+.theme-toggle,
+.theme-toggle--mobile {
+  display: none !important;
+}
+
+/* ── Cursos / Academy ── */
 .btn-cursos,
 .btn-dual.btn-cursos {
-  background: #ffffff;
-  color: #1e293b;
-  border: 1px solid var(--color-border);
+  background: var(--glass-bg-strong);
+  color: var(--color-text);
+  border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .btn-cursos:hover,
 .btn-dual.btn-cursos:hover {
-  background: #f8fafc;
+  background: var(--color-surface-elevated);
 }
 
-/* ── Cursos / Academy ── */
 .cursos-sidebar {
   background: var(--color-surface) !important;
   border-color: var(--color-border) !important;
   box-shadow: var(--shadow-card-lg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .cursos-sidebar .sidebar-brand {
@@ -54,7 +209,7 @@
 }
 
 .cursos-sidebar .sidebar-nav a.active {
-  background: rgba(0, 58, 112, 0.08) !important;
+  background: var(--corp-green-muted) !important;
   color: var(--color-heading) !important;
 }
 
@@ -85,17 +240,19 @@
   box-shadow: var(--shadow-card-lg) !important;
 }
 
-/* ── Procesos — tarjetas (modo claro) ── */
+/* ── Procesos — tarjetas ── */
 .card-opcion-exec,
 .folder-card-exec {
   background: var(--color-surface) !important;
   border-color: var(--color-border) !important;
   box-shadow: var(--shadow-card) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .card-opcion-exec:hover,
 .folder-card-exec:hover {
-  background: var(--color-surface-muted) !important;
+  background: var(--color-surface-elevated) !important;
   border-color: var(--color-border-strong) !important;
 }
 
@@ -109,6 +266,6 @@
 }
 
 .folder-card-exec .folder-count {
-  background: #edf2f7 !important;
+  background: var(--corp-green-muted) !important;
   color: var(--color-text-muted) !important;
 }

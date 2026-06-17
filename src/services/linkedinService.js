@@ -1,4 +1,3 @@
-/*
 const axios = require("axios");
 const db = require("../db");
 const qs = require("querystring");
@@ -124,4 +123,3 @@ async function getCompanyPosts() {
 }
 
 module.exports = { getAuthorizationUrl, exchangeCodeForToken, getCompanyPosts };
-*/
