@@ -22,17 +22,17 @@
     <div class="phone-field" data-phone-chile id="crear_phone_field">
       <span class="phone-field__prefix" aria-hidden="true">+56</span>
       <input type="tel" id="crear_telefono_local" class="phone-field__local" placeholder="9 1234 5678" maxlength="11" inputmode="numeric" autocomplete="tel-national" aria-label="Número celular sin código de país">
-      <input type="hidden" name="telefono" id="crear_telefono">
+      <input type="hidden" name="phone" id="crear_telefono">
     </div>
     <span class="field-error" id="crear_telefono-error" role="alert"></span>
   </div>
 
   <div class="campo">
     <label for="crear_area_trabajo_id">Área de Trabajo <span class="required-mark">*</span></label>
-    <select id="crear_area_trabajo_id" name="area_trabajo_id" required>
+        <select id="crear_area_trabajo_id" name="work_area_id" required>
       <option value="">-- Selecciona un área --</option>
       <% (areas || []).forEach(area => { %>
-        <option value="<%= area.id %>"><%= area.nombre_area %></option>
+        <option value="<%= area.id %>"><%= area.area_name %></option>
       <% }) %>
     </select>
   </div>
@@ -40,7 +40,7 @@
   <div class="modal-form-grid-2">
     <div class="campo">
       <label for="crear_fecha_nacimiento" id="crear_fecha_nacimiento_label">Fecha de Nacimiento <span class="required-mark" id="crear_fecha_nacimiento_mark">*</span></label>
-      <input type="date" id="crear_fecha_nacimiento" name="fecha_nacimiento" required>
+      <input type="date" id="crear_fecha_nacimiento" name="birth_date" required>
       <span class="hint" id="crear_fecha_nacimiento_hint" hidden>Opcional si indicas un correo electrónico.</span>
     </div>
     <div class="campo">

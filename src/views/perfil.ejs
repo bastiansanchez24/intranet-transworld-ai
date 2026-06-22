@@ -1,5 +1,5 @@
 <%
-  const tieneFoto = Boolean(usuario.foto);
+  const tieneFoto = Boolean(usuario.photo);
   const sinDato = '—';
   const rolFmt = usuario.role || 'Usuario';
   const correoVerificado = usuario.email_confirmed ? 'Verificado' : 'Pendiente de verificación';
@@ -22,7 +22,7 @@
         <label for="foto">Foto de perfil</label>
         <div class="profile-photo-preview-wrap">
           <div class="profile-photo-preview profile-photo-preview--light" id="photo-preview">
-            <img id="photo-preview-img" <% if (tieneFoto) { %>src="<%= usuario.foto %>"<% } else { %>hidden<% } %>>
+            <img id="photo-preview-img" <% if (tieneFoto) { %>src="<%= usuario.photo %>"<% } else { %>hidden<% } %>>
             <div class="profile-photo-placeholder" id="photo-placeholder" <%= tieneFoto ? 'hidden' : '' %>>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -76,7 +76,7 @@
               <div class="phone-field" data-phone-chile>
                 <span class="phone-field__prefix" aria-hidden="true">+56</span>
                 <input type="tel" id="telefono_local" class="phone-field__local" required placeholder="9 1234 5678" maxlength="11" inputmode="numeric" autocomplete="tel-national" aria-label="Número celular sin código de país">
-                <input type="hidden" name="telefono" id="telefono" value="<%= usuario.telefono || '' %>">
+                <input type="hidden" name="phone" id="telefono" value="<%= usuario.phone || '' %>">
               </div>
             </div>
           </div>
@@ -88,7 +88,7 @@
             </div>
             <div class="perfil-field">
               <label for="fecha_nacimiento">Fecha de nacimiento</label>
-              <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value="<%= usuario.fecha_nacimiento_input || '' %>" required autocomplete="bday">
+              <input type="date" id="fecha_nacimiento" name="birth_date" value="<%= usuario.birth_date_input || '' %>" required autocomplete="bday">
             </div>
           </div>
 

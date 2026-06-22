@@ -386,37 +386,37 @@
 
   <article class="noticia-card">
     
-    <% if (noticia.imagen) { %>
-      <a href="<%= noticia.imagen %>" target="_blank" class="noticia-portada-link" title="Ver portada completa">
-        <img src="<%= noticia.imagen %>" class="noticia-portada-img" alt="Portada de la noticia">
+    <% if (noticia.image) { %>
+      <a href="<%= noticia.image %>" target="_blank" class="noticia-portada-link" title="Ver portada completa">
+        <img src="<%= noticia.image %>" class="noticia-portada-img" alt="Portada de la noticia">
       </a>
     <% } %>
     
     <div class="noticia-body">
       
-      <h1 class="noticia-titulo"><%= noticia.titulo %></h1>
+      <h1 class="noticia-titulo"><%= noticia.title %></h1>
 
-      <% if (noticia.destacada) { %>
+      <% if (noticia.featured) { %>
         <div class="badge-destacada" aria-label="Noticia destacada en el inicio">★ Destacada en el inicio</div>
       <% } %>
       
-      <% if (noticia.subtitulo) { %>
-        <h3 class="noticia-subtitulo"><%= noticia.subtitulo %></h3>
+      <% if (noticia.subtitle) { %>
+        <h3 class="noticia-subtitulo"><%= noticia.subtitle %></h3>
       <% } %>
       
       <div class="noticia-fecha">
-        Publicado el <%= new Date(noticia.fecha_creacion).toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+        Publicado el <%= new Date(noticia.created_at).toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
       </div>
 
-      <div class="noticia-contenido"><%- noticia.contenido %></div>
+      <div class="noticia-contenido"><%- noticia.content %></div>
 
       <% 
          let adjuntos = [];
          try {
-           if (typeof noticia.adjuntos === 'string') {
-               adjuntos = JSON.parse(noticia.adjuntos);
-           } else if (noticia.adjuntos) {
-               adjuntos = noticia.adjuntos;
+           if (typeof noticia.attachments === 'string') {
+               adjuntos = JSON.parse(noticia.attachments);
+           } else if (noticia.attachments) {
+               adjuntos = noticia.attachments;
            }
          } catch(e) { 
              console.error("Error cargando adjuntos:", e); 
@@ -458,7 +458,7 @@
             Editar Noticia
           </a>
 
-          <% if (noticia.destacada) { %>
+          <% if (noticia.featured) { %>
             <form action="/noticias/destacar/<%= noticia.id %>" method="POST" style="margin: 0;">
               <input type="hidden" name="quitar" value="1">
               <button type="submit" class="btn-destacar btn-destacar--activa">

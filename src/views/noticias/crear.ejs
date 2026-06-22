@@ -24,7 +24,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js"></script>
 <script>
   tinymce.init({
-    selector: 'textarea[name="contenido"]',
+    selector: 'textarea[name="content"]',
     plugins: 'lists link',
     toolbar: 'undo redo | fontfamily fontsize forecolor backcolor | bold italic underline | alignleft aligncenter alignright | bullist numlist | removeformat',
     promotion: false,
@@ -43,10 +43,10 @@
     <form id="formCrearNoticia" action="/noticias/crear" method="POST" class="form-ticket">
       
       <label>Título</label>
-      <input type="text" name="titulo" required placeholder="Titular principal">
+      <input type="text" name="title" required placeholder="Titular principal">
 
       <label>Subtítulo (Opcional)</label>
-      <input type="text" name="subtitulo" placeholder="Bajada o resumen corto">
+      <input type="text" name="subtitle" placeholder="Bajada o resumen corto">
 
       <label style="margin-top:15px;">Imagen de Portada (Opcional)</label>
       <input type="hidden" name="imagen_portada" id="url_portada">
@@ -67,7 +67,7 @@
       <input type="file" id="fileGaleria" multiple accept="image/*,video/*" style="display: none;" onchange="document.getElementById('statusGaleria').textContent = this.files.length + ' archivos seleccionados'">
 
       <label style="margin-top:15px;">Contenido</label>
-      <textarea name="contenido" id="contenido" rows="10" placeholder="Escribe aquí el cuerpo de la noticia..."></textarea>
+      <textarea name="content" id="contenido" rows="10" placeholder="Escribe aquí el cuerpo de la noticia..."></textarea>
 
       <div id="uploadStatus" style="margin-top: 15px; display: none; font-weight: bold; color: #003a70;"></div>
 

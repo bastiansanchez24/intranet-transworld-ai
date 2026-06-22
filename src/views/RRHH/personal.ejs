@@ -589,19 +589,19 @@
               const inicial    = (firstName || lastName).charAt(0).toUpperCase();
               const areaNombre = p.area || '-';
               const correo   = p.email    || '-';
-              const telefono = p.telefono || '-';
+              const telefono = p.phone || '-';
               const telefonoHref = p.telefonoHref || null;
               const rol = p.role || 'Usuario';
               const cumpleSort = p.ordenCumple !== undefined ? p.ordenCumple : 9999;
               const cumpleFmt  = p.fechaCumpleFmt || '-';
-              const enIntranet = p.usuario_intranet === true || p.usuario_intranet === 't' || p.usuario_intranet === 1;
+              const enIntranet = p.is_intranet_user === true || p.is_intranet_user === 't' || p.is_intranet_user === 1;
               const tieneCorreo = Boolean(p.email && String(p.email).trim());
               const correoVerificado = p.email_confirmed === true || p.email_confirmed === 't' || p.email_confirmed === 1;
             %>
             <tr>
               <td>
-                <% if (p.foto) { %>
-                  <img src="<%= p.foto %>" alt="Foto" class="avatar">
+                <% if (p.photo) { %>
+                  <img src="<%= p.photo %>" alt="Foto" class="avatar">
                 <% } else { %>
                   <div class="avatar-fallback"><%= inicial %></div>
                 <% } %>

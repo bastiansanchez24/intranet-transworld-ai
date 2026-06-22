@@ -162,10 +162,10 @@
             <span class="home-widget__label">Menú semanal</span>
             <ul class="home-menu-week" aria-label="Menú de la semana">
               <% for (let i = 1; i <= 5; i++) { %>
-                <% const platoDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.dia_numero === i) : null; %>
+                <% const platoDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.day_number === i) : null; %>
                 <li class="home-menu-week__day<%= i === diaActualMenu ? ' home-menu-week__day--today' : '' %>">
                   <span class="home-menu-week__label"><%= nombresDiasMenu[i - 1] %></span>
-                  <span class="home-menu-week__dish"><%= platoDia && platoDia.nombre_plato ? platoDia.nombre_plato : 'No definido' %></span>
+                  <span class="home-menu-week__dish"><%= platoDia && platoDia.dish_name ? platoDia.dish_name : 'No definido' %></span>
                 </li>
               <% } %>
             </ul>
@@ -204,8 +204,8 @@
             <a href="<%= destacada.link %>" class="home-news__featured">
               <div class="home-news__featured-media">
                 <img
-                  src="<%= destacada.imagen || '/img/fondo-home.png' %>"
-                  alt="<%= destacada.titulo %>"
+                  src="<%= destacada.image || '/img/fondo-home.png' %>"
+                  alt="<%= destacada.title %>"
                   class="home-news__featured-img"
                   loading="eager"
                   onerror="this.src='/img/fondo-home.png'"
@@ -215,9 +215,9 @@
                   <time class="home-news__featured-date" datetime="<%= destacada.fecha.toISOString() %>">
                     <%= formatDateShort(destacada.fecha) %>
                   </time>
-                  <h3 class="home-news__featured-title"><%= destacada.titulo %></h3>
-                  <% if (destacada.subtitulo) { %>
-                    <p class="home-news__featured-sub"><%= destacada.subtitulo %></p>
+                  <h3 class="home-news__featured-title"><%= destacada.title %></h3>
+                  <% if (destacada.subtitle) { %>
+                    <p class="home-news__featured-sub"><%= destacada.subtitle %></p>
                   <% } %>
                 </div>
               </div>
@@ -229,13 +229,13 @@
               <% listaNoticias.forEach((news) => { %>
                 <li class="home-news__list-item">
                   <a href="<%= news.link %>" class="home-news__list-link">
-                    <% if (news.imagen) { %>
+                    <% if (news.image) { %>
                       <span class="home-news__list-thumb">
-                        <img src="<%= news.imagen %>" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+                        <img src="<%= news.image %>" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
                       </span>
                     <% } %>
                     <span class="home-news__list-date"><%= formatDateShort(news.fecha).toUpperCase() %></span>
-                    <span class="home-news__list-title" title="<%= news.titulo %>"><%= news.titulo %></span>
+                    <span class="home-news__list-title" title="<%= news.title %>"><%= news.title %></span>
                   </a>
                 </li>
               <% }); %>
@@ -265,8 +265,8 @@
               %>
                 <article class="home-birthday item-cumple<%= esHoy ? ' home-birthday--today' : '' %> <%= ocultoClass %>" aria-label="Cumpleaños de <%= titleCase(p.nombre) %>">
                   <div class="home-birthday__avatar-wrap">
-                    <% if (p.foto) { %>
-                      <img src="<%= p.foto %>" alt="" class="home-birthday__avatar" loading="lazy">
+                    <% if (p.photo || p.foto) { %>
+                      <img src="<%= p.photo || p.foto %>" alt="" class="home-birthday__avatar" loading="lazy">
                     <% } else { %>
                       <div class="home-birthday__avatar home-birthday__avatar--initials" aria-hidden="true"><%= iniciales %></div>
                     <% } %>
@@ -312,17 +312,17 @@
             <div class="home-gallery__viewport">
               <% imagenesGaleria.forEach((item, index) => { %>
                 <article class="home-gallery__slide<%= index === 0 ? ' is-active' : '' %>">
-                  <a href="/marketing/eventos/<%= item.slug %>" class="home-gallery__link" title="Ver galería de <%= item.nombre %>">
+                  <a href="/marketing/eventos/<%= item.slug %>" class="home-gallery__link" title="Ver galería de <%= item.name %>">
                     <img
-                      src="<%= item.imagen %>"
-                      alt="Imagen de la galería de <%= item.nombre %>"
+                      src="<%= item.image %>"
+                      alt="Imagen de la galería de <%= item.name %>"
                       class="home-gallery__img"
                       loading="<%= index === 0 ? 'eager' : 'lazy' %>"
                       onerror="this.src='/img/fondo-home.png'"
                     >
                     <div class="home-gallery__overlay">
                       <span class="home-gallery__eyebrow">Galería de eventos</span>
-                      <h3 class="home-gallery__title"><%= item.nombre %></h3>
+                      <h3 class="home-gallery__title"><%= item.name %></h3>
                       <span class="home-gallery__cta">Ver fotos</span>
                     </div>
                   </a>
@@ -359,9 +359,9 @@
           <% if (typeof linkedinFeed !== 'undefined' && linkedinFeed.length > 0) { %>
             <% linkedinFeed.forEach((post, index) => { %>
               <div class="home-comms__slide<%= index === 0 ? ' is-active' : '' %>">
-                <a href="<%= post.enlace_url %>" target="_blank" rel="noopener noreferrer" class="home-comms__link" title="<%= post.texto %>">
-                  <% if (post.imagen_url === '/img/fondo-home.png') { %>
-                    <% const parrafos = (post.texto || '').split('\n').filter(p => p.trim().length > 0); %>
+                <a href="<%= post.link_url %>" target="_blank" rel="noopener noreferrer" class="home-comms__link" title="<%= post.text %>">
+                  <% if (post.image_url === '/img/fondo-home.png') { %>
+                    <% const parrafos = (post.text || '').split('\n').filter(p => p.trim().length > 0); %>
                     <% const textoResumen = parrafos.slice(0, 2).join('<br><br>'); %>
                     <div class="home-comms__text-card">
                       <div class="home-comms__text-summary"><%- textoResumen %></div>
@@ -371,7 +371,7 @@
                       <p class="home-comms__cta">Haga click para ver más...</p>
                     </div>
                   <% } else { %>
-                    <img src="<%= post.imagen_url %>" alt="Publicación LinkedIn" class="home-comms__img" onerror="this.src='/img/fondo-home.png'">
+                    <img src="<%= post.image_url %>" alt="Publicación LinkedIn" class="home-comms__img" onerror="this.src='/img/fondo-home.png'">
                   <% } %>
                 </a>
               </div>
@@ -452,10 +452,10 @@
     <form action="/platos/editar" method="POST">
       <% const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']; %>
       <% for (let i = 1; i <= 5; i++) { %>
-        <% const platoDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.dia_numero === i) : null; %>
+        <% const platoDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.day_number === i) : null; %>
         <div class="modal-form-group">
           <label class="modal-form-label"><%= dias[i - 1] %></label>
-          <input type="text" name="plato_<%= i %>" value="<%= platoDia ? platoDia.nombre_plato : '' %>" required class="modal-form-input">
+          <input type="text" name="plato_<%= i %>" value="<%= platoDia ? platoDia.dish_name : '' %>" required class="modal-form-input">
         </div>
       <% } %>
       <div class="modal-actions-row">
@@ -473,10 +473,10 @@
     <h3>Menú de la Semana</h3>
     <div class="modal-list-stack">
       <% for (let i = 1; i <= 5; i++) { %>
-        <% const pDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.dia_numero === i) : null; %>
+        <% const pDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.day_number === i) : null; %>
         <div class="modal-list-item">
           <span class="modal-item-label"><%= nombresDiasMenu[i - 1] %></span>
-          <span class="modal-item-value"><%= pDia && pDia.nombre_plato ? pDia.nombre_plato : 'No definido' %></span>
+          <span class="modal-item-value"><%= pDia && pDia.dish_name ? pDia.dish_name : 'No definido' %></span>
         </div>
       <% } %>
     </div>

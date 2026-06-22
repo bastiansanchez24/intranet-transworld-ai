@@ -136,8 +136,8 @@
       <% noticias.forEach(n => { %>
         <a href="/noticias/<%= n.id %>" class="card-noticia">
           
-          <% if (n.imagen) { %>
-            <img src="<%= n.imagen %>" alt="Portada" class="card-imagen">
+          <% if (n.image) { %>
+            <img src="<%= n.image %>" alt="Portada" class="card-imagen">
           <% } else { %>
             <div class="card-imagen" style="display: flex; align-items: center; justify-content: center; opacity: 0.5;">
               <span style="font-size: 3rem;">📰</span>
@@ -145,14 +145,14 @@
           <% } %>
 
           <div class="card-body">
-            <div class="card-titulo"><%= n.titulo %></div>
+            <div class="card-titulo"><%= n.title %></div>
             
-            <% if (n.subtitulo) { %>
-              <div class="card-subtitulo"><%= n.subtitulo %></div>
+            <% if (n.subtitle) { %>
+              <div class="card-subtitulo"><%= n.subtitle %></div>
             <% } %>
 
             <div class="card-fecha">
-              <%= new Date(n.fecha_creacion).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+              <%= new Date(n.created_at).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }) %>
             </div>
           </div>
         </a>

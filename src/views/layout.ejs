@@ -30,7 +30,7 @@
     if (currentUser) {
       if (currentUser.username) displayName = currentUser.username;
       else if (currentUser.first_name) displayName = currentUser.first_name + (currentUser.last_name ? ' ' + currentUser.last_name : '');
-      else if (currentUser.nombre) displayName = currentUser.nombre;
+      else if (currentUser.name) displayName = currentUser.name;
     }
   %>
 
@@ -67,8 +67,8 @@
   <% if (currentUser) { %>
     <div class="nav-user-menu nav-user-menu--mobile">
       <button type="button" class="user-name nav-user-link nav-user-trigger" aria-expanded="false" aria-haspopup="true" aria-label="Abrir menú de usuario">
-        <% if (currentUser.foto) { %>
-          <img src="<%= currentUser.foto %>" alt="Foto" class="nav-user-photo">
+        <% if (currentUser.photo || currentUser.foto) { %>
+          <img src="<%= currentUser.photo || currentUser.foto %>" alt="Foto" class="nav-user-photo">
         <% } else { %>
           <div class="nav-user-avatar">
             <%= displayName.charAt(0).toUpperCase() %>
@@ -149,8 +149,8 @@
       <% if (currentUser) { %>
         <div class="nav-user nav-user-menu">
           <button type="button" class="user-name nav-user-link nav-user-trigger" aria-expanded="false" aria-haspopup="true" aria-label="Abrir menú de usuario">
-            <% if (currentUser.foto) { %>
-              <img src="<%= currentUser.foto %>" alt="Foto" class="nav-user-photo">
+            <% if (currentUser.photo || currentUser.foto) { %>
+              <img src="<%= currentUser.photo || currentUser.foto %>" alt="Foto" class="nav-user-photo">
             <% } else { %>
               <div class="nav-user-avatar">
                 <%= displayName.charAt(0).toUpperCase() %>
@@ -190,12 +190,12 @@
 
     <form id="formCrearTicketNavbar" action="/sistemas/tickets/crear" method="POST" class="ticket-modal-form">
       <label for="ticketModalTitulo">Resumen del problema (Titulo)</label>
-      <input type="text" id="ticketModalTitulo" name="titulo" placeholder="Ej: No puedo acceder a la carpeta compartida de Ventas" required>
+      <input type="text" id="ticketModalTitulo" name="title" placeholder="Ej: No puedo acceder a la carpeta compartida de Ventas" required>
 
       <div class="ticket-modal-row">
         <div>
           <label for="ticketModalCategoria">Categoria</label>
-          <select id="ticketModalCategoria" name="categoria">
+          <select id="ticketModalCategoria" name="category">
             <option value="SAP">Soporte Tecnico</option>
             <option value="Salesforce">Software / ERP</option>
             <option value="Intranet">Infraestructura / Red</option>
@@ -205,16 +205,16 @@
         </div>
         <div>
           <label for="ticketModalPrioridad">Prioridad sugerida</label>
-          <select id="ticketModalPrioridad" name="prioridad">
-            <option value="Baja">Baja (No impide trabajar)</option>
-            <option value="Media" selected>Media (Dificulta el trabajo)</option>
-            <option value="Alta">Alta (Urgente / Operacion detenida)</option>
+          <select id="ticketModalPrioridad" name="priority">
+            <option value="low">Baja (No impide trabajar)</option>
+            <option value="medium" selected>Media (Dificulta el trabajo)</option>
+            <option value="high">Alta (Urgente / Operacion detenida)</option>
           </select>
         </div>
       </div>
 
       <label for="ticketModalDescripcion">Descripcion detallada</label>
-      <textarea id="ticketModalDescripcion" name="descripcion" placeholder="Explica detalladamente que sucede..." required maxlength="2000"></textarea>
+      <textarea id="ticketModalDescripcion" name="description" placeholder="Explica detalladamente que sucede..." required maxlength="2000"></textarea>
       <div id="ticketModalCounter" class="ticket-modal-counter">0 / 2000</div>
 
       <label class="ticket-modal-files-label">Adjuntar archivos (Opcional)</label>

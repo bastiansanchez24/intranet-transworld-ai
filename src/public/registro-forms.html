@@ -131,7 +131,7 @@
             if (!response.ok) throw new Error("Evento no encontrado");
 
             const data = await response.json();
-            eventoNombre = data.nombre;
+            eventoNombre = data.name;
             eventoFecha = data.fecha || "";
 
             if (eventoFecha.includes('-') && eventoFecha.split('-')[0].length === 4) {
@@ -170,12 +170,12 @@
 
         try {
             const formData = {
-                nombre_completo: document.getElementById('nombre').value,
-                empresa: document.getElementById('empresa').value,
-                cargo: document.getElementById('cargo').value,
-                telefono: document.getElementById('telefono').value,
+                full_name: document.getElementById('nombre').value,
+                company: document.getElementById('empresa').value,
+                job_title: document.getElementById('cargo').value,
+                phone: document.getElementById('telefono').value,
                 email: emailIngresado,
-                acreditado: false
+                accredited: false
             };
 
             const response = await fetch(`/registro/evento/${encodeURIComponent(EVENTO_ID)}/registrar`, {

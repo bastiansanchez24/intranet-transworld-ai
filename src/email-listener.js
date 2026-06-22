@@ -1,11 +1,11 @@
 // email-listener.js
 //
 // Escucha el buzón IMAP del correo de soporte
-// y crea un ticket nuevo en la tabla `tickets` por cada correo entrante.
+// y crea un ticket nuevo en la tabla `support_tickets` por cada correo entrante.
 
 const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
-const db = require('../db'); // ajusta la ruta si tu db.js está en otra carpeta
+const db = require('./db');
 
 async function main() {
   const client = new ImapFlow({
@@ -33,55 +33,50 @@ async function main() {
       const parsed = await simpleParser(message.source);
 
       const from = parsed.from && parsed.from.value && parsed.from.value[0];
-      const solicitante_email = from ? from.address : null;
-      const solicitante_nombre = from ? (from.name || from.address) : null;
+      const requester_email = from ? from.address : null;
+      const requester_name = from ? (from.name || from.address) : null;
 
-      const titulo = (parsed.subject || '(sin asunto)').substring(0, 255);
-      const descripcion =
+      const title = (parsed.subject || '(sin asunto)').substring(0, 255);
+      const description =
         parsed.text || parsed.html || '(sin contenido en el correo)';
 
-      const categoria = 'Otro';
-      const prioridad = 'Media';
-      const estado = 'Abierto';
+      const category = 'Otro';
+      const priority = 'medium';
+      const status = 'open';
 
-      if (!solicitante_email) {
+      if (!requester_email) {
         console.log(
           'Correo recibido sin remitente válido, no se crea ticket.'
         );
         return;
       }
 
-      db.query(
+      const { rows } = await db.query(
         `
-        INSERT INTO tickets (
-          titulo,
-          descripcion,
-          
-          categoria,
-          prioridad,
-          estado,
-          solicitante_nombre,
-          solicitante_email
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO support_tickets (
+          title,
+          description,
+          category,
+          priority,
+          status,
+          requester_name,
+          requester_email
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
       `,
         [
-          titulo,
-          descripcion,
-          categoria,
-          prioridad,
-          estado,
-          solicitante_nombre,
-          solicitante_email
+          title,
+          description,
+          category,
+          priority,
+          status,
+          requester_name,
+          requester_email
         ],
-        (err, result) => {
-          if (err) {
-            console.error('Error insertando ticket desde email:', err);
-          } else {
-            console.log(
-              `Ticket creado desde email. ID: ${result.insertId}, remitente: ${solicitante_email}`
-            );
-          }
-        }
+      );
+
+      console.log(
+        `Ticket creado desde email. ID: ${rows[0].id}, remitente: ${requester_email}`
       );
     } catch (err) {
       console.error('Error procesando nuevo correo:', err);

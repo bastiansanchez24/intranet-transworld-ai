@@ -23,7 +23,7 @@
 </style>
 
 <div class="eval-container">
-  <h2 class="curso-titulo">Evaluación: <%= curso.titulo %></h2>
+  <h2 class="curso-titulo">Evaluación: <%= curso.title %></h2>
 
   <div id="resultado-container" class="resultado-box" style="<%= yaEvaluado ? 'display: block;' : 'display: none;' %>">
       <h3 id="resultado-title" class="resultado-title">
@@ -39,10 +39,10 @@
          <% } %>
       </p>
 
-      <% if (curso.consejos_comerciales) { %>
+      <% if (curso.commercial_tips) { %>
         <div id="consejos-extras" class="consejos-generales-box" style="display: <%= (yaEvaluado && notaGuardada >= 80) ? 'block' : 'none' %>;">
           <h3 style="margin-top: 0; color: #003a70; text-align: center; border-bottom: 1px solid #ffda75; padding-bottom: 10px;">Material de Apoyo Comercial</h3>
-          <%- curso.consejos_comerciales %>
+          <%- curso.commercial_tips %>
         </div>
       <% } %>
       
@@ -59,14 +59,14 @@
   <form id="formExamen" style="<%= (yaEvaluado && notaGuardada < 80) ? 'display: none;' : 'display: block;' %>">
     <% preguntas.forEach((p, index) => { %>
       <div class="pregunta-card" id="card_<%= p.id %>">
-        <p class="pregunta-enunciado"><%= index + 1 %>. <%= p.enunciado %></p>
+        <p class="pregunta-enunciado"><%= index + 1 %>. <%= p.question_text %></p>
         
         <% p.alternativas.forEach(alt => { 
              let extraClass = (isAprobado && correctasIds.includes(alt.id)) ? 'alt-correcta' : '';
         %>
           <label class="alternativa-label <%= extraClass %>" id="label_alt_<%= alt.id %>">
             <input type="radio" name="preg_<%= p.id %>" value="<%= alt.id %>" required <%= isAprobado ? 'disabled' : '' %>>
-            <%= alt.texto %>
+            <%= alt.text %>
           </label>
         <% }) %>
 

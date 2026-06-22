@@ -16,6 +16,13 @@ const {
   validateChileMobilePhone,
 } = require("../utils/phoneChile");
 const { sendMail } = require("../services/mailer");
+const {
+  NOTICIA_VIEW_COLUMNS,
+  APPLICATION_VIEW_COLUMNS,
+  MATERIAL_VIEW_COLUMNS,
+  courseStatusToDb,
+  courseStatusFromDb,
+} = require("../utils/schemaMappers");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -23,6 +30,46 @@ const upload = multer({ storage });
 // ==========================================
 // SISTEMA DE CACHÉ
 // ==========================================
+const COURSE_LIST_BASE = `
+  SELECT c.id, c.title AS titulo, c.subsection AS subseccion, sd.image_url AS imagen_url
+  FROM courses c
+  LEFT JOIN subsection_details sd ON c.subsection = sd.name
+`;
+
+function buildProgresoMap(rows) {
+  const progresoMap = {};
+  rows.forEach((p) => {
+    progresoMap[p.curso_id] = {
+      curso_id: p.curso_id,
+      segundos_vistos: p.segundos_vistos,
+      estado: courseStatusFromDb(p.estado_db ?? p.estado),
+    };
+  });
+  return progresoMap;
+}
+
+function mapCursoRow(curso) {
+  return {
+    ...curso,
+    titulo: curso.title ?? curso.titulo,
+    descripcion: curso.description ?? curso.descripcion,
+    subseccion: curso.subsection ?? curso.subseccion,
+    tiempo_requerido_segundos:
+      curso.required_watch_seconds ?? curso.tiempo_requerido_segundos,
+  };
+}
+
+function mapPreguntaRow(pregunta) {
+  return {
+    ...pregunta,
+    enunciado: pregunta.question_text ?? pregunta.enunciado,
+    orden: pregunta.sort_order ?? pregunta.orden,
+    alternativas: (pregunta.alternativas || []).map((alt) => ({
+      id: alt.id,
+      texto: alt.text ?? alt.texto,
+    })),
+  };
+}
 let cachedIndicadores = {
   dolar: { valor: null, tendencia: "igual" },
   euro: { valor: null, tendencia: "igual" },
@@ -102,12 +149,14 @@ function mapNoticiaHomeRow(n) {
   return {
     id: n.id,
     type: "noticia",
-    titulo: n.titulo,
-    subtitulo: n.subtitulo,
-    imagen: n.imagen,
+    title: n.title ?? n.titulo,
+    subtitle: n.subtitle ?? n.subtitulo,
+    image: n.image ?? n.imagen,
     link: `/noticias/${n.id}`,
-    fecha: n.fecha_creacion ? new Date(n.fecha_creacion) : new Date(),
-    destacada: Boolean(n.destacada),
+    fecha: (n.created_at ?? n.fecha_creacion)
+      ? new Date(n.created_at ?? n.fecha_creacion)
+      : new Date(),
+    featured: Boolean(n.featured ?? n.destacada),
   };
 }
 
@@ -116,10 +165,10 @@ async function fetchNoticiasHome() {
 
   try {
     const { rows } = await db.query(
-      `SELECT id, titulo, imagen, subtitulo, fecha_creacion, destacada
-       FROM noticias
-       WHERE destacada = true
-       ORDER BY fecha_creacion DESC
+      `SELECT id, title, image, subtitle, created_at, featured
+       FROM news_articles
+       WHERE featured = true
+       ORDER BY created_at DESC
        LIMIT 1`,
     );
     if (rows[0]) {
@@ -135,14 +184,14 @@ async function fetchNoticiasHome() {
   let noticiasLista = [];
   try {
     const sql = noticiaDestacada
-      ? `SELECT id, titulo, imagen, subtitulo, fecha_creacion
-         FROM noticias
+      ? `SELECT id, title, image, subtitle, created_at
+         FROM news_articles
          WHERE id != $1
-         ORDER BY fecha_creacion DESC
+         ORDER BY created_at DESC
          LIMIT 8`
-      : `SELECT id, titulo, imagen, subtitulo, fecha_creacion
-         FROM noticias
-         ORDER BY fecha_creacion DESC
+      : `SELECT id, title, image, subtitle, created_at
+         FROM news_articles
+         ORDER BY created_at DESC
          LIMIT 8`;
     const params = noticiaDestacada ? [noticiaDestacada.id] : [];
     const { rows } = await db.query(sql, params);
@@ -166,9 +215,9 @@ async function fetchEventosCarousel() {
 
   try {
     const { rows: eventos } = await db.query(
-      `SELECT nombre, slug
-       FROM eventos
-       ORDER BY fecha_creacion DESC
+      `SELECT name, slug
+       FROM events
+       ORDER BY created_at DESC
        LIMIT 10`,
     );
 
@@ -179,8 +228,8 @@ async function fetchEventosCarousel() {
           return archivos
             .filter((item) => item.resource_type === "image")
             .map((item) => ({
-              imagen: item.url,
-              nombre: evento.nombre,
+              image: item.url,
+              name: evento.name,
               slug: evento.slug,
               created_at: item.created_at,
             }));
@@ -230,16 +279,16 @@ router.get("/", async (req, res) => {
     const sqlMes = `
       SELECT
         TRIM(CONCAT(u.first_name, ' ', COALESCE(u.last_name, ''))) AS nombre,
-        COALESCE(at.nombre_area, 'Sin área') AS area,
-        u.foto,
-        EXTRACT(DAY FROM u.fecha_nacimiento) AS dia
+        COALESCE(at.area_name, 'Sin área') AS area,
+        u.photo,
+        EXTRACT(DAY FROM u.birth_date) AS dia
       FROM users u
-      LEFT JOIN area_trabajo at ON at.id = u.area_trabajo_id
-      WHERE u.fecha_nacimiento IS NOT NULL
-        AND EXTRACT(MONTH FROM u.fecha_nacimiento) = $1
+      LEFT JOIN work_areas at ON at.id = u.work_area_id
+      WHERE u.birth_date IS NOT NULL
+        AND EXTRACT(MONTH FROM u.birth_date) = $1
       ORDER BY dia ASC, nombre ASC
     `;
-    const sqlEventosPortada = `SELECT nombre, slug, imagen FROM eventos WHERE imagen IS NOT NULL AND imagen != '' ORDER BY fecha_creacion DESC LIMIT 8`;
+    const sqlEventosPortada = `SELECT name, slug, image FROM events WHERE image IS NOT NULL AND image != '' ORDER BY created_at DESC LIMIT 8`;
 
     const emptyNoticiasHome = {
       noticiaDestacada: null,
@@ -274,19 +323,19 @@ router.get("/", async (req, res) => {
     // FIX: .catch para que si la tabla platos no existe no rompa el home
     const { rows: platosRows } = await db
       .query(
-        "SELECT dia_numero, nombre_plato FROM platos ORDER BY dia_numero ASC",
+        "SELECT day_number, dish_name FROM lunch_menu ORDER BY day_number ASC",
       )
       .catch(() => ({ rows: [] }));
 
-    const platoHoy = platosRows.find((p) => p.dia_numero === diaActual);
-    const platoDelDia = platoHoy ? platoHoy.nombre_plato : "No definido";
+    const platoHoy = platosRows.find((p) => p.day_number === diaActual);
+    const platoDelDia = platoHoy ? platoHoy.dish_name : "No definido";
 
     const diaManana = diaActual < 5 ? diaActual + 1 : null;
     const platoMananaRow = diaManana
-      ? platosRows.find((p) => p.dia_numero === diaManana)
+      ? platosRows.find((p) => p.day_number === diaManana)
       : null;
     const platoManana = diaManana
-      ? (platoMananaRow ? platoMananaRow.nombre_plato : "No definido")
+      ? (platoMananaRow ? platoMananaRow.dish_name : "No definido")
       : null;
 
     res.render("home", {
@@ -371,19 +420,19 @@ router.post("/platos/editar", async (req, res) => {
 
   const { plato_1, plato_2, plato_3, plato_4, plato_5 } = req.body;
   try {
-    await db.query("UPDATE platos SET nombre_plato = $1 WHERE dia_numero = 1", [
+    await db.query("UPDATE lunch_menu SET dish_name = $1 WHERE day_number = 1", [
       plato_1,
     ]);
-    await db.query("UPDATE platos SET nombre_plato = $1 WHERE dia_numero = 2", [
+    await db.query("UPDATE lunch_menu SET dish_name = $1 WHERE day_number = 2", [
       plato_2,
     ]);
-    await db.query("UPDATE platos SET nombre_plato = $1 WHERE dia_numero = 3", [
+    await db.query("UPDATE lunch_menu SET dish_name = $1 WHERE day_number = 3", [
       plato_3,
     ]);
-    await db.query("UPDATE platos SET nombre_plato = $1 WHERE dia_numero = 4", [
+    await db.query("UPDATE lunch_menu SET dish_name = $1 WHERE day_number = 4", [
       plato_4,
     ]);
-    await db.query("UPDATE platos SET nombre_plato = $1 WHERE dia_numero = 5", [
+    await db.query("UPDATE lunch_menu SET dish_name = $1 WHERE day_number = 5", [
       plato_5,
     ]);
 
@@ -401,9 +450,9 @@ router.get("/perfil", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   const id = req.session.user.id;
   const { rows } = await db.query(
-    `SELECT u.*, at.nombre_area AS area
+    `SELECT u.*, at.area_name AS area
      FROM users u
-     LEFT JOIN area_trabajo at ON at.id = u.area_trabajo_id
+     LEFT JOIN work_areas at ON at.id = u.work_area_id
      WHERE u.id = $1`,
     [id],
   );
@@ -414,12 +463,13 @@ router.get("/perfil", async (req, res) => {
     error: req.query.error || null,
     usuario: {
       ...raw,
+      photo: raw.photo ?? raw.foto,
       role: normalizeRole(raw.role),
-      fecha_nacimiento_input: raw.fecha_nacimiento
-        ? new Date(raw.fecha_nacimiento).toISOString().slice(0, 10)
+      birth_date_input: raw.birth_date
+        ? new Date(raw.birth_date).toISOString().slice(0, 10)
         : "",
-      telefono: formatPhoneForDisplay(raw.telefono) || raw.telefono,
-      telefonoHref: toTelHref(raw.telefono),
+      phone: formatPhoneForDisplay(raw.phone) || raw.phone,
+      telefonoHref: toTelHref(raw.phone),
     },
   });
 });
@@ -430,8 +480,9 @@ router.post("/perfil", async (req, res) => {
   const userId = req.session.user.id;
   const firstName = toTitleCase(req.body.first_name);
   const lastName = toTitleCase(req.body.last_name);
-  const fechaNacimiento = String(req.body.fecha_nacimiento || "").trim() || null;
-  const telefonoCheck = validateChileMobilePhone(req.body.telefono, {
+  const fechaNacimiento =
+    String(req.body.birth_date || req.body.fecha_nacimiento || "").trim() || null;
+  const telefonoCheck = validateChileMobilePhone(req.body.phone || req.body.telefono, {
     required: true,
   });
 
@@ -452,8 +503,8 @@ router.post("/perfil", async (req, res) => {
       `UPDATE users
        SET first_name = $1,
            last_name = $2,
-           fecha_nacimiento = $3,
-           telefono = $4
+           birth_date = $3,
+           phone = $4
        WHERE id = $5`,
       [
         firstName,
@@ -482,7 +533,7 @@ router.post("/perfil/foto", upload.single("foto_perfil"), async (req, res) => {
   if (!req.session.user || !req.file) return res.redirect("/perfil");
   try {
     const userId = req.session.user.id;
-    const { rows } = await db.query("SELECT foto FROM users WHERE id = $1", [
+    const { rows } = await db.query("SELECT photo AS foto FROM users WHERE id = $1", [
       userId,
     ]);
     const previousUrl = rows[0]?.foto || null;
@@ -491,11 +542,12 @@ router.post("/perfil/foto", upload.single("foto_perfil"), async (req, res) => {
       req.file.buffer,
       previousUrl,
     );
-    await db.query("UPDATE users SET foto = $1 WHERE id = $2", [
+    await db.query("UPDATE users SET photo = $1 WHERE id = $2", [
       fotoUrl,
       userId,
     ]);
     req.session.user.foto = fotoUrl;
+    req.session.user.photo = fotoUrl;
     res.redirect("/perfil");
   } catch (err) {
     console.error(err);
@@ -507,13 +559,14 @@ router.post("/perfil/foto/eliminar", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   try {
     const userId = req.session.user.id;
-    const { rows } = await db.query("SELECT foto FROM users WHERE id = $1", [
+    const { rows } = await db.query("SELECT photo AS foto FROM users WHERE id = $1", [
       userId,
     ]);
     const previousUrl = rows[0]?.foto || null;
     await userPhotoStorage.removeUserPhoto(userId, previousUrl);
-    await db.query("UPDATE users SET foto = NULL WHERE id = $1", [userId]);
+    await db.query("UPDATE users SET photo = NULL WHERE id = $1", [userId]);
     req.session.user.foto = null;
+    req.session.user.photo = null;
     res.redirect("/perfil");
   } catch (err) {
     console.error(err);
@@ -546,16 +599,13 @@ router.get("/cursos/equipamiento-activo", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   try {
     const { rows: progreso } = await db.query(
-      "SELECT curso_id, estado, segundos_vistos FROM capacitaciones_usuarios WHERE usuario_id = $1",
+      "SELECT course_id AS curso_id, status AS estado_db, seconds_watched AS segundos_vistos FROM user_course_progress WHERE user_id = $1",
       [req.session.user.id],
     );
-    const progresoMap = {};
-    progreso.forEach((p) => {
-      progresoMap[p.curso_id] = p;
-    });
+    const progresoMap = buildProgresoMap(progreso);
 
     const { rows: cursosRows } = await db.query(
-      "SELECT c.id, c.titulo, c.subseccion, sd.imagen_url FROM cursos c LEFT JOIN subsecciones_detalles sd ON c.subseccion = sd.nombre WHERE c.seccion ILIKE '%Equipamiento%' AND c.activo = true ORDER BY c.subseccion ASC, c.titulo ASC",
+      `${COURSE_LIST_BASE} WHERE c.section ILIKE '%Equipamiento%' AND c.is_active = true ORDER BY c.subsection ASC, c.title ASC`,
     );
     const cursosAgrupados = {};
     cursosRows.forEach((curso) => {
@@ -565,7 +615,7 @@ router.get("/cursos/equipamiento-activo", async (req, res) => {
     });
 
     const { rows: materiales } = await db.query(
-      "SELECT * FROM material_estudio WHERE seccion = 'Equipamiento Activo' ORDER BY fecha_creacion DESC",
+      `SELECT ${MATERIAL_VIEW_COLUMNS} FROM study_materials WHERE section = 'Equipamiento Activo' ORDER BY created_at DESC`,
     );
 
     res.render("cursos/equipamiento-activo", {
@@ -590,16 +640,13 @@ router.get("/cursos/fibra-optica", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   try {
     const { rows: progreso } = await db.query(
-      "SELECT curso_id, estado, segundos_vistos FROM capacitaciones_usuarios WHERE usuario_id = $1",
+      "SELECT course_id AS curso_id, status AS estado_db, seconds_watched AS segundos_vistos FROM user_course_progress WHERE user_id = $1",
       [req.session.user.id],
     );
-    const progresoMap = {};
-    progreso.forEach((p) => {
-      progresoMap[p.curso_id] = p;
-    });
+    const progresoMap = buildProgresoMap(progreso);
 
     const { rows: cursosRows } = await db.query(
-      "SELECT c.id, c.titulo, c.subseccion, sd.imagen_url FROM cursos c LEFT JOIN subsecciones_detalles sd ON c.subseccion = sd.nombre WHERE c.seccion ILIKE '%Fibra%' AND c.activo = true ORDER BY c.subseccion ASC, c.titulo ASC",
+      `${COURSE_LIST_BASE} WHERE c.section ILIKE '%Fibra%' AND c.is_active = true ORDER BY c.subsection ASC, c.title ASC`,
     );
     const cursosAgrupados = {};
     cursosRows.forEach((curso) => {
@@ -609,7 +656,7 @@ router.get("/cursos/fibra-optica", async (req, res) => {
     });
 
     const { rows: materiales } = await db.query(
-      "SELECT * FROM material_estudio WHERE seccion = 'Fibra Óptica' ORDER BY fecha_creacion DESC",
+      `SELECT ${MATERIAL_VIEW_COLUMNS} FROM study_materials WHERE section = 'Fibra Óptica' ORDER BY created_at DESC`,
     );
 
     res.render("cursos/fibra-optica", {
@@ -634,16 +681,13 @@ router.get("/cursos/infraestructura", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   try {
     const { rows: progreso } = await db.query(
-      "SELECT curso_id, estado, segundos_vistos FROM capacitaciones_usuarios WHERE usuario_id = $1",
+      "SELECT course_id AS curso_id, status AS estado_db, seconds_watched AS segundos_vistos FROM user_course_progress WHERE user_id = $1",
       [req.session.user.id],
     );
-    const progresoMap = {};
-    progreso.forEach((p) => {
-      progresoMap[p.curso_id] = p;
-    });
+    const progresoMap = buildProgresoMap(progreso);
 
     const { rows: cursosRows } = await db.query(
-      "SELECT c.id, c.titulo, c.subseccion, sd.imagen_url FROM cursos c LEFT JOIN subsecciones_detalles sd ON c.subseccion = sd.nombre WHERE c.seccion ILIKE '%Infraestructura%' AND c.activo = true ORDER BY c.subseccion ASC, c.titulo ASC",
+      `${COURSE_LIST_BASE} WHERE c.section ILIKE '%Infraestructura%' AND c.is_active = true ORDER BY c.subsection ASC, c.title ASC`,
     );
     const cursosAgrupados = {};
     cursosRows.forEach((curso) => {
@@ -653,7 +697,7 @@ router.get("/cursos/infraestructura", async (req, res) => {
     });
 
     const { rows: materiales } = await db.query(
-      "SELECT * FROM material_estudio WHERE seccion = 'Infraestructura' ORDER BY fecha_creacion DESC",
+      `SELECT ${MATERIAL_VIEW_COLUMNS} FROM study_materials WHERE section = 'Infraestructura' ORDER BY created_at DESC`,
     );
 
     res.render("cursos/infraestructura", {
@@ -678,16 +722,13 @@ router.get("/cursos/safety-machine", async (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   try {
     const { rows: progreso } = await db.query(
-      "SELECT curso_id, estado, segundos_vistos FROM capacitaciones_usuarios WHERE usuario_id = $1",
+      "SELECT course_id AS curso_id, status AS estado_db, seconds_watched AS segundos_vistos FROM user_course_progress WHERE user_id = $1",
       [req.session.user.id],
     );
-    const progresoMap = {};
-    progreso.forEach((p) => {
-      progresoMap[p.curso_id] = p;
-    });
+    const progresoMap = buildProgresoMap(progreso);
 
     const { rows: cursosRows } = await db.query(
-      "SELECT c.id, c.titulo, c.subseccion, sd.imagen_url FROM cursos c LEFT JOIN subsecciones_detalles sd ON c.subseccion = sd.nombre WHERE c.seccion ILIKE '%Seguridad%' AND c.activo = true ORDER BY c.subseccion ASC, c.titulo ASC",
+      `${COURSE_LIST_BASE} WHERE c.section ILIKE '%Seguridad%' AND c.is_active = true ORDER BY c.subsection ASC, c.title ASC`,
     );
     const cursosAgrupados = {};
     cursosRows.forEach((curso) => {
@@ -697,7 +738,7 @@ router.get("/cursos/safety-machine", async (req, res) => {
     });
 
     const { rows: materiales } = await db.query(
-      "SELECT * FROM material_estudio WHERE seccion = 'Safety Machine' ORDER BY fecha_creacion DESC",
+      `SELECT ${MATERIAL_VIEW_COLUMNS} FROM study_materials WHERE section = 'Safety Machine' ORDER BY created_at DESC`,
     );
 
     res.render("cursos/safety-machine", {
@@ -735,7 +776,7 @@ router.post(
       );
 
       await db.query(
-        "INSERT INTO material_estudio (seccion, nombre, archivo_url, public_id, tipo_recurso) VALUES ($1, $2, $3, $4, $5)",
+        "INSERT INTO study_materials (section, name, file_url, public_id, resource_type) VALUES ($1, $2, $3, $4, $5)",
         [
           seccion,
           nombre,
@@ -762,7 +803,7 @@ router.post(
     try {
       if (req.file) {
         const { rows } = await db.query(
-          "SELECT public_id FROM material_estudio WHERE id = $1",
+          "SELECT public_id FROM study_materials WHERE id = $1",
           [id],
         );
         if (rows.length > 0 && rows[0].public_id) {
@@ -776,12 +817,12 @@ router.post(
         );
 
         await db.query(
-          "UPDATE material_estudio SET nombre = $1, archivo_url = $2, public_id = $3, tipo_recurso = $4 WHERE id = $5",
+          "UPDATE study_materials SET name = $1, file_url = $2, public_id = $3, resource_type = $4 WHERE id = $5",
           [nombre, result.secure_url, result.public_id, "file", id],
         );
       } else {
         await db.query(
-          "UPDATE material_estudio SET nombre = $1 WHERE id = $2",
+          "UPDATE study_materials SET name = $1 WHERE id = $2",
           [nombre, id],
         );
       }
@@ -801,13 +842,13 @@ router.post(
     const { return_url } = req.body;
     try {
       const { rows } = await db.query(
-        "SELECT public_id FROM material_estudio WHERE id = $1",
+        "SELECT public_id FROM study_materials WHERE id = $1",
         [id],
       );
       if (rows.length > 0 && rows[0].public_id) {
         await fileStorage.deleteFile(rows[0].public_id);
       }
-      await db.query("DELETE FROM material_estudio WHERE id = $1", [id]);
+      await db.query("DELETE FROM study_materials WHERE id = $1", [id]);
       res.redirect(return_url || "/cursos");
     } catch (err) {
       console.error("Error eliminando material:", err);
@@ -830,11 +871,11 @@ router.post(
     try {
       if (new_name && new_name !== old_name) {
         await db.query(
-          "UPDATE cursos SET subseccion = $1 WHERE subseccion = $2",
+          "UPDATE courses SET subsection = $1 WHERE subsection = $2",
           [new_name, old_name],
         );
         await db.query(
-          "UPDATE subsecciones_detalles SET nombre = $1 WHERE nombre = $2",
+          "UPDATE subsection_details SET name = $1 WHERE name = $2",
           [new_name, old_name],
         );
       }
@@ -859,10 +900,10 @@ router.post(
       }
 
       await db.query(
-        `INSERT INTO subsecciones_detalles (nombre, imagen_url) 
+        `INSERT INTO subsection_details (name, image_url) 
          VALUES ($1, $2)
-         ON CONFLICT (nombre) 
-         DO UPDATE SET imagen_url = EXCLUDED.imagen_url`,
+         ON CONFLICT (name) 
+         DO UPDATE SET image_url = EXCLUDED.image_url`,
         [nombre_final, imageUrl],
       );
 
@@ -885,15 +926,15 @@ router.get("/cursos/reproductor/:id", async (req, res) => {
     const usuarioId = req.session.user.id;
 
     const { rows: cursoRows } = await db.query(
-      "SELECT * FROM cursos WHERE id = $1",
+      "SELECT * FROM courses WHERE id = $1",
       [cursoId],
     );
     if (cursoRows.length === 0)
       return res.status(404).send("Curso no encontrado");
-    const cursoDb = cursoRows[0];
+    const cursoDb = mapCursoRow(cursoRows[0]);
 
     const { rows: progresoRows } = await db.query(
-      "SELECT segundos_vistos FROM capacitaciones_usuarios WHERE usuario_id = $1 AND curso_id = $2",
+      "SELECT seconds_watched AS segundos_vistos FROM user_course_progress WHERE user_id = $1 AND course_id = $2",
       [usuarioId, cursoId],
     );
     const progresoGuardado =
@@ -931,12 +972,12 @@ router.post("/cursos/api/progreso", async (req, res) => {
 
   try {
     const sql = `
-      INSERT INTO capacitaciones_usuarios (usuario_id, curso_id, segundos_vistos, estado) 
-      VALUES ($1, $2, $3, 'En curso') 
-      ON CONFLICT (usuario_id, curso_id) 
+      INSERT INTO user_course_progress (user_id, course_id, seconds_watched, status) 
+      VALUES ($1, $2, $3, 'in_progress') 
+      ON CONFLICT (user_id, course_id) 
       DO UPDATE SET 
-        segundos_vistos = GREATEST(capacitaciones_usuarios.segundos_vistos, EXCLUDED.segundos_vistos),
-        estado = CASE WHEN capacitaciones_usuarios.estado = 'Evaluado' THEN 'Evaluado' ELSE 'En curso' END
+        seconds_watched = GREATEST(user_course_progress.seconds_watched, EXCLUDED.seconds_watched),
+        status = CASE WHEN user_course_progress.status = 'evaluated' THEN 'evaluated' ELSE 'in_progress' END
     `;
     await db.query(sql, [usuario_id, curso_id, segundos_vistos]);
     res.json({ success: true });
@@ -956,30 +997,30 @@ router.get("/cursos/evaluacion/:id", async (req, res) => {
 
   try {
     const { rows: cursoRows } = await db.query(
-      "SELECT * FROM cursos WHERE id = $1",
+      "SELECT * FROM courses WHERE id = $1",
       [cursoId],
     );
     if (cursoRows.length === 0)
       return res.status(404).send("Curso no encontrado");
 
     const { rows: userProg } = await db.query(
-      "SELECT estado, nota, intentos FROM capacitaciones_usuarios WHERE usuario_id = $1 AND curso_id = $2",
+      "SELECT status AS estado_db, score AS nota, attempts AS intentos FROM user_course_progress WHERE user_id = $1 AND course_id = $2",
       [usuarioId, cursoId],
     );
     const progreso = userProg.length > 0 ? userProg[0] : null;
 
-    const yaEvaluado = progreso && progreso.estado === "Evaluado";
+    const yaEvaluado = progreso && courseStatusFromDb(progreso.estado_db) === "Evaluado";
     const notaGuardada = progreso ? progreso.nota : null;
     const intentosTotales = progreso ? progreso.intentos || 0 : 0;
 
     const { rows: preguntasRows } = await db.query(
-      "SELECT * FROM preguntas WHERE curso_id = $1 ORDER BY orden ASC",
+      "SELECT id, question_text AS enunciado, sort_order AS orden FROM questions WHERE course_id = $1 ORDER BY sort_order ASC",
       [cursoId],
     );
 
     for (let p of preguntasRows) {
       const { rows: altRows } = await db.query(
-        "SELECT id, texto FROM alternativas WHERE pregunta_id = $1 ORDER BY id ASC",
+        "SELECT id, text AS texto FROM question_options WHERE question_id = $1 ORDER BY id ASC",
         [p.id],
       );
       p.alternativas = altRows;
@@ -989,21 +1030,21 @@ router.get("/cursos/evaluacion/:id", async (req, res) => {
     if (yaEvaluado && notaGuardada >= 80) {
       const { rows: correctas } = await db.query(
         `SELECT a.id AS alternativa_id 
-         FROM alternativas a 
-         JOIN preguntas p ON a.pregunta_id = p.id 
-         WHERE p.curso_id = $1 AND a.es_correcta = true`,
+         FROM question_options a 
+         JOIN questions p ON a.question_id = p.id 
+         WHERE p.course_id = $1 AND a.is_correct = true`,
         [cursoId],
       );
       correctasIds = correctas.map((c) => c.alternativa_id);
     }
 
     res.render("cursos/evaluacion", {
-      titulo: `Evaluación: ${cursoRows[0].titulo} | Transworld`,
+      titulo: `Evaluación: ${mapCursoRow(cursoRows[0]).titulo} | Transworld`,
       pageTitle: "Evaluación de Curso",
       user: req.session.user,
       active: "equipamiento",
-      curso: cursoRows[0],
-      preguntas: preguntasRows,
+      curso: mapCursoRow(cursoRows[0]),
+      preguntas: preguntasRows.map(mapPreguntaRow),
       yaEvaluado,
       notaGuardada,
       intentosTotales,
@@ -1027,10 +1068,10 @@ router.post("/cursos/api/evaluacion/:id", async (req, res) => {
 
   try {
     const { rows: correctas } = await db.query(
-      `SELECT a.pregunta_id, a.id AS alternativa_id 
-       FROM alternativas a 
-       JOIN preguntas p ON a.pregunta_id = p.id 
-       WHERE p.curso_id = $1 AND a.es_correcta = true`,
+      `SELECT a.question_id AS pregunta_id, a.id AS alternativa_id 
+       FROM question_options a 
+       JOIN questions p ON a.question_id = p.id 
+       WHERE p.course_id = $1 AND a.is_correct = true`,
       [cursoId],
     );
 
@@ -1049,13 +1090,13 @@ router.post("/cursos/api/evaluacion/:id", async (req, res) => {
     const mostrarFeedback = porcentaje >= 80;
 
     await db.query(
-      `UPDATE capacitaciones_usuarios 
-       SET intentos = COALESCE(intentos, 0) + 1, 
-           nota = GREATEST(COALESCE(nota, 0), $1), 
-           estado = 'Evaluado', 
-           segundos_vistos = 0, 
-           fecha_completado = COALESCE(fecha_completado, NOW())
-       WHERE usuario_id = $2 AND curso_id = $3`,
+      `UPDATE user_course_progress 
+       SET attempts = COALESCE(attempts, 0) + 1, 
+           score = GREATEST(COALESCE(score, 0), $1), 
+           status = 'evaluated', 
+           seconds_watched = 0, 
+           completed_at = COALESCE(completed_at, NOW())
+       WHERE user_id = $2 AND course_id = $3`,
       [porcentaje, usuarioId, cursoId],
     );
 
@@ -1080,9 +1121,9 @@ router.post("/cursos/api/reintentar/:id", async (req, res) => {
 
   try {
     await db.query(
-      `UPDATE capacitaciones_usuarios 
-       SET segundos_vistos = 0, estado = 'En curso' 
-       WHERE usuario_id = $1 AND curso_id = $2`,
+      `UPDATE user_course_progress 
+       SET seconds_watched = 0, status = 'in_progress' 
+       WHERE user_id = $1 AND course_id = $2`,
       [req.session.user.id, req.params.id],
     );
     res.json({ success: true });
@@ -1101,29 +1142,29 @@ router.get("/kpi-cursos", async (req, res) => {
       SELECT 
         u.id AS usuario_id,
         u.first_name || ' ' || COALESCE(u.last_name, '') AS nombre_usuario,
-        SUM(cu.nota) AS puntaje_total,
-        COUNT(cu.curso_id) AS cursos_completados
-      FROM capacitaciones_usuarios cu
-      JOIN users u ON cu.usuario_id = u.id
-      WHERE cu.estado = 'Evaluado'
+        SUM(cu.score) AS puntaje_total,
+        COUNT(cu.course_id) AS cursos_completados
+      FROM user_course_progress cu
+      JOIN users u ON cu.user_id = u.id
+      WHERE cu.status = 'evaluated'
       GROUP BY u.id, u.first_name, u.last_name
       ORDER BY puntaje_total DESC, cursos_completados DESC
     `;
     const { rows: todosLosRanking } = await db.query(queryRanking);
     const top10Ranking = todosLosRanking.slice(0, 10);
 
-    const queryCursos = `SELECT id, titulo, seccion, subseccion FROM cursos WHERE activo = true`;
+    const queryCursos = `SELECT id, title AS titulo, section AS seccion, subsection AS subseccion FROM courses WHERE is_active = true`;
     const { rows: cursos } = await db.query(queryCursos);
 
     const kpiPorCursoPromises = cursos.map(async (curso) => {
       const queryNotasCurso = `
         SELECT 
           u.first_name || ' ' || COALESCE(u.last_name, '') AS nombre_usuario,
-          cu.nota
-        FROM capacitaciones_usuarios cu
-        JOIN users u ON cu.usuario_id = u.id
-        WHERE cu.curso_id = $1 AND cu.nota IS NOT NULL AND cu.nota > 0
-        ORDER BY cu.nota DESC
+          cu.score AS nota
+        FROM user_course_progress cu
+        JOIN users u ON cu.user_id = u.id
+        WHERE cu.course_id = $1 AND cu.score IS NOT NULL AND cu.score > 0
+        ORDER BY cu.score DESC
         LIMIT 10
       `;
       const { rows: notasCurso } = await db.query(queryNotasCurso, [curso.id]);
@@ -1163,11 +1204,19 @@ router.get("/kpi-cursos", async (req, res) => {
 router.get("/apps", requireRole.intranetActivo(), async (req, res) => {
     try {
       const { rows } = await db.query(
-        "SELECT * FROM aplicaciones ORDER BY fecha_creacion DESC",
+        "SELECT * FROM applications ORDER BY created_at DESC",
       );
       res.render("ver-apps", {
         titulo: "Aplicaciones | Transworld",
-        apps: rows,
+        apps: rows.map((app) => ({
+          ...app,
+          nombre: app.name ?? app.nombre,
+          descripcion: app.description ?? app.descripcion,
+          fecha_creacion: app.created_at ?? app.fecha_creacion,
+          ultima_actualizacion: app.updated_at ?? app.ultima_actualizacion,
+          cambios: app.changelog ?? app.cambios,
+          notificado: app.notified ?? app.notificado,
+        })),
         user: req.session.user,
         ok: req.query.ok,
       });
@@ -1215,7 +1264,7 @@ router.post(
       }
 
       await db.query(
-        `INSERT INTO aplicaciones (nombre, descripcion, url_pc, url_apk, qr_apk, qr_ios) 
+        `INSERT INTO applications (name, description, url_pc, url_apk, qr_apk, qr_ios) 
          VALUES ($1, $2, $3, $4, $5, $6)`,
         [
           nombre,
@@ -1244,7 +1293,7 @@ router.post(
     const { nombre, descripcion, url_pc, url_apk } = req.body;
 
     try {
-      let updateQuery = `UPDATE aplicaciones SET nombre = $1, descripcion = $2, url_pc = $3, url_apk = $4, ultima_actualizacion = NOW(), notificado = false`;
+      let updateQuery = `UPDATE applications SET name = $1, description = $2, url_pc = $3, url_apk = $4, updated_at = NOW(), notified = false`;
       let queryParams = [nombre, descripcion, url_pc || null, url_apk || null];
       let paramIndex = 5;
 
@@ -1287,7 +1336,7 @@ router.post(
   async (req, res) => {
     const { id } = req.params;
     try {
-      await db.query("DELETE FROM aplicaciones WHERE id = $1", [id]);
+      await db.query("DELETE FROM applications WHERE id = $1", [id]);
       res.redirect("/apps?ok=Aplicación+eliminada+con+éxito");
     } catch (err) {
       console.error("Error al eliminar aplicación:", err);
@@ -1312,7 +1361,7 @@ router.post("/apps/notificar/:id", requireRole.administrador(), async (req, res)
 
   try {
     const { rows: appRows } = await db.query(
-      "UPDATE aplicaciones SET cambios = $1, notificado = true WHERE id = $2 RETURNING nombre",
+      "UPDATE applications SET changelog = $1, notified = true WHERE id = $2 RETURNING name AS nombre",
       [cambios_texto, id],
     );
 

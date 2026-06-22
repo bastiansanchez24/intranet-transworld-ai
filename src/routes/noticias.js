@@ -5,6 +5,7 @@ const fileStorage = require('../services/fileStorage');
 const requireRole = require('../middlewares/requireRole');
 const multer = require('multer');
 const { sendMail } = require('../services/mailer');
+const { NOTICIA_VIEW_COLUMNS } = require('../utils/schemaMappers');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -19,14 +20,14 @@ async function setNoticiaDestacada(noticiaId, destacada) {
     destacada === "true" ||
     destacada === "on";
   if (isDestacada) {
-    await db.query("UPDATE noticias SET destacada = false WHERE id != $1", [
+    await db.query("UPDATE news_articles SET featured = false WHERE id != $1", [
       noticiaId,
     ]);
-    await db.query("UPDATE noticias SET destacada = true WHERE id = $1", [
+    await db.query("UPDATE news_articles SET featured = true WHERE id = $1", [
       noticiaId,
     ]);
   } else {
-    await db.query("UPDATE noticias SET destacada = false WHERE id = $1", [
+    await db.query("UPDATE news_articles SET featured = false WHERE id = $1", [
       noticiaId,
     ]);
   }
@@ -43,11 +44,11 @@ function createSlug(text) {
 function buildNoticiaEmailHtml(noticia) {
   let adjuntosCorreo = [];
   try {
-    if (noticia.adjuntos) {
+    if (noticia.attachments) {
       adjuntosCorreo =
-        typeof noticia.adjuntos === 'string'
-          ? JSON.parse(noticia.adjuntos)
-          : noticia.adjuntos;
+        typeof noticia.attachments === 'string'
+          ? JSON.parse(noticia.attachments)
+          : noticia.attachments;
     }
   } catch (e) {}
 
@@ -55,8 +56,8 @@ function buildNoticiaEmailHtml(noticia) {
     (a) => a.tipo === 'image' || (a.resource_type === 'image' && a.tipo !== 'video'),
   );
 
-  const imagenPortadaHtml = noticia.imagen
-    ? `<img src="${noticia.imagen}" alt="Portada" style="width:100%; max-height:380px; object-fit:cover; display:block; margin-bottom:0;">`
+  const imagenPortadaHtml = noticia.image
+    ? `<img src="${noticia.image}" alt="Portada" style="width:100%; max-height:380px; object-fit:cover; display:block; margin-bottom:0;">`
     : '';
 
   const galeriaHtml =
@@ -81,10 +82,10 @@ function buildNoticiaEmailHtml(noticia) {
       </div>
       ${imagenPortadaHtml}
       <div style="padding: 25px; background-color: #ffffff;">
-        <h3 style="color: #003a70; margin-top: 0; font-size: 22px;">${noticia.titulo}</h3>
-        ${noticia.subtitulo ? `<p style="color: #475569; font-size: 16px; font-weight: bold;">${noticia.subtitulo}</p>` : ''}
+        <h3 style="color: #003a70; margin-top: 0; font-size: 22px;">${noticia.title}</h3>
+        ${noticia.subtitle ? `<p style="color: #475569; font-size: 16px; font-weight: bold;">${noticia.subtitle}</p>` : ''}
         <div style="color: #334155; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
-          ${noticia.contenido}
+          ${noticia.content}
         </div>
         ${galeriaHtml}
         <div style="text-align: center; margin-top: 30px; margin-bottom: 10px;">
@@ -114,7 +115,7 @@ async function enviarCorreoNoticia(noticia) {
   await sendMail({
     to: process.env.MAIL_FROM || 'noreply@transworld.cl',
     bcc: listaCorreos,
-    subject: `Nueva Noticia: ${noticia.titulo}`,
+    subject: `Nueva Noticia: ${noticia.title}`,
     html: buildNoticiaEmailHtml(noticia),
   });
 
@@ -127,7 +128,7 @@ async function enviarCorreoNoticia(noticia) {
 // ==========================================
 router.get('/', async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM noticias ORDER BY fecha_creacion DESC');
+    const { rows } = await db.query(`SELECT ${NOTICIA_VIEW_COLUMNS} FROM news_articles ORDER BY created_at DESC`);
     res.render('noticias/index', { 
       titulo: 'Noticias', 
       noticias: rows,
@@ -209,7 +210,7 @@ router.post('/crear', requireRole(...ROLES_CREAR), async (req, res) => {
 
   try {
     const sql = `
-      INSERT INTO noticias (titulo, subtitulo, slug, contenido, imagen, adjuntos, autor, fecha_creacion) 
+      INSERT INTO news_articles (title, subtitle, slug, content, image, attachments, author, created_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) 
       RETURNING id
     `;
@@ -229,7 +230,7 @@ router.post('/crear', requireRole(...ROLES_CREAR), async (req, res) => {
 
     if (req.session.user) {
       await db.query(
-        'INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
         [req.session.user.id, 'publicó una nueva noticia', 'Noticias', `/noticias/${noticiaId}`]
       );
     }
@@ -248,11 +249,11 @@ router.post('/eliminar/:id', requireRole(...ROLES_ELIMINAR), async (req, res) =>
   const { id } = req.params;
 
   try {
-    await db.query('DELETE FROM noticias WHERE id = $1', [id]);
+    await db.query('DELETE FROM news_articles WHERE id = $1', [id]);
 
     if (req.session.user) {
       await db.query(
-        'INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
         [req.session.user.id, 'eliminó una noticia', 'Noticias', '/noticias']
       );
     }
@@ -272,7 +273,7 @@ router.post('/destacar/:id', requireRole(...ROLES_CREAR), async (req, res) => {
   const quitar = req.body.quitar === '1';
 
   try {
-    const { rows } = await db.query('SELECT id, titulo FROM noticias WHERE id = $1', [id]);
+    const { rows } = await db.query(`SELECT id, title FROM news_articles WHERE id = $1`, [id]);
 
     if (rows.length === 0) {
       return res.status(404).send('Noticia no encontrada');
@@ -290,7 +291,7 @@ router.post('/destacar/:id', requireRole(...ROLES_CREAR), async (req, res) => {
 
     if (req.session.user) {
       await db.query(
-        'INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
         [
           req.session.user.id,
           quitar ? 'quitó noticia destacada del inicio' : 'marcó una noticia como destacada',
@@ -314,7 +315,7 @@ router.post('/enviar-correo/:id', requireRole(...ROLES_CREAR), async (req, res) 
   const { id } = req.params;
 
   try {
-    const { rows } = await db.query('SELECT * FROM noticias WHERE id = $1', [id]);
+    const { rows } = await db.query(`SELECT ${NOTICIA_VIEW_COLUMNS} FROM news_articles WHERE id = $1`, [id]);
 
     if (rows.length === 0) {
       return res.status(404).send('Noticia no encontrada');
@@ -324,7 +325,7 @@ router.post('/enviar-correo/:id', requireRole(...ROLES_CREAR), async (req, res) 
 
     if (req.session.user) {
       await db.query(
-        'INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
         [
           req.session.user.id,
           'envió aviso por correo de una noticia',
@@ -354,10 +355,10 @@ router.get('/:id_or_slug', async (req, res) => {
   let values = [];
 
   if (/^\d+$/.test(param)) {
-    sql = 'SELECT * FROM noticias WHERE id = $1';
+    sql = `SELECT ${NOTICIA_VIEW_COLUMNS} FROM news_articles WHERE id = $1`;
     values = [parseInt(param)];
   } else {
-    sql = 'SELECT * FROM noticias WHERE slug = $1';
+    sql = `SELECT ${NOTICIA_VIEW_COLUMNS} FROM news_articles WHERE slug = $1`;
     values = [param];
   }
 
@@ -369,7 +370,7 @@ router.get('/:id_or_slug', async (req, res) => {
     }
 
     res.render('noticias/detalle', { 
-      titulo: rows[0].titulo, 
+      titulo: rows[0].title, 
       noticia: rows[0],
       user: req.session.user,
       publicada: req.query.publicada === '1',
@@ -389,7 +390,7 @@ router.get('/:id_or_slug', async (req, res) => {
 router.get('/editar/:id', requireRole(...ROLES_CREAR), async (req, res) => {
   const { id } = req.params;
   try {
-    const { rows } = await db.query('SELECT * FROM noticias WHERE id = $1', [id]);
+    const { rows } = await db.query(`SELECT ${NOTICIA_VIEW_COLUMNS} FROM news_articles WHERE id = $1`, [id]);
     
     if (rows.length === 0) {
       return res.status(404).send('Noticia no encontrada');
@@ -419,8 +420,8 @@ router.post('/editar/:id', requireRole(...ROLES_CREAR), async (req, res) => {
 
   try {
     const sql = `
-      UPDATE noticias 
-      SET titulo = $1, subtitulo = $2, contenido = $3, imagen = $4, adjuntos = $5
+      UPDATE news_articles 
+      SET title = $1, subtitle = $2, content = $3, image = $4, attachments = $5
       WHERE id = $6
     `;
     
@@ -437,7 +438,7 @@ router.post('/editar/:id', requireRole(...ROLES_CREAR), async (req, res) => {
 
     if (req.session.user) {
       await db.query(
-        'INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
         [req.session.user.id, 'editó una noticia', 'Noticias', `/noticias/${id}`]
       );
     }

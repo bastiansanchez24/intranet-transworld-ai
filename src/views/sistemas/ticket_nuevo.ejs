@@ -47,13 +47,13 @@
 
       <div style="margin-bottom: 15px;">
         <label for="titulo">Resumen del problema (Título)</label>
-        <input type="text" id="titulo" name="titulo" placeholder="Ej: No puedo acceder a la carpeta compartida de Ventas" required>
+        <input type="text" id="titulo" name="title" placeholder="Ej: No puedo acceder a la carpeta compartida de Ventas" required>
       </div>
 
       <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
         <div style="flex: 1; min-width: 200px;">
           <label for="categoria">Categoría</label>
-          <select id="categoria" name="categoria">
+          <select id="categoria" name="category">
             <option value="SAP">Soporte Técnico</option>
             <option value="Salesforce">Software / ERP</option>
             <option value="Intranet">Infraestructura / Red</option>
@@ -64,10 +64,10 @@
 
         <div style="flex: 1; min-width: 200px;">
           <label for="prioridad">Prioridad sugerida</label>
-          <select id="prioridad" name="prioridad">
-            <option value="Baja">Baja (No impide trabajar)</option>
-            <option value="Media" selected>Media (Dificulta el trabajo)</option>
-            <option value="Alta">Alta (Urgente / Operación detenida)</option>
+          <select id="prioridad" name="priority">
+            <option value="low">Baja (No impide trabajar)</option>
+            <option value="medium" selected>Media (Dificulta el trabajo)</option>
+            <option value="high">Alta (Urgente / Operación detenida)</option>
           </select>
         </div>
       </div>
@@ -77,7 +77,7 @@
         
         <textarea 
             id="descripcion" 
-            name="descripcion" 
+            name="description" 
             placeholder="Explica detalladamente qué sucede..." 
             required 
             maxlength="2000"

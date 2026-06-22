@@ -159,62 +159,64 @@
   <tbody>
     <% if (tickets && tickets.length > 0) { %>
       <% tickets.forEach(t => { 
-         
+         const estadoLabels = { open: 'Abierto', in_progress: 'En curso', pending_close: 'Pendiente de cierre', closed: 'Cerrado' };
+         const prioridadLabels = { low: 'Baja', medium: 'Media', high: 'Alta' };
+
          let esNoLeido = false;
-         if (typeof user !== 'undefined' && typeof isAdministrador !== 'undefined' && isAdministrador && t.leido_admin === false) {
+         if (typeof user !== 'undefined' && typeof isAdministrador !== 'undefined' && isAdministrador && t.read_by_admin === false) {
             esNoLeido = true;
-         } else if (typeof user !== 'undefined' && !(typeof isAdministrador !== 'undefined' && isAdministrador) && t.leido_usuario === false) {
+         } else if (typeof user !== 'undefined' && !(typeof isAdministrador !== 'undefined' && isAdministrador) && t.read_by_user === false) {
             esNoLeido = true;
          }
 
          let badgePrioridad = 'bg-secondary';
-         if (t.prioridad === 'Alta') badgePrioridad = 'bg-danger';
-         else if (t.prioridad === 'Media') badgePrioridad = 'bg-success';
-         else if (t.prioridad === 'Baja') badgePrioridad = 'bg-primary';
+         if (t.priority === 'high') badgePrioridad = 'bg-danger';
+         else if (t.priority === 'medium') badgePrioridad = 'bg-success';
+         else if (t.priority === 'low') badgePrioridad = 'bg-primary';
 
          let badgeEstado = 'bg-secondary';
-         if (t.estado === 'Abierto') badgeEstado = 'bg-primary';
-         else if (t.estado === 'En curso') badgeEstado = 'bg-warning';
-         else if (t.estado === 'Pendiente de cierre') badgeEstado = 'bg-warning';
-         else if (t.estado === 'Cerrado') badgeEstado = 'bg-success';
+         if (t.status === 'open') badgeEstado = 'bg-primary';
+         else if (t.status === 'in_progress') badgeEstado = 'bg-warning';
+         else if (t.status === 'pending_close') badgeEstado = 'bg-warning';
+         else if (t.status === 'closed') badgeEstado = 'bg-success';
 
          const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', minute: 'numeric', second: 'numeric' };
-         const strCreado = t.fecha_creacion ? new Date(t.fecha_creacion).toLocaleDateString('es-CL', options) : '-';
+         const strCreado = t.created_at ? new Date(t.created_at).toLocaleDateString('es-CL', options) : '-';
          const strUltima = t.fecha_ultima_respuesta ? new Date(t.fecha_ultima_respuesta).toLocaleDateString('es-CL', options) : '-';
          
          let tRespuesta = '-';
-         if (t.fecha_ultima_respuesta && t.fecha_creacion) {
-            const diffMs = new Date(t.fecha_ultima_respuesta) - new Date(t.fecha_creacion);
+         if (t.fecha_ultima_respuesta && t.created_at) {
+            const diffMs = new Date(t.fecha_ultima_respuesta) - new Date(t.created_at);
             const diffMins = Math.floor(diffMs / 60000);
             if (diffMins < 60) tRespuesta = `${diffMins}m`;
             else if (diffMins < 1440) tRespuesta = `${Math.floor(diffMins/60)}h ${diffMins%60}m`;
             else tRespuesta = `${Math.floor(diffMins/1440)}d ${Math.floor((diffMins%1440)/60)}h`;
          }
       %>
-        <tr class="clickable-row <%= esNoLeido ? 'fila-no-leida' : '' %>" data-href="/sistemas/tickets/<%= t.id %>" data-estado="<%= t.estado %>">
+        <tr class="clickable-row <%= esNoLeido ? 'fila-no-leida' : '' %>" data-href="/sistemas/tickets/<%= t.id %>" data-estado="<%= t.status %>">
           
           <td data-sort="<%= t.id %>">
             <%= t.id %>
             <% if (esNoLeido) { %><span class="badge-nuevo-ticket">Nuevo</span><% } %>
           </td>
-          <td style="color: #0056b3; font-weight: 500; min-width: 200px; max-width: 300px;" title="<%= t.titulo %>">
+          <td style="color: #0056b3; font-weight: 500; min-width: 200px; max-width: 300px;" title="<%= t.title %>">
             <div style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; line-height: 1.2;">
-              <%= t.titulo %>
+              <%= t.title %>
             </div>
           </td>
-          <td><%= t.categoria || '-' %></td>
-          <td data-sort="<%= t.prioridad %>"><span class="badge <%= badgePrioridad %>"><%= t.prioridad %></span></td>
-          <td data-sort="<%= t.estado %>"><span class="badge <%= badgeEstado %>"><%= t.estado %></span></td>
+          <td><%= t.category || '-' %></td>
+          <td data-sort="<%= t.priority %>"><span class="badge <%= badgePrioridad %>"><%= prioridadLabels[t.priority] || t.priority %></span></td>
+          <td data-sort="<%= t.status %>"><span class="badge <%= badgeEstado %>"><%= estadoLabels[t.status] || t.status %></span></td>
           
           <% if (user && typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-            <td style="font-weight: 600; color: <%= t.asignado_a ? '#28a745' : '#888' %>;">
-                <%= t.asignado_a || 'Sin asignar' %>
+            <td style="font-weight: 600; color: <%= t.assigned_to ? '#28a745' : '#888' %>;">
+                <%= t.assigned_to || 'Sin asignar' %>
             </td>
           <% } %>
 
-          <td><%= t.solicitante_nombre %></td>
-          <td style="color: #555; font-size: 0.9em;"><%= t.solicitante_email %></td>
-          <td data-sort="<%= t.fecha_creacion ? new Date(t.fecha_creacion).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strCreado %></td>
+          <td><%= t.requester_name %></td>
+          <td style="color: #555; font-size: 0.9em;"><%= t.requester_email %></td>
+          <td data-sort="<%= t.created_at ? new Date(t.created_at).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strCreado %></td>
           <td data-sort="<%= t.fecha_ultima_respuesta ? new Date(t.fecha_ultima_respuesta).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strUltima %></td>
           <td style="color: #003a70; font-weight: 600; font-size: 0.9em;"><%= tRespuesta %></td>
           
@@ -286,7 +288,7 @@
     
     rows.forEach(row => {
       const estado = row.getAttribute("data-estado");
-      if (estado === "Cerrado") {
+      if (estado === "closed") {
         row.style.display = mostrandoCerrados ? "" : "none";
       }
     });

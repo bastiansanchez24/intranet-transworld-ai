@@ -3,14 +3,14 @@ const { ROLES } = require("../constants/roles");
 
 /**
  * Sin correo o sin verificar → rol Deshabilitado.
- * Con correo (aunque no verificado) → siguen en la intranet (usuario_intranet = TRUE).
- * Sin correo → fuera de la intranet (usuario_intranet = FALSE).
+ * Con correo (aunque no verificado) → siguen en la intranet (is_intranet_user = TRUE).
+ * Sin correo → fuera de la intranet (is_intranet_user = FALSE).
  */
 async function syncUnverifiedUsersToDisabled() {
   const sql = `
     UPDATE users
     SET role = $1,
-        usuario_intranet = (email IS NOT NULL AND BTRIM(email) <> '')
+        is_intranet_user = (email IS NOT NULL AND BTRIM(email) <> '')
     WHERE (
       email IS NULL
       OR BTRIM(email) = ''
@@ -18,7 +18,7 @@ async function syncUnverifiedUsersToDisabled() {
     )
     AND (
       role IS DISTINCT FROM $1
-      OR usuario_intranet IS DISTINCT FROM (email IS NOT NULL AND BTRIM(email) <> '')
+      OR is_intranet_user IS DISTINCT FROM (email IS NOT NULL AND BTRIM(email) <> '')
     )
     RETURNING id
   `;

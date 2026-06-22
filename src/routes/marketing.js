@@ -3,6 +3,7 @@ const multer = require('multer');
 const db = require('../db');
 const fileStorage = require('../services/fileStorage');
 const requireRole = require('../middlewares/requireRole');
+const { EVENTO_VIEW_COLUMNS } = require('../utils/schemaMappers');
 
 const router = express.Router();
 const WRITE_ROLES = ['admin'];
@@ -47,7 +48,7 @@ router.get('/', (req, res) => res.redirect('/marketing/eventos'));
 
 router.get('/eventos', async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM eventos ORDER BY fecha_creacion DESC');
+    const { rows } = await db.query(`SELECT ${EVENTO_VIEW_COLUMNS} FROM events ORDER BY created_at DESC`);
     res.render('marketing/eventos', { titulo: 'Galería de Eventos | Intranet Transworld Chile', eventos: rows });
   } catch (err) {
     console.error(err);
@@ -64,7 +65,7 @@ router.post('/eventos/nuevo', requireRole(...WRITE_ROLES), async (req, res) => {
   const slug = createSlug(nombre);
 
   try {
-    await db.query('INSERT INTO eventos (nombre, slug, descripcion) VALUES ($1, $2, $3)',
+    await db.query('INSERT INTO events (name, slug, description) VALUES ($1, $2, $3)',
       [nombre, slug, descripcion]);
     res.redirect('/marketing/eventos');
   } catch (err) {
@@ -77,7 +78,7 @@ router.post('/eventos/nuevo', requireRole(...WRITE_ROLES), async (req, res) => {
 router.get('/eventos/:slug', async (req, res) => {
   const { slug } = req.params;
   try {
-    const { rows } = await db.query('SELECT * FROM eventos WHERE slug = $1', [slug]);
+    const { rows } = await db.query(`SELECT ${EVENTO_VIEW_COLUMNS} FROM events WHERE slug = $1`, [slug]);
     if (rows.length === 0) return res.status(404).send('Evento no encontrado');
 
     const folder = `eventos/${slug}/`;
@@ -87,7 +88,7 @@ router.get('/eventos/:slug', async (req, res) => {
     let todos = imagenes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     res.render('marketing/evento_detalle', {
-      titulo: rows[0].nombre,
+      titulo: rows[0].name,
       evento: rows[0],
       imagenes: todos
     });
@@ -145,14 +146,14 @@ router.post('/eventos/:slug/fotos', requireRole(...WRITE_ROLES), upload.none(), 
       const firstImage = directFiles.find(f => (f.resource_type === 'image' || !f.resource_type));
       if (firstImage) {
         await db.query(
-          `UPDATE eventos SET imagen = $1 WHERE slug = $2 AND (imagen IS NULL OR imagen = '')`,
+          `UPDATE events SET image = $1 WHERE slug = $2 AND (image IS NULL OR image = '')`,
           [firstImage.secure_url, slug]
         );
       }
 
       if (req.session.user && req.session.user.id) {
         await db.query(
-          'INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+          'INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
           [req.session.user.id, 'subió contenido multimedia', 'Galería de Eventos', `/marketing/eventos/${slug}`]
         );
       }
@@ -171,7 +172,7 @@ router.post('/eventos/:slug/portada', requireRole(...WRITE_ROLES), async (req, r
   const { slug } = req.params;
   const { url_imagen } = req.body;
   try {
-    await db.query('UPDATE eventos SET imagen = $1 WHERE slug = $2', [url_imagen, slug]);
+    await db.query('UPDATE events SET image = $1 WHERE slug = $2', [url_imagen, slug]);
     res.redirect(`/marketing/eventos/${slug}`);
   } catch (err) {
     console.error(err);
@@ -187,9 +188,9 @@ router.post('/eventos/:slug/fotos/eliminar', requireRole(...WRITE_ROLES), async 
   try {
     await fileStorage.deleteFile(public_id);
 
-    const { rows } = await db.query('SELECT imagen FROM eventos WHERE slug = $1', [slug]);
-    if (rows.length > 0 && rows[0].imagen && rows[0].imagen.includes(public_id)) {
-        await db.query('UPDATE eventos SET imagen = NULL WHERE slug = $1', [slug]);
+    const { rows } = await db.query('SELECT image FROM events WHERE slug = $1', [slug]);
+    if (rows.length > 0 && rows[0].image && rows[0].image.includes(public_id)) {
+        await db.query('UPDATE events SET image = NULL WHERE slug = $1', [slug]);
     }
     res.redirect(`/marketing/eventos/${slug}`);
   } catch (err) {
@@ -204,7 +205,7 @@ router.post('/eventos/:slug/eliminar', requireRole(...WRITE_ROLES), async (req, 
   try {
     await fileStorage.deleteFolder(`eventos/${slug}`);
     
-    await db.query('DELETE FROM eventos WHERE slug = $1', [slug]);
+    await db.query('DELETE FROM events WHERE slug = $1', [slug]);
     res.redirect('/marketing/eventos');
   } catch (err) {
     console.error(err);
@@ -216,7 +217,7 @@ router.post('/eventos/:slug/eliminar', requireRole(...WRITE_ROLES), async (req, 
 router.get('/eventos/:slug/editar', requireRole(...WRITE_ROLES), async (req, res) => {
   const { slug } = req.params;
   try {
-    const { rows } = await db.query('SELECT * FROM eventos WHERE slug = $1', [slug]);
+    const { rows } = await db.query(`SELECT ${EVENTO_VIEW_COLUMNS} FROM events WHERE slug = $1`, [slug]);
     if (rows.length === 0) return res.status(404).send('Evento no encontrado');
     res.render('marketing/eventos_editar', { titulo: 'Editar Evento', evento: rows[0] });
   } catch (err) {
@@ -229,9 +230,9 @@ router.post('/eventos/:slug/editar', requireRole(...WRITE_ROLES), async (req, re
   const { slug } = req.params;
   const { nombre, descripcion } = req.body;
   try {
-    await db.query('UPDATE eventos SET nombre = $1, descripcion = $2 WHERE slug = $3', [nombre, descripcion, slug]);
+    await db.query('UPDATE events SET name = $1, description = $2 WHERE slug = $3', [nombre, descripcion, slug]);
     if (req.session.user && req.session.user.id) {
-      await db.query('INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+      await db.query('INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
         [req.session.user.id, 'editó información del evento', 'Galería de Eventos', `/marketing/eventos/${slug}`]);
     }
     res.redirect(`/marketing/eventos/${slug}?ok=Evento actualizado correctamente`);

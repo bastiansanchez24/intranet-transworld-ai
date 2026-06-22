@@ -59,37 +59,40 @@
   </div>
 
   <% 
+    const estadoLabels = { open: 'Abierto', in_progress: 'En curso', pending_close: 'Pendiente de cierre', closed: 'Cerrado' };
+    const prioridadLabels = { low: 'Baja', medium: 'Media', high: 'Alta' };
+
     let badgeEstado = 'bg-secondary';
-    if (ticket.estado === 'Abierto') badgeEstado = 'bg-primary';
-    else if (ticket.estado === 'En curso') badgeEstado = 'bg-warning';
-    else if (ticket.estado === 'Pendiente de cierre') badgeEstado = 'bg-success';
-    else if (ticket.estado === 'Cerrado') badgeEstado = 'bg-secondary';
+    if (ticket.status === 'open') badgeEstado = 'bg-primary';
+    else if (ticket.status === 'in_progress') badgeEstado = 'bg-warning';
+    else if (ticket.status === 'pending_close') badgeEstado = 'bg-success';
+    else if (ticket.status === 'closed') badgeEstado = 'bg-secondary';
 
     let badgePrioridad = 'bg-secondary';
-    if (ticket.prioridad === 'Alta') badgePrioridad = 'bg-danger';
-    else if (ticket.prioridad === 'Media') badgePrioridad = 'bg-success';
-    else if (ticket.prioridad === 'Baja') badgePrioridad = 'bg-primary';
+    if (ticket.priority === 'high') badgePrioridad = 'bg-danger';
+    else if (ticket.priority === 'medium') badgePrioridad = 'bg-success';
+    else if (ticket.priority === 'low') badgePrioridad = 'bg-primary';
   %>
 
   <div class="cabecera-detalle">
     <div>
       <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
         <h2 style="margin: 0; color: #003a70;">Ticket #<%= ticket.id %></h2>
-        <span class="badge <%= badgeEstado %>" style="font-size: 0.9em;"><%= ticket.estado %></span>
+        <span class="badge <%= badgeEstado %>" style="font-size: 0.9em;"><%= estadoLabels[ticket.status] || ticket.status %></span>
         
         <% if (user && typeof isAdministrador !== 'undefined' && isAdministrador) { %>
             <button id="btnTomarTicket" onclick="tomarTicket(<%= ticket.id %>)" 
                     style="padding: 6px 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: 0.3s;
-                    <%= ticket.asignado_a ? 'background-color: #28a745; color: white;' : 'background-color: #0056b3; color: white;' %>">
-                <%= ticket.asignado_a ? 'Ticket tomado por ' + ticket.asignado_a : 'Tomar Ticket' %>
+                    <%= ticket.assigned_to ? 'background-color: #28a745; color: white;' : 'background-color: #0056b3; color: white;' %>">
+                <%= ticket.assigned_to ? 'Ticket tomado por ' + ticket.assigned_to : 'Tomar Ticket' %>
             </button>
         <% } %>
 
       </div>
-      <h3 style="margin: 10px 0 0 0; color: #333;"><%= ticket.titulo %></h3>
+      <h3 style="margin: 10px 0 0 0; color: #333;"><%= ticket.title %></h3>
     </div>
     <div style="text-align: right; color: #666; font-size: 0.9em;">
-      <p style="margin: 0;"><strong>Creado:</strong> <%= new Date(ticket.fecha_creacion).toLocaleString('es-CL') %></p>
+      <p style="margin: 0;"><strong>Creado:</strong> <%= new Date(ticket.created_at).toLocaleString('es-CL') %></p>
       <% if (ticket.fecha_resolucion) { %>
         <p style="margin: 5px 0 0 0;"><strong>Pendiente de cierre:</strong> <%= new Date(ticket.fecha_resolucion).toLocaleString('es-CL') %></p>
       <% } %>
@@ -100,18 +103,18 @@
   </div>
 
   <div class="seccion-info">
-    <p><strong>Solicitante:</strong> <%= ticket.solicitante_nombre %> (<%= ticket.solicitante_email %>)</p>
+    <p><strong>Solicitante:</strong> <%= ticket.requester_name %> (<%= ticket.requester_email %>)</p>
     <p>
-      <strong>Categoría:</strong> <%= ticket.categoria || 'Sin clasificar' %> | 
-      <strong>Prioridad:</strong> <span class="badge <%= badgePrioridad %>"><%= ticket.prioridad %></span>
+      <strong>Categoría:</strong> <%= ticket.category || 'Sin clasificar' %> | 
+      <strong>Prioridad:</strong> <span class="badge <%= badgePrioridad %>"><%= prioridadLabels[ticket.priority] || ticket.priority %></span>
     </p>
     <div style="margin-top: 20px; padding: 15px; background: #fdfdfd; border-radius: 6px; border: 1px solid #eee;">
       <strong style="display:block; margin-bottom: 10px; color: #003a70;">Descripción del requerimiento:</strong>
-      <p style="white-space: pre-wrap; font-family: monospace; color: #444; font-size: 1rem;"><%= ticket.descripcion %></p>
+      <p style="white-space: pre-wrap; font-family: monospace; color: #444; font-size: 1rem;"><%= ticket.description %></p>
       
       <% 
         let ticketAdjuntos = [];
-        try { if(ticket.adjuntos) ticketAdjuntos = JSON.parse(ticket.adjuntos); } catch(e) {}
+        try { if(ticket.attachments) ticketAdjuntos = JSON.parse(ticket.attachments); } catch(e) {}
       %>
       <% if(ticketAdjuntos && ticketAdjuntos.length > 0) { %>
         <div class="adjuntos-wrapper">
@@ -168,9 +171,9 @@
           
           <% 
             let respAdjuntos = [];
-            try { if(r.adjuntos) respAdjuntos = JSON.parse(r.adjuntos); } catch(e) {}
-            if(r.archivo_url && respAdjuntos.length === 0) {
-                respAdjuntos.push({ url: r.archivo_url, nombre: r.archivo_nombre || 'Archivo adjunto', tipo: r.archivo_tipo || 'doc' });
+            try { if(r.attachments) respAdjuntos = JSON.parse(r.attachments); } catch(e) {}
+            if(r.file_url && respAdjuntos.length === 0) {
+                respAdjuntos.push({ url: r.file_url, nombre: r.archivo_nombre || 'Archivo adjunto', tipo: r.archivo_tipo || 'doc' });
             }
           %>
           <% if(respAdjuntos && respAdjuntos.length > 0) { %>
@@ -216,7 +219,7 @@
     <% } %>
   </div>
 
-  <% if (ticket.estado === 'Pendiente de cierre' && user.email === ticket.solicitante_email) { %>
+  <% if (ticket.status === 'pending_close' && user.email === ticket.requester_email) { %>
     <div class="acciones-rapidas">
       <div style="flex: 1;">
         <h4 style="margin: 0 0 10px 0; color: #28a745;">El equipo de TI ha marcado este ticket como Pendiente de cierre.</h4>
@@ -233,7 +236,7 @@
     </div>
   <% } %>
 
-  <% if (ticket.estado !== 'Cerrado') { %>
+  <% if (ticket.status !== 'closed') { %>
     
     <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
       <div class="form-respuesta" style="border-top: 4px solid #003a70;">
@@ -243,29 +246,29 @@
           <div style="display: flex; gap: 15px; margin-bottom: 15px;">
             <div style="flex: 1;">
               <label>Categoría:</label>
-              <select name="categoria">
-                <option value="SAP" <%= ticket.categoria==='SAP'?'selected':'' %>>SAP</option>
-                <option value="Salesforce" <%= ticket.categoria==='Salesforce'?'selected':'' %>>Salesforce</option>
-                <option value="Intranet" <%= ticket.categoria==='Intranet'?'selected':'' %>>Intranet</option>
-                <option value="Hardware" <%= ticket.categoria==='Hardware'?'selected':'' %>>Hardware </option>
-                <option value="Otro" <%= ticket.categoria==='Otro'?'selected':'' %>>Otro</option>
+              <select name="category">
+                <option value="SAP" <%= ticket.category==='SAP'?'selected':'' %>>SAP</option>
+                <option value="Salesforce" <%= ticket.category==='Salesforce'?'selected':'' %>>Salesforce</option>
+                <option value="Intranet" <%= ticket.category==='Intranet'?'selected':'' %>>Intranet</option>
+                <option value="Hardware" <%= ticket.category==='Hardware'?'selected':'' %>>Hardware </option>
+                <option value="Otro" <%= ticket.category==='Otro'?'selected':'' %>>Otro</option>
               </select>
             </div>
             <div style="flex: 1;">
               <label>Prioridad:</label>
-              <select name="prioridad">
-                <option value="Baja" <%= ticket.prioridad==='Baja'?'selected':'' %>>Baja</option>
-                <option value="Media" <%= ticket.prioridad==='Media'?'selected':'' %>>Media</option>
-                <option value="Alta" <%= ticket.prioridad==='Alta'?'selected':'' %>>Alta</option>
+              <select name="priority">
+                <option value="low" <%= ticket.priority==='low'?'selected':'' %>>Baja</option>
+                <option value="medium" <%= ticket.priority==='medium'?'selected':'' %>>Media</option>
+                <option value="high" <%= ticket.priority==='high'?'selected':'' %>>Alta</option>
               </select>
             </div>
             <div style="flex: 1;">
               <label>Estado:</label>
-              <select name="estado" style="background-color: #fffdf5; border-color: #ffc107; font-weight: bold;">
-                <option value="Abierto" <%= ticket.estado==='Abierto'?'selected':'' %>>Abierto</option>
-                <option value="En curso" <%= ticket.estado==='En curso'?'selected':'' %>>En curso</option>
-                <option value="Pendiente de cierre" <%= ticket.estado==='Pendiente de cierre'?'selected':'' %>>Marcar como Pendiente de cierre</option>
-                <option value="Cerrado" <%= ticket.estado==='Cerrado'?'selected':'' %>>Cerrar directamente</option>
+              <select name="status" style="background-color: #fffdf5; border-color: #ffc107; font-weight: bold;">
+                <option value="open" <%= ticket.status==='open'?'selected':'' %>>Abierto</option>
+                <option value="in_progress" <%= ticket.status==='in_progress'?'selected':'' %>>En curso</option>
+                <option value="pending_close" <%= ticket.status==='pending_close'?'selected':'' %>>Marcar como Pendiente de cierre</option>
+                <option value="closed" <%= ticket.status==='closed'?'selected':'' %>>Cerrar directamente</option>
               </select>
             </div>
           </div>
@@ -329,7 +332,7 @@
                 btn.innerText = 'Ticket tomado exitosamente.';
                 
                 setTimeout(() => {
-                   btn.innerText = 'Ticket tomado por ' + data.asignado_a;
+                   btn.innerText = 'Ticket tomado por ' + data.assigned_to;
                    btn.disabled = false;
                 }, 2500);
             } else {

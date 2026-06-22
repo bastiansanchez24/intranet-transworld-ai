@@ -230,12 +230,12 @@
                 <div class="phone-field" data-phone-chile>
                   <span class="phone-field__prefix" aria-hidden="true">+56</span>
                   <input type="tel" id="telefono_local" class="login-field__input phone-field__local" required placeholder="9 1234 5678" maxlength="11" inputmode="numeric" autocomplete="tel-national" aria-label="Número celular sin código de país">
-                  <input type="hidden" name="telefono" id="telefono" value="<%= fd.telefono || '' %>">
+                  <input type="hidden" name="phone" id="telefono" value="<%= fd.phone || '' %>">
                 </div>
               </div>
               <div class="login-field">
                 <label class="login-field__label" for="fecha_nacimiento">Fecha de nacimiento</label>
-                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="login-field__input" value="<%= fd.fecha_nacimiento || '' %>" required>
+                <input type="date" id="fecha_nacimiento" name="birth_date" class="login-field__input" value="<%= fd.birth_date || '' %>" required>
               </div>
             </div>
 

@@ -328,7 +328,7 @@
   const chartWrapper = document.getElementById('cursoChartWrapper');
   const tituloCursoSeleccionado = document.getElementById('tituloCursoSeleccionado');
 
-  const seccionesUnicas = [...new Set(cursosKpiData.map(c => c.seccion).filter(Boolean))];
+  const seccionesUnicas = [...new Set(cursosKpiData.map(c => c.section).filter(Boolean))];
   
   seccionesUnicas.forEach(sec => {
     selectSeccion.add(new Option(sec, sec));
@@ -347,8 +347,8 @@
       return;
     }
 
-    const dataFiltrada = cursosKpiData.filter(c => c.seccion === sec);
-    const subseccionesUnicas = [...new Set(dataFiltrada.map(c => c.subseccion).filter(Boolean))];
+    const dataFiltrada = cursosKpiData.filter(c => c.section === sec);
+    const subseccionesUnicas = [...new Set(dataFiltrada.map(c => c.subsection).filter(Boolean))];
 
     if (subseccionesUnicas.length > 0) {
       subseccionesUnicas.forEach(subsec => {
@@ -374,7 +374,7 @@
       return;
     }
 
-    const dataFiltrada = cursosKpiData.filter(c => c.seccion === sec && c.subseccion === subsec);
+    const dataFiltrada = cursosKpiData.filter(c => c.section === sec && c.subsection === subsec);
     cargarCursos(dataFiltrada);
   });
 
@@ -415,7 +415,7 @@
         labels: cursoInfo.top10.map(u => u.nombre_usuario),
         datasets: [{
           label: 'Nota',
-          data: cursoInfo.top10.map(u => parseFloat(u.nota)),
+          data: cursoInfo.top10.map(u => parseFloat(u.score)),
           backgroundColor: chartColors.green,
           borderColor: chartColors.greenBorder,
           borderWidth: 1,

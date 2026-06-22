@@ -215,11 +215,11 @@
       <div class="form-grid-2" style="margin-bottom: 4px;">
         <div class="form-group">
           <label>Nombre de la Aplicación *</label>
-          <input type="text" name="nombre" required placeholder="Ej: Transworld Lead App">
+          <input type="text" name="name" required placeholder="Ej: Transworld Lead App">
         </div>
         <div class="form-group">
           <label>Descripción *</label>
-          <textarea name="descripcion" rows="3" required placeholder="Describe para qué sirve la aplicación..."></textarea>
+          <textarea name="description" rows="3" required placeholder="Describe para qué sirve la aplicación..."></textarea>
         </div>
       </div>
 
@@ -278,19 +278,19 @@
         <% if (typeof apps !== 'undefined' && apps.length > 0) { %>
           <% apps.forEach(app => { %>
             <tr>
-              <td data-label="Nombre" style="font-weight: 700; color: #003a70;"><%= app.nombre %></td>
-              <td data-label="Descripción" style="font-size: 0.9rem;"><%= app.descripcion %></td>
+              <td data-label="Nombre" style="font-weight: 700; color: #003a70;"><%= app.name %></td>
+              <td data-label="Descripción" style="font-size: 0.9rem;"><%= app.description %></td>
               <td data-label="Descargas" style="text-align: center;">
                 <% if (app.url_pc) { %>
                   <a href="<%= app.url_pc %>" target="_blank" class="btn-descarga" title="Descargar para Windows">PC</a>
                 <% } %>
                 
                 <% if (app.url_apk) { %>
-                  <button onclick="manejarDescargaAndroid('<%= app.url_apk %>', '<%= app.qr_apk ? app.qr_apk : '' %>', '<%= app.nombre.replace(/'/g, "\\'") %>')" class="btn-descarga" title="Descargar para Android">APK</button>
+                  <button onclick="manejarDescargaAndroid('<%= app.url_apk %>', '<%= app.qr_apk ? app.qr_apk : '' %>', '<%= app.name.replace(/'/g, "\\'") %>')" class="btn-descarga" title="Descargar para Android">APK</button>
                 <% } %>
                 
                 <% if (app.qr_ios) { %>
-                  <button onclick="abrirModalQR('<%= app.qr_ios %>', '<%= app.nombre.replace(/'/g, "\\'") %> iOS')" class="btn-descarga" title="Ver QR iOS">QR iOS</button>
+                  <button onclick="abrirModalQR('<%= app.qr_ios %>', '<%= app.name.replace(/'/g, "\\'") %> iOS')" class="btn-descarga" title="Ver QR iOS">QR iOS</button>
                 <% } %>
                 
                 <% if (!app.url_pc && !app.url_apk && !app.qr_ios) { %>
@@ -299,20 +299,20 @@
               </td>
               
               <td data-label="Última actualización" style="text-align: center; color: #4a5568; font-size: 0.85rem;">
-                <%= app.ultima_actualizacion ? new Date(app.ultima_actualizacion).toLocaleDateString('es-CL') : '—' %>
+                <%= app.updated_at ? new Date(app.updated_at).toLocaleDateString('es-CL') : '—' %>
               </td>
               
               <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
               <td data-label="Acciones" style="text-align: center;">
                 <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
                   <button type="button" class="btn-notificar" 
-                          title="<%= app.notificado === false ? 'Enviar cambios por correo a Ventas/Marketing' : 'No hay cambios pendientes' %>"
-                          onclick="abrirModalNotificar('<%= app.id %>', '<%= app.nombre.replace(/'/g, "\\'") %>')"
-                          <%= app.notificado === false ? '' : 'disabled' %>>
+                          title="<%= app.notified === false ? 'Enviar cambios por correo a Ventas/Marketing' : 'No hay cambios pendientes' %>"
+                          onclick="abrirModalNotificar('<%= app.id %>', '<%= app.name.replace(/'/g, "\\'") %>')"
+                          <%= app.notified === false ? '' : 'disabled' %>>
                     Notificar
                   </button>
 
-                  <button onclick="abrirModalEditar('<%= app.id %>', '<%= app.nombre.replace(/'/g, "\\'") %>', '<%= app.descripcion.replace(/'/g, "\\'") %>', '<%= app.url_pc %>', '<%= app.url_apk %>')" class="btn-secundario" title="Editar App">Editar</button>
+                  <button onclick="abrirModalEditar('<%= app.id %>', '<%= app.name.replace(/'/g, "\\'") %>', '<%= app.description.replace(/'/g, "\\'") %>', '<%= app.url_pc %>', '<%= app.url_apk %>')" class="btn-secundario" title="Editar App">Editar</button>
                   
                   <form action="/apps/eliminar/<%= app.id %>" method="POST" style="margin: 0;" onsubmit="return confirm('¿Estás seguro que deseas eliminar la aplicación? Esta acción es irreversible.');">
                     <button type="submit" class="btn-danger" title="Eliminar App">Eliminar</button>
@@ -369,11 +369,11 @@
         <p style="color: #718096; font-size: 0.9rem; margin: 0 0 20px;">Actualiza la información y los enlaces de descarga de la aplicación.</p>
         <div class="form-group">
           <label>Nombre</label>
-          <input type="text" name="nombre" id="edit-nombre" form="form-editar" required>
+          <input type="text" name="name" id="edit-nombre" form="form-editar" required>
         </div>
         <div class="form-group" style="margin-bottom: 0;">
           <label>Descripción</label>
-          <textarea name="descripcion" id="edit-desc" form="form-editar" rows="4" required></textarea>
+          <textarea name="description" id="edit-desc" form="form-editar" rows="4" required></textarea>
         </div>
       </aside>
       <div class="modal-h-main">

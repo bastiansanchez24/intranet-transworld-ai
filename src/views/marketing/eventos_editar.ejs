@@ -29,12 +29,12 @@
     <form action="/marketing/eventos/<%= evento.slug %>/editar" method="POST" class="form-ticket">
       
       <label for="nombre" style="font-weight: bold; display: block; margin-bottom: 5px;">Nombre del Evento</label>
-      <input type="text" id="nombre" name="nombre" value="<%= evento.nombre %>" required 
+      <input type="text" id="nombre" name="name" value="<%= evento.name %>" required 
              style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;">
 
       <label for="descripcion" style="font-weight: bold; display: block; margin-bottom: 5px;">Descripción</label>
-      <textarea id="descripcion" name="descripcion" rows="4" 
-                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: none;"><%= evento.descripcion %></textarea>
+      <textarea id="descripcion" name="description" rows="4" 
+                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: none;"><%= evento.description %></textarea>
 
       <div style="margin-top: 25px; text-align: right;">
         <button type="submit" class="btn btn-primario">Guardar Cambios</button>

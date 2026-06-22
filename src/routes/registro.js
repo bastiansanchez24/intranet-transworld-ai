@@ -15,7 +15,7 @@ function generarUUID() {
 
 async function obtenerEvento(eventoId) {
   const { rows } = await db.query(
-    'SELECT id, nombre, COALESCE(fecha, \'\') AS fecha FROM eventos WHERE id = $1 OR slug = $1 LIMIT 1',
+    "SELECT id, name AS nombre, COALESCE(fecha, '') AS fecha FROM events WHERE id = $1 OR slug = $1 LIMIT 1",
     [eventoId]
   );
   return rows && rows[0] ? rows[0] : null;
@@ -32,12 +32,6 @@ router.get('/evento/:id', async (req, res) => {
     }
 
     return res.json({ nombre: evento.nombre, fecha: evento.fecha });
-
-    if (!rows || rows.length === 0) {
-      return res.status(404).json({ error: 'Evento no encontrado' });
-    }
-
-    return res.json(rows[0]);
   } catch (err) {
     console.error('[Registro API] Error al cargar evento:', err.message);
     return res.status(500).json({ error: 'Error interno al cargar evento' });
@@ -63,7 +57,7 @@ router.post('/evento/:id/registrar', async (req, res) => {
 
     const eventoPk = evento.id;
     const { rows: duplicados } = await db.query(
-      'SELECT nombre_completo FROM registrados WHERE evento_id = $1 AND LOWER(email) = $2 LIMIT 1',
+      'SELECT full_name AS nombre_completo FROM event_registrants WHERE event_id = $1 AND LOWER(email) = $2 LIMIT 1',
       [eventoPk, emailNormalizado]
     );
 
@@ -75,8 +69,8 @@ router.post('/evento/:id/registrar', async (req, res) => {
 
     const nuevoId = generarUUID();
     await db.query(
-      `INSERT INTO registrados
-       (id, nombre_completo, empresa, cargo, telefono, email, evento_id, acreditado)
+      `INSERT INTO event_registrants
+       (id, full_name, company, job_title, phone, email, event_id, accredited)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [nuevoId, nombre_completo, empresa, cargo, telefono, emailNormalizado, eventoPk, acreditado || false]
     );

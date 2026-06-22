@@ -219,7 +219,7 @@
        let idLista = 'lista-' + index;
        let cursosLista = cursosAgrupados[subseccion];
        
-       let imgUrl = cursosLista[0].imagen_url;
+       let imgUrl = cursosLista[0].image_url;
        if (!imgUrl) {
            let textoNorm = subseccion.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
            if (textoNorm.includes('data center') || textoNorm.includes('datacenter')) imgUrl = '/img/cdplogo.png';
@@ -251,11 +251,11 @@
   %>
     <div id="<%= idLista %>" class="cursos-grid-list">
       <% cursosLista.forEach(curso => { 
-           let completado = typeof progresoUsuario !== 'undefined' && progresoUsuario[curso.id] && progresoUsuario[curso.id].estado === 'Evaluado';
+           let completado = typeof progresoUsuario !== 'undefined' && progresoUsuario[curso.id] && progresoUsuario[curso.id].status === 'evaluated';
            let btnClass = completado ? 'btn-prueba btn-completado' : 'btn-prueba';
       %>
-        <button class="<%= btnClass %>" onclick="abrirModalReglas('<%= curso.titulo %>', <%= curso.id %>)">
-          <span style="flex: 1; text-align: left;"><%= curso.titulo %></span>
+        <button class="<%= btnClass %>" onclick="abrirModalReglas('<%= curso.title %>', <%= curso.id %>)">
+          <span style="flex: 1; text-align: left;"><%= curso.title %></span>
           <% if (completado) { %> 
             <span title="Curso Aprobado" style="margin-left: 10px; font-weight: bold; font-size: 1.3rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.15);">✓</span> 
           <% } %>
@@ -293,31 +293,31 @@
   <% if (typeof materiales !== 'undefined' && materiales.length > 0) { %>
     <% materiales.forEach(mat => { 
         let icono = '📄';
-        if (mat.nombre.toLowerCase().includes('pdf')) icono = '📕';
-        else if (mat.nombre.toLowerCase().includes('excel') || mat.nombre.toLowerCase().includes('xls')) icono = '📗';
-        else if (mat.nombre.toLowerCase().includes('video') || mat.nombre.toLowerCase().includes('mp4')) icono = '🎥';
-        else if (mat.nombre.toLowerCase().includes('imagen') || mat.nombre.toLowerCase().includes('jpg') || mat.nombre.toLowerCase().includes('png')) icono = '🖼️';
+        if (mat.name.toLowerCase().includes('pdf')) icono = '📕';
+        else if (mat.name.toLowerCase().includes('excel') || mat.name.toLowerCase().includes('xls')) icono = '📗';
+        else if (mat.name.toLowerCase().includes('video') || mat.name.toLowerCase().includes('mp4')) icono = '🎥';
+        else if (mat.name.toLowerCase().includes('imagen') || mat.name.toLowerCase().includes('jpg') || mat.name.toLowerCase().includes('png')) icono = '🖼️';
     %>
       <div class="material-card">
         
         <div class="material-info">
             <div class="material-icon"><%= icono %></div>
             <div class="material-text">
-                <a href="<%= mat.archivo_url %>" target="_blank" class="material-nombre" title="Ver archivo">
-                    <%= mat.nombre %>
+                <a href="<%= mat.file_url %>" target="_blank" class="material-nombre" title="Ver archivo">
+                    <%= mat.name %>
                 </a>
-                <span class="material-fecha">Subido el: <%= new Date(mat.fecha_creacion).toLocaleDateString('es-CL') %></span>
+                <span class="material-fecha">Subido el: <%= new Date(mat.created_at).toLocaleDateString('es-CL') %></span>
             </div>
         </div>
 
         <div>
-            <a href="<%= mat.archivo_url %>" target="_blank" class="btn-material btn-descargar">
+            <a href="<%= mat.file_url %>" target="_blank" class="btn-material btn-descargar">
                  Ver / Descargar
              </a>
             
             <% if (typeof can !== 'undefined' && can.cursos_write) { %>
             <div class="material-actions">
-                <button type="button" class="btn-material btn-mat-edit" onclick="abrirModalEditarMaterial('<%= mat.id %>', '<%= mat.nombre.replace(/'/g, "\\'") %>')" title="Editar nombre o archivo">
+                <button type="button" class="btn-material btn-mat-edit" onclick="abrirModalEditarMaterial('<%= mat.id %>', '<%= mat.name.replace(/'/g, "\\'") %>')" title="Editar nombre o archivo">
                     Editar
                 </button>
                 <form action="/cursos/material/eliminar/<%= mat.id %>" method="POST" style="margin: 0;" onsubmit="return confirm('¿Seguro que deseas eliminar este material? Se borrará de la nube permanentemente.');">
@@ -347,7 +347,7 @@
         <input type="hidden" name="return_url" class="mat_return_url">
         
         <label style="display:block; margin-bottom: 8px; font-weight: 600; color:#334155;">Nombre del Archivo</label>
-        <input type="text" name="nombre" required placeholder="Ej: Manual de Antenas" style="width: 100%; padding: 12px 15px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box; background: #f8fafc;">
+        <input type="text" name="name" required placeholder="Ej: Manual de Antenas" style="width: 100%; padding: 12px 15px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box; background: #f8fafc;">
 
         <label style="display:block; margin-bottom: 8px; font-weight: 600; color:#334155;">Archivo (PDF, Word, Excel, Video, etc.)</label>
         <input type="file" name="archivo" required style="width: 100%; padding: 12px 15px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box; background: #f8fafc;">
@@ -367,7 +367,7 @@
         <input type="hidden" name="return_url" class="mat_return_url">
         
         <label style="display:block; margin-bottom: 8px; font-weight: 600; color:#334155;">Nombre del Archivo</label>
-        <input type="text" name="nombre" id="edit_mat_nombre" required style="width: 100%; padding: 12px 15px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box; background: #f8fafc;">
+        <input type="text" name="name" id="edit_mat_nombre" required style="width: 100%; padding: 12px 15px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box; background: #f8fafc;">
 
         <label style="display:block; margin-bottom: 8px; font-weight: 600; color:#334155;">Reemplazar Archivo (Opcional)</label>
         <input type="file" name="archivo" style="width: 100%; padding: 12px 15px; margin-bottom: 5px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box; background: #f8fafc;">
@@ -463,7 +463,7 @@
 
     btnPrincipal.onclick = null;
     btnResultados.style.display = 'none';
-    if (estadoCurso && estadoCurso.estado === 'Evaluado') {
+    if (estadoCurso && estadoCurso.status === 'evaluated') {
         btnResultados.style.display = 'inline-block';
         btnResultados.href = `/cursos/evaluacion/${idCurso}`;
         btnPrincipal.innerText = 'Repetir curso';
@@ -476,7 +476,7 @@
                 .catch(e => alert("Error al reiniciar."));
             }
         };
-    } else if (estadoCurso && estadoCurso.segundos_vistos > 0) {
+    } else if (estadoCurso && estadoCurso.seconds_watched > 0) {
         btnPrincipal.innerText = 'Reanudar curso';
         btnPrincipal.href = `/cursos/reproductor/${idCurso}`;
     } else {

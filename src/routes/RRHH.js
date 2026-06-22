@@ -20,6 +20,7 @@ const {
   toTelHref,
 } = require("../utils/phoneChile");
 const { validateEmail } = require("../utils/email");
+const { mapPersonaForView } = require("../utils/schemaMappers");
 const { generateUniqueUsuarioId } = require("../utils/userId");
 
 function redirectPersonalCrearError(res, message) {
@@ -109,7 +110,7 @@ function enviarClaveTemporal(email, firstName, passwordTemporal) {
 
 async function getAreasTrabajo() {
   const { rows } = await db.query(
-    "SELECT id, nombre_area FROM area_trabajo ORDER BY nombre_area ASC",
+    "SELECT id, area_name AS nombre_area FROM work_areas ORDER BY area_name ASC",
   );
   return rows;
 }
@@ -137,15 +138,15 @@ router.get("/personal", async (req, res) => {
       u.last_name,
       u.email,
       u.role,
-      u.foto,
-      u.fecha_nacimiento,
-      u.area_trabajo_id,
-      u.telefono,
-      u.usuario_intranet,
+      u.photo,
+      u.birth_date,
+      u.work_area_id,
+      u.phone,
+      u.is_intranet_user,
       u.email_confirmed,
-      at.nombre_area AS area
+      at.area_name AS area
     FROM users u
-    LEFT JOIN area_trabajo at ON at.id = u.area_trabajo_id
+    LEFT JOIN work_areas at ON at.id = u.work_area_id
     ORDER BY u.last_name ASC NULLS LAST, u.first_name ASC
   `;
 
@@ -154,18 +155,21 @@ router.get("/personal", async (req, res) => {
     const mostrarColumnaRol = Boolean(res.locals.isAdministrador);
 
     const personasFormateadas = results.map((p) => {
-      const partes = parseFechaNacimiento(p.fecha_nacimiento);
+      const birthDate = p.birth_date ?? p.fecha_nacimiento;
+      const phoneRaw = p.phone ?? p.telefono;
+      const partes = parseFechaNacimiento(birthDate);
       const ordenCumple = partes ? partes.month * 100 + partes.day : 9999;
       const fechaCumpleFmt = partes
         ? `${String(partes.day).padStart(2, "0")}-${String(partes.month + 1).padStart(2, "0")}`
         : "-";
 
-      const telefonoHref = toTelHref(p.telefono);
-      const telefonoDisplay = formatPhoneForDisplay(p.telefono);
+      const telefonoHref = toTelHref(phoneRaw);
+      const telefonoDisplay = formatPhoneForDisplay(phoneRaw);
 
       const persona = {
         ...p,
-        telefono: telefonoDisplay || p.telefono,
+        phone: telefonoDisplay || phoneRaw,
+        telefono: telefonoDisplay || phoneRaw,
         ordenCumple,
         fechaCumpleFmt,
         telefonoHref,
@@ -295,7 +299,7 @@ router.post("/crear", requireRole.administrador(), async (req, res) => {
 
       await db.query(
         `INSERT INTO users
-          (id, first_name, last_name, email, password_hash, password_salt, role, email_confirmed, must_change_password, area_trabajo_id, fecha_nacimiento, telefono, usuario_intranet, home_tutorial_seen)
+          (id, first_name, last_name, email, password_hash, password_salt, role, email_confirmed, must_change_password, work_area_id, birth_date, phone, is_intranet_user, home_tutorial_seen)
         VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE, TRUE, $8, $9, $10, TRUE, FALSE)`,
         [
           userId,
@@ -317,7 +321,7 @@ router.post("/crear", requireRole.administrador(), async (req, res) => {
     } else {
       await db.query(
         `INSERT INTO users
-          (id, first_name, last_name, email, role, email_confirmed, must_change_password, area_trabajo_id, fecha_nacimiento, telefono, usuario_intranet)
+          (id, first_name, last_name, email, role, email_confirmed, must_change_password, work_area_id, birth_date, phone, is_intranet_user)
         VALUES ($1, $2, $3, $4, $5, FALSE, FALSE, $6, $7, $8, FALSE)`,
         [
           userId,
@@ -359,10 +363,10 @@ router.get("/editar/:id", requireRole.administrador(), async (req, res) => {
 
     if (rows.length === 0) return res.status(404).send("Usuario no encontrado");
 
-    const persona = {
+    const persona = mapPersonaForView({
       ...rows[0],
-      telefono: formatPhoneForDisplay(rows[0].telefono) || rows[0].telefono,
-    };
+      telefono: formatPhoneForDisplay(rows[0].phone ?? rows[0].telefono) || rows[0].phone || rows[0].telefono,
+    });
 
     if (req.query.partial === "1") {
       return res.render("RRHH/partials/persona_editar_modal", {
@@ -452,7 +456,7 @@ router.post(
       }
 
       const { rows: prev } = await db.query(
-        "SELECT foto, password_hash, email_confirmed, role, email FROM users WHERE id = $1",
+        "SELECT photo AS foto, password_hash, email_confirmed, role, email FROM users WHERE id = $1",
         [id],
       );
       const prevUser = prev[0] || {};
@@ -491,9 +495,9 @@ router.post(
         "first_name=$1",
         "last_name=$2",
         "role=$3",
-        "area_trabajo_id=$4",
-        "fecha_nacimiento=$5",
-        "telefono=$6",
+        "work_area_id=$4",
+        "birth_date=$5",
+        "phone=$6",
         "email=$7",
       ];
       const values = [
@@ -507,7 +511,7 @@ router.post(
       ];
 
       if (fotoValue !== undefined) {
-        setClauses.push(`foto=$${values.length + 1}`);
+        setClauses.push(`photo=$${values.length + 1}`);
         values.push(fotoValue);
       }
 
@@ -521,7 +525,7 @@ router.post(
           `password_salt=$${values.length + 2}`,
           "email_confirmed=FALSE",
           "must_change_password=TRUE",
-          "usuario_intranet=TRUE",
+          "is_intranet_user=TRUE",
           "confirm_token=NULL",
           "confirm_expires=NULL",
         );
@@ -542,6 +546,7 @@ router.post(
         fotoValue !== undefined
       ) {
         req.session.user.foto = fotoValue;
+        req.session.user.photo = fotoValue;
       }
 
       if (passwordTemporalNueva) {
@@ -566,7 +571,7 @@ router.post(
 router.post("/eliminar/:id", requireRole.administrador(), async (req, res) => {
   const { id } = req.params;
   try {
-    const { rows } = await db.query("SELECT foto FROM users WHERE id = $1", [
+    const { rows } = await db.query("SELECT photo AS foto FROM users WHERE id = $1", [
       id,
     ]);
     if (rows.length > 0) {
@@ -615,7 +620,7 @@ router.post(
 
       if (req.session.user && req.session.user.id) {
         await db.query(
-          "INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)",
+          "INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)",
           [
             req.session.user.id,
             "actualizó",

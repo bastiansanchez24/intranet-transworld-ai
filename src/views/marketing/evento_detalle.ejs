@@ -4,7 +4,7 @@
   </div>
 
   <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-    <h2 class="page-title" style="margin: 0;">Evento: <%= evento.nombre %></h2>
+    <h2 class="page-title" style="margin: 0;">Evento: <%= evento.name %></h2>
 
     <% if (can.eventos_write) { %>
       <a href="/marketing/eventos/<%= evento.slug %>/editar" title="Editar título y descripción"
@@ -14,9 +14,9 @@
     <% } %>
   </div>
 
-  <% if (evento.descripcion) { %>
+  <% if (evento.description) { %>
     <p class="page-description" style="margin-bottom: 25px; font-style: italic; color: #555;">
-      <%= evento.descripcion %>
+      <%= evento.description %>
     </p>
   <% } %>
 
@@ -100,7 +100,7 @@
           <div class="media-container" style="position: relative; height: 180px;">
             <img
               src="<%= thumbUrl %>"      
-              alt="<%= evento.nombre %>"
+              alt="<%= evento.name %>"
               class="galeria-thumb-grid"
               data-index="<%= index %>" 
               loading="lazy"

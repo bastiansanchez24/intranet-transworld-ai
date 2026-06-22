@@ -176,10 +176,10 @@ function iniciarTareaCierreTickets() {
   const ejecutarCierre = async () => {
     try {
       const sql = `
-        UPDATE tickets 
-        SET estado = 'Cerrado', fecha_cierre = NOW(), cierre_automatico = TRUE
-        WHERE estado = 'Pendiente de cierre' 
-        AND fecha_resolucion < (NOW() - INTERVAL '1 day')
+        UPDATE support_tickets 
+        SET status = 'closed', closed_at = NOW(), auto_closed = TRUE
+        WHERE status = 'pending_close' 
+        AND resolved_at < (NOW() - INTERVAL '1 day')
       `;
 
       const result = await db.query(sql);
@@ -209,8 +209,8 @@ function iniciarLimpiezaHistorial() {
   const ejecutarLimpieza = async () => {
     try {
       const sql = `
-        DELETE FROM historial_cambios 
-        WHERE fecha < (NOW() - INTERVAL '5 days')
+        DELETE FROM change_log 
+        WHERE created_at < (NOW() - INTERVAL '5 days')
       `;
 
       const result = await db.query(sql);
@@ -272,12 +272,12 @@ async function asegurarCorreoUnico() {
 async function asegurarColumnaNoticiasDestacada() {
   try {
     await db.query(`
-      ALTER TABLE noticias
-        ADD COLUMN IF NOT EXISTS destacada BOOLEAN NOT NULL DEFAULT false
+      ALTER TABLE news_articles
+        ADD COLUMN IF NOT EXISTS featured BOOLEAN NOT NULL DEFAULT false
     `);
     await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_noticias_destacada ON noticias (destacada)
-        WHERE destacada = true
+      CREATE INDEX IF NOT EXISTS idx_news_articles_featured ON news_articles (featured)
+        WHERE featured = true
     `);
   } catch (err) {
     console.error(

@@ -20,9 +20,9 @@ function mapDocumentoRow(row) {
   return {
     id: row.id,
     url: row.url,
-    name: row.nombre,
+    name: row.name,
     public_id: row.public_id,
-    format: getFileExtension(row.url, row.nombre),
+    format: getFileExtension(row.url, row.name),
   };
 }
 
@@ -31,11 +31,11 @@ const upload = multer({ storage });
 
 // === 1. DEFINICIÓN DE ÁREAS ===
 const AREAS = [
-  { slug: 'logistica', nombre: 'Logística' },
-  { slug: 'contabilidad', nombre: 'Contabilidad' },
-  { slug: 'ti', nombre: 'TI' },
-  { slug: 'marketing', nombre: 'Marketing' },
-  { slug: 'comercial', nombre: 'Comercial' }
+  { slug: 'logistica', name: 'Logística' },
+  { slug: 'contabilidad', name: 'Contabilidad' },
+  { slug: 'ti', name: 'TI' },
+  { slug: 'marketing', name: 'Marketing' },
+  { slug: 'comercial', name: 'Comercial' }
 ];
 
 // === 2. HELPER DE PERMISOS ===
@@ -56,7 +56,7 @@ router.get('/', (req, res) => res.render('procesos/index', { titulo: 'Procesos y
 router.get('/procedimientos', async (req, res) => {
   try {
     const areasConConteo = await Promise.all(AREAS.map(async (area) => {
-      const result = await db.query('SELECT COUNT(*) FROM documentos WHERE tipo = $1', [`procedimiento_${area.slug}`]);
+      const result = await db.query('SELECT COUNT(*) FROM documents WHERE type = $1', [`procedimiento_${area.slug}`]);
       return { ...area, cantidad: parseInt(result.rows[0].count) || 0 };
     }));
 
@@ -75,7 +75,7 @@ router.get('/procedimientos', async (req, res) => {
 router.get('/protocolos', async (req, res) => {
   try {
     const areasConConteo = await Promise.all(AREAS.map(async (area) => {
-      const result = await db.query('SELECT COUNT(*) FROM documentos WHERE tipo = $1', [`protocolo_${area.slug}`]);
+      const result = await db.query('SELECT COUNT(*) FROM documents WHERE type = $1', [`protocolo_${area.slug}`]);
       return { ...area, cantidad: parseInt(result.rows[0].count) || 0 };
     }));
 
@@ -93,7 +93,7 @@ router.get('/protocolos', async (req, res) => {
 
 router.get('/reglamento', async (req, res) => {
   try {
-    const { rows } = await db.query("SELECT * FROM documentos WHERE tipo = 'reglamento' ORDER BY fecha_creacion DESC");
+    const { rows } = await db.query("SELECT * FROM documents WHERE type = 'reglamento' ORDER BY created_at DESC");
     
     const archivos = rows.map(mapDocumentoRow);
     
@@ -125,17 +125,17 @@ router.get('/api/buscar', async (req, res) => {
       const searchParam = `%${query}%`;
       
       const docsQuery = `
-          SELECT nombre, url, tipo 
-          FROM documentos 
-          WHERE nombre ILIKE $1 
-          ORDER BY fecha_creacion DESC 
+          SELECT name, url, type
+          FROM documents 
+          WHERE name ILIKE $1 
+          ORDER BY created_at DESC 
           LIMIT 10
       `;
       const otrosQuery = `
-          SELECT nombre, url, 'otros' AS tipo 
-          FROM otros_docs 
-          WHERE nombre ILIKE $1 
-          ORDER BY fecha_creacion DESC 
+          SELECT name, url, 'otros' AS type 
+          FROM other_documents 
+          WHERE name ILIKE $1 
+          ORDER BY created_at DESC 
           LIMIT 5
       `;
 
@@ -167,7 +167,7 @@ router.get('/:seccion/:area', async (req, res) => {
   const tipoDB = `${mapSeccion[seccion]}_${area}`;
 
   try {
-    const { rows } = await db.query('SELECT * FROM documentos WHERE tipo = $1 ORDER BY fecha_creacion DESC', [tipoDB]);
+    const { rows } = await db.query('SELECT * FROM documents WHERE type = $1 ORDER BY created_at DESC', [tipoDB]);
     
     const archivos = rows.map(mapDocumentoRow);
 
@@ -176,9 +176,9 @@ router.get('/:seccion/:area', async (req, res) => {
     const tituloSeccionCapitalizado = seccion.charAt(0).toUpperCase() + seccion.slice(1);
 
     res.render('procesos/vista_archivos', {
-      titulo: `${tituloSeccionCapitalizado}: ${areaObj.nombre}`,
+      titulo: `${tituloSeccionCapitalizado}: ${areaObj.name}`,
       tituloSeccion: tituloSeccionCapitalizado,
-      tituloArea: areaObj.nombre,
+      tituloArea: areaObj.name,
       seccionBase: seccion,
       slugArea: area,
       archivos,
@@ -257,7 +257,7 @@ router.post('/:seccion/:area/subir', requireRole.administrador(), async (req, re
     }
     if (seccion === 'otros') {
         await db.query(
-            'INSERT INTO otros_docs (nombre, url, public_id) VALUES ($1, $2, $3)',
+            'INSERT INTO other_documents (name, url, public_id) VALUES ($1, $2, $3)',
             [nombre_archivo || 'Documento', secure_url, public_id]
         );
     } else {
@@ -265,13 +265,13 @@ router.post('/:seccion/:area/subir', requireRole.administrador(), async (req, re
         let tipoDB = (seccion === 'reglamento') ? 'reglamento' : `${mapSeccion[seccion]}_${area}`; 
         
         await db.query(
-          'INSERT INTO documentos (nombre, tipo, url, public_id, usuario_id) VALUES ($1, $2, $3, $4, $5)',
+          'INSERT INTO documents (name, type, url, public_id, user_id) VALUES ($1, $2, $3, $4, $5)',
           [nombre_archivo || 'Documento', tipoDB, secure_url, public_id, req.session.user.id]
         );
     }
 
     const areaObj = AREAS.find(a => a.slug === area);
-    const nombreArea = areaObj ? areaObj.nombre : (area === 'general' ? '' : area);
+    const nombreArea = areaObj ? areaObj.name : (area === 'general' ? '' : area);
     const nombreSeccion = seccion.charAt(0).toUpperCase() + seccion.slice(1);
     const textoHistorial = nombreArea ? `${nombreSeccion} sección ${nombreArea}` : `${nombreSeccion}`;
 
@@ -280,7 +280,7 @@ router.post('/:seccion/:area/subir', requireRole.administrador(), async (req, re
     if(seccion === 'otros') urlHistorial = '/procesos/otros';
 
     await db.query(
-      'INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+      'INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
       [req.session.user.id, `subió un documento`, textoHistorial, urlHistorial]
     );
 
@@ -297,8 +297,8 @@ router.post('/:seccion/:area/subir', requireRole.administrador(), async (req, re
 router.post('/documento/editar', requireRole.administrador(), async (req, res) => {
   const { id, nuevo_nombre, return_to, seccion_base } = req.body;
   try {
-    const tabla = seccion_base === 'otros' ? 'otros_docs' : 'documentos';
-    await db.query(`UPDATE ${tabla} SET nombre = $1 WHERE id = $2`, [nuevo_nombre, id]);
+    const tabla = seccion_base === 'otros' ? 'other_documents' : 'documents';
+    await db.query(`UPDATE ${tabla} SET name = $1 WHERE id = $2`, [nuevo_nombre, id]);
     res.redirect(`${return_to}?ok=Editado`);
   } catch (err) { res.redirect(return_to); }
 });
@@ -311,11 +311,11 @@ router.post('/eliminar', requireRole.administrador(), async (req, res) => {
   try {
     if (public_id) await fileStorage.deleteFile(public_id);
     
-    const tabla = seccion_base === 'otros' ? 'otros_docs' : 'documentos';
+    const tabla = seccion_base === 'otros' ? 'other_documents' : 'documents';
     if (db_id) await db.query(`DELETE FROM ${tabla} WHERE id = $1`, [db_id]);
     
     await db.query(
-      'INSERT INTO historial_cambios (usuario_id, accion, seccion, enlace) VALUES ($1, $2, $3, $4)',
+      'INSERT INTO change_log (user_id, action, section, link_path) VALUES ($1, $2, $3, $4)',
       [req.session.user.id, `eliminó un documento`, seccion_base || 'Procesos', return_to || '/procesos']
     );
 
@@ -328,7 +328,7 @@ router.post('/eliminar', requireRole.administrador(), async (req, res) => {
 // ==========================================
 router.get('/otros', async (req, res) => {
   try {
-    const { rows } = await db.query("SELECT * FROM otros_docs ORDER BY fecha_creacion DESC");
+    const { rows } = await db.query("SELECT * FROM other_documents ORDER BY created_at DESC");
     
     const archivos = rows.map(mapDocumentoRow);
     
@@ -354,7 +354,7 @@ router.post('/otros/subir', requireRole.administrador(), upload.single('archivo'
           const result = await fileStorage.saveFile(req.file.buffer, 'intranet_otros_docs', req.file.originalname);
 
           await db.query(
-            'INSERT INTO otros_docs (nombre, url, public_id) VALUES ($1, $2, $3)',
+            'INSERT INTO other_documents (name, url, public_id) VALUES ($1, $2, $3)',
             [nombre_archivo, result.secure_url, result.public_id]
           );
         res.redirect('/procesos/otros');
@@ -367,7 +367,7 @@ router.post('/otros/subir', requireRole.administrador(), upload.single('archivo'
 router.post('/otros/editar', requireRole.administrador(), async (req, res) => {
     const { id, nuevo_nombre } = req.body;
     try {
-        await db.query('UPDATE otros_docs SET nombre = $1 WHERE id = $2', [nuevo_nombre, id]);
+        await db.query('UPDATE other_documents SET name = $1 WHERE id = $2', [nuevo_nombre, id]);
         res.redirect('/procesos/otros?ok=Editado');
     } catch (err) {
         console.error(err);
@@ -379,7 +379,7 @@ router.post('/otros/eliminar', requireRole.administrador(), async (req, res) => 
     try {
       const { id, public_id } = req.body;
       if (public_id) await fileStorage.deleteFile(public_id);
-      await db.query('DELETE FROM otros_docs WHERE id = $1', [id]);
+      await db.query('DELETE FROM other_documents WHERE id = $1', [id]);
       res.redirect('/procesos/otros');
     } catch (err) {
       console.error(err);

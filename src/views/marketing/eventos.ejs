@@ -62,20 +62,20 @@
       <% eventos.forEach(function(ev) { %>
         <div class="card-evento-modern">
           
-          <a href="/marketing/eventos/<%= ev.slug %>" class="evento-link" title="Ver galería de <%= ev.nombre %>">
+          <a href="/marketing/eventos/<%= ev.slug %>" class="evento-link" title="Ver galería de <%= ev.name %>">
             <div class="evento-img-container">
-              <% if (ev.imagen) { %>
-                <img src="<%= ev.imagen %>" alt="<%= ev.nombre %>" class="evento-img">
+              <% if (ev.image) { %>
+                <img src="<%= ev.image %>" alt="<%= ev.name %>" class="evento-img">
               <% } else { %>
                 <div class="folder-icon-placeholder">📁</div>
               <% } %>
             </div>
             
             <div class="evento-info">
-              <div class="evento-titulo"><%= ev.nombre %></div>
-              <% if (ev.descripcion) { %>
+              <div class="evento-titulo"><%= ev.name %></div>
+              <% if (ev.description) { %>
                 <div class="evento-desc">
-                  <%= ev.descripcion.length > 60 ? ev.descripcion.substring(0, 60) + '...' : ev.descripcion %>
+                  <%= ev.description.length > 60 ? ev.description.substring(0, 60) + '...' : ev.description %>
                 </div>
               <% } %>
             </div>

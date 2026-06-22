@@ -5,10 +5,31 @@ const { sendMail } = require("../services/mailer");
 const requireRole = require("../middlewares/requireRole");
 const { isAdministrador } = require("../constants/roles");
 const multer = require('multer');
+const {
+  ticketStatusToDb,
+  ticketPriorityToDb,
+  mapTicketReplyForView,
+} = require("../utils/schemaMappers");
 const fileStorage = require('../services/fileStorage');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+const TICKET_LIST_SQL = `
+      SELECT t.id,
+             t.title,
+             t.category,
+             t.priority,
+             t.status,
+             t.requester_name,
+             t.requester_email,
+             t.read_by_admin,
+             t.read_by_user,
+             t.assigned_to,
+             t.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS created_at,
+             (SELECT MAX(created_at) FROM ticket_replies WHERE ticket_id = t.id) AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_ultima_respuesta
+      FROM support_tickets t
+`;
 
 const EMAIL_SUPPORT = "soporte@transworld.cl";
 const NOTIFICATION_COUNT_TTL_MS = 30 * 1000;
@@ -124,9 +145,9 @@ router.get("/tickets/notificaciones/count", async (req, res) => {
     let params = [];
 
     if (isAdministrador(user.role)) {
-      sql = `SELECT COUNT(*) FROM tickets WHERE leido_admin = FALSE`;
+      sql = `SELECT COUNT(*) FROM support_tickets WHERE read_by_admin = FALSE`;
     } else {
-      sql = `SELECT COUNT(*) FROM tickets WHERE (solicitante_email = $1 OR solicitante_nombre = $1) AND leido_usuario = FALSE`;
+      sql = `SELECT COUNT(*) FROM support_tickets WHERE (requester_email = $1 OR requester_name = $1) AND read_by_user = FALSE`;
       params = [userEmail];
     }
 
@@ -154,22 +175,9 @@ router.get("/tickets", async (req, res) => {
   let params = [];
 
   if (isAdministrador(user.role)) {
-    sql = `
-      SELECT t.id, t.titulo, t.categoria, t.prioridad, t.estado, t.solicitante_nombre, t.solicitante_email, t.leido_admin, t.leido_usuario, t.asignado_a,
-             t.fecha_creacion AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_creacion,
-             (SELECT MAX(fecha) FROM ticket_respuestas WHERE ticket_id = t.id) AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_ultima_respuesta
-      FROM tickets t 
-      ORDER BY t.fecha_creacion DESC
-    `;
+    sql = `${TICKET_LIST_SQL} ORDER BY t.created_at DESC`;
   } else {
-    sql = `
-      SELECT t.id, t.titulo, t.categoria, t.prioridad, t.estado, t.solicitante_nombre, t.solicitante_email, t.leido_admin, t.leido_usuario, t.asignado_a,
-             t.fecha_creacion AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_creacion,
-             (SELECT MAX(fecha) FROM ticket_respuestas WHERE ticket_id = t.id) AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_ultima_respuesta
-      FROM tickets t 
-      WHERE t.solicitante_email = $1 OR t.solicitante_nombre = $1
-      ORDER BY t.fecha_creacion DESC
-    `;
+    sql = `${TICKET_LIST_SQL} WHERE t.requester_email = $1 OR t.requester_name = $1 ORDER BY t.created_at DESC`;
     params = [userEmail];
   }
 
@@ -208,8 +216,8 @@ router.post("/tickets/crear", async (req, res) => {
     const solicitante_email = u.email;
 
     const sql = `
-      INSERT INTO tickets (titulo, descripcion, categoria, prioridad, estado, solicitante_nombre, solicitante_email, adjuntos, leido_admin, leido_usuario) 
-      VALUES ($1, $2, $3, $4, 'Abierto', $5, $6, $7, FALSE, TRUE) 
+      INSERT INTO support_tickets (title, description, category, priority, status, requester_name, requester_email, attachments, read_by_admin, read_by_user) 
+      VALUES ($1, $2, $3, $4, 'open', $5, $6, $7, FALSE, TRUE) 
       RETURNING id
     `;
 
@@ -217,7 +225,7 @@ router.post("/tickets/crear", async (req, res) => {
       titulo,
       descripcion,
       categoria,
-      prioridad,
+      ticketPriorityToDb(prioridad),
       solicitante_nombre,
       solicitante_email,
       adjuntos_data || "[]",
@@ -279,15 +287,18 @@ router.post(
     const { categoria, prioridad, estado, mensaje_respuesta, adjuntos_data } =
       req.body;
 
-    let sql = `UPDATE tickets SET categoria = $1, prioridad = $2, estado = $3`;
-    if (estado === "Pendiente de cierre") sql += `, fecha_resolucion = NOW()`;
-    else if (estado === "Cerrado") sql += `, fecha_cierre = NOW()`;
+    const estadoDb = ticketStatusToDb(estado);
+    const prioridadDb = ticketPriorityToDb(prioridad);
+
+    let sql = `UPDATE support_tickets SET category = $1, priority = $2, status = $3`;
+    if (estado === "Pendiente de cierre") sql += `, resolved_at = NOW()`;
+    else if (estado === "Cerrado") sql += `, closed_at = NOW()`;
     else if (estado === "Abierto")
-      sql += `, fecha_resolucion = NULL, fecha_cierre = NULL`;
+      sql += `, resolved_at = NULL, closed_at = NULL`;
     sql += ` WHERE id = $4`;
 
     try {
-      await db.query(sql, [categoria, prioridad, estado, id]);
+      await db.query(sql, [categoria, prioridadDb, estadoDb, id]);
 
       const tieneMensaje =
         mensaje_respuesta && mensaje_respuesta.trim().length > 0;
@@ -296,27 +307,27 @@ router.post(
       if (tieneMensaje || tieneAdjuntos || estado === "Pendiente de cierre") {
         if (tieneMensaje || tieneAdjuntos) {
           await db.query(
-            `INSERT INTO ticket_respuestas (ticket_id, mensaje, remitente, adjuntos, fecha) VALUES ($1, $2, $3, $4, NOW())`,
-            [id, mensaje_respuesta, "Soporte", adjuntos_data || "[]"],
+            `INSERT INTO ticket_replies (ticket_id, message, sender, attachments, created_at) VALUES ($1, $2, $3, $4, NOW())`,
+            [id, mensaje_respuesta, "Support", adjuntos_data || "[]"],
           );
         }
 
         await db.query(
-          "UPDATE tickets SET leido_usuario = FALSE WHERE id = $1",
+          "UPDATE support_tickets SET read_by_user = FALSE WHERE id = $1",
           [id],
         );
 
         const { rows: ticket } = await db.query(
-          "SELECT solicitante_email, titulo FROM tickets WHERE id = $1",
+          "SELECT requester_email, title FROM support_tickets WHERE id = $1",
           [id],
         );
         if (ticket.length > 0) {
-          let asunto = `Actualización Ticket #${id}: ${ticket[0].titulo}`;
+          let asunto = `Actualización Ticket #${id}: ${ticket[0].title}`;
           let cuerpo = `Hola,\n\nSe ha actualizado tu ticket. Nuevo estado: ${estado.toUpperCase()}.\n`;
           if (tieneMensaje) cuerpo += `\nMensaje: "${mensaje_respuesta}"`;
 
           sendMail({
-            to: ticket[0].solicitante_email,
+            to: ticket[0].requester_email,
             subject: asunto,
             text: generarTextoCorreo(cuerpo, adjuntos_data),
             html: generarHtmlCorreo(cuerpo, adjuntos_data),
@@ -338,14 +349,14 @@ router.post("/tickets/:id/confirmar", async (req, res) => {
   const user = req.session.user;
   try {
     const { rows } = await db.query(
-      "SELECT solicitante_email FROM tickets WHERE id = $1",
+      "SELECT requester_email FROM support_tickets WHERE id = $1",
       [id],
     );
-    if (rows.length === 0 || rows[0].solicitante_email !== user.email)
+    if (rows.length === 0 || rows[0].requester_email !== user.email)
       return res.status(403).send("No tienes permiso.");
 
     await db.query(
-      `UPDATE tickets SET estado = 'Cerrado', fecha_cierre = NOW(), cierre_automatico = FALSE WHERE id = $1`,
+      `UPDATE support_tickets SET status = 'closed', closed_at = NOW(), auto_closed = FALSE WHERE id = $1`,
       [id],
     );
     res.redirect(`/sistemas/tickets/${id}`);
@@ -361,29 +372,29 @@ router.post("/tickets/:id/rechazar", async (req, res) => {
   const user = req.session.user;
   try {
     const { rows } = await db.query(
-      "SELECT solicitante_email, titulo FROM tickets WHERE id = $1",
+      "SELECT requester_email, title FROM support_tickets WHERE id = $1",
       [id],
     );
-    if (rows.length === 0 || rows[0].solicitante_email !== user.email)
+    if (rows.length === 0 || rows[0].requester_email !== user.email)
       return res.status(403).send("No tienes permiso.");
 
     await db.query(
-      `UPDATE tickets SET estado = 'Abierto', fecha_resolucion = NULL, leido_admin = FALSE WHERE id = $1`,
+      `UPDATE support_tickets SET status = 'open', resolved_at = NULL, read_by_admin = FALSE WHERE id = $1`,
       [id],
     );
     await db.query(
-      `INSERT INTO ticket_respuestas (ticket_id, mensaje, remitente, fecha) VALUES ($1, $2, $3, NOW())`,
+      `INSERT INTO ticket_replies (ticket_id, message, sender, created_at) VALUES ($1, $2, $3, NOW())`,
       [
         id,
         "El usuario ha rechazado la solución y el ticket se ha reabierto.",
-        "Sistema",
+        "System",
       ],
     );
 
     if (process.env.ADMIN_NOTIFY_EMAIL) {
       sendMail({
         to: process.env.ADMIN_NOTIFY_EMAIL,
-        subject: `Ticket Reabierto #${id}: ${rows[0].titulo}`,
+        subject: `Ticket Reabierto #${id}: ${rows[0].title}`,
         text: `El usuario rechazó la solución y reabrió el ticket ${id}`,
         html: generarHtmlCorreo(
           `El usuario rechazó la solución y reabrió el ticket ${id}`,
@@ -407,7 +418,7 @@ router.post("/tickets/:id/responder", async (req, res) => {
 
   try {
     const { rows: results } = await db.query(
-      `SELECT solicitante_email, titulo FROM tickets WHERE id = $1`,
+      `SELECT requester_email, title FROM support_tickets WHERE id = $1`,
       [id],
     );
     if (results.length === 0)
@@ -415,28 +426,28 @@ router.post("/tickets/:id/responder", async (req, res) => {
     const ticket = results[0];
 
     const isAdmin = isAdministrador(user.role);
-    const isOwner = user.email === ticket.solicitante_email;
+    const isOwner = user.email === ticket.requester_email;
     if (!isAdmin && !isOwner) return res.status(403).send("Sin permiso.");
 
     let remitenteNombre = isAdmin
       ? "Soporte"
       : user.username || user.first_name;
     let emailDestino = isAdmin
-      ? ticket.solicitante_email
+      ? ticket.requester_email
       : process.env.ADMIN_NOTIFY_EMAIL;
-    let asuntoEmail = `Nueva respuesta Ticket #${id}: ${ticket.titulo}`;
+    let asuntoEmail = `Nueva respuesta Ticket #${id}: ${ticket.title}`;
 
     await db.query(
-      `INSERT INTO ticket_respuestas (ticket_id, mensaje, remitente, adjuntos, fecha) VALUES ($1, $2, $3, $4, NOW())`,
-      [id, mensaje_respuesta, remitenteNombre, adjuntos_data || "[]"],
+      `INSERT INTO ticket_replies (ticket_id, message, sender, attachments, created_at) VALUES ($1, $2, $3, $4, NOW())`,
+      [id, mensaje_respuesta, isAdmin ? "Support" : remitenteNombre, adjuntos_data || "[]"],
     );
 
     if (isAdmin) {
-      await db.query("UPDATE tickets SET leido_usuario = FALSE WHERE id = $1", [
+      await db.query("UPDATE support_tickets SET read_by_user = FALSE WHERE id = $1", [
         id,
       ]);
     } else {
-      await db.query("UPDATE tickets SET leido_admin = FALSE WHERE id = $1", [
+      await db.query("UPDATE support_tickets SET read_by_admin = FALSE WHERE id = $1", [
         id,
       ]);
     }
@@ -475,7 +486,7 @@ router.post("/tickets/:id/tomar", requireRole.administrador(), async (req, res) 
         (userRows[0].last_name ? " " + userRows[0].last_name : "");
     }
 
-    await db.query("UPDATE tickets SET asignado_a = $1 WHERE id = $2", [
+    await db.query("UPDATE support_tickets SET assigned_to = $1 WHERE id = $2", [
       adminName,
       id,
     ]);
@@ -494,19 +505,21 @@ router.get("/tickets/:id", async (req, res) => {
   const user = req.session.user;
 
   const sqlTicket = `
-    SELECT *, 
-           fecha_creacion AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_creacion,
-           fecha_resolucion AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_resolucion,
-           fecha_cierre AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_cierre
-    FROM tickets WHERE id = $1
+    SELECT id, title, description, category, priority, status,
+           requester_name, requester_email, attachments, read_by_admin, read_by_user,
+           assigned_to, auto_closed,
+           created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS created_at,
+           resolved_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_resolucion,
+           closed_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha_cierre
+    FROM support_tickets WHERE id = $1
   `;
 
   const sqlRespuestas = `
-    SELECT id, mensaje, remitente, archivo_url, archivo_nombre, archivo_tipo, adjuntos, 
-           fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha 
-    FROM ticket_respuestas 
+    SELECT id, message, sender, file_url, file_name, file_type, attachments, 
+           created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Santiago' AS fecha 
+    FROM ticket_replies 
     WHERE ticket_id = $1 
-    ORDER BY fecha ASC
+    ORDER BY created_at ASC
   `;
 
   try {
@@ -517,18 +530,18 @@ router.get("/tickets/:id", async (req, res) => {
     const userEmail = user.email || user.username;
     if (
       !isAdministrador(user.role) &&
-      ticketResults[0].solicitante_email !== user.email
+      ticketResults[0].requester_email !== user.email
     )
       return res.status(403).send("No tienes permisos.");
 
     const { rows: respuestasResults } = await db.query(sqlRespuestas, [id]);
 
     if (isAdministrador(user.role)) {
-      await db.query("UPDATE tickets SET leido_admin = TRUE WHERE id = $1", [
+      await db.query("UPDATE support_tickets SET read_by_admin = TRUE WHERE id = $1", [
         id,
       ]);
     } else {
-      await db.query("UPDATE tickets SET leido_usuario = TRUE WHERE id = $1", [
+      await db.query("UPDATE support_tickets SET read_by_user = TRUE WHERE id = $1", [
         id,
       ]);
     }
@@ -537,7 +550,7 @@ router.get("/tickets/:id", async (req, res) => {
     res.render("sistemas/tickets_detalle", {
       titulo: `Ticket #${id}`,
       ticket: ticketResults[0],
-      respuestas: respuestasResults,
+      respuestas: respuestasResults.map(mapTicketReplyForView),
       user: user,
     });
   } catch (err) {

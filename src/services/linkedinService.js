@@ -242,14 +242,22 @@ async function persistImageToSharePoint(imageUrl, enlaceUrl) {
   }
 }
 
+function normalizeLinkedInPost(post) {
+  return {
+    text: post.text ?? post.texto ?? "Publicación de Transworld",
+    image_url: post.image_url ?? post.imagen_url ?? FALLBACK_IMAGE,
+    link_url: post.link_url ?? post.enlace_url ?? "#",
+  };
+}
+
 async function enrichPostsWithSharePointImages(posts) {
   const enriched = [];
   for (const post of posts) {
-    const imagen_url = await persistImageToSharePoint(
-      post.imagen_url,
-      post.enlace_url,
+    const image_url = await persistImageToSharePoint(
+      post.image_url ?? post.imagen_url,
+      post.link_url ?? post.enlace_url,
     );
-    enriched.push({ ...post, imagen_url });
+    enriched.push(normalizeLinkedInPost({ ...post, image_url }));
   }
   return enriched;
 }
@@ -326,7 +334,7 @@ async function parsePosts(response, accessToken) {
         if (urlsMatch?.length) imageUrl = urlsMatch[0];
       }
 
-      posts.push({ texto: text, imagen_url: imageUrl, enlace_url: postUrl });
+      posts.push({ text, image_url: imageUrl, link_url: postUrl });
     } catch (parseError) {
       console.log("[LINKEDIN] Error al procesar un post específico.");
     }
@@ -348,19 +356,15 @@ async function fetchOrganizationPosts(accessToken) {
 async function getPostsFromDb() {
   try {
     const { rows } = await db.query(
-      `SELECT imagen_url, enlace_url
+      `SELECT image_url, link_url
        FROM linkedin_posts
-       ORDER BY fecha_creacion DESC
+       ORDER BY created_at DESC
        LIMIT 3`,
     );
 
     return rows
-      .filter((row) => isSharePointImageUrl(row.imagen_url))
-      .map((row) => ({
-        texto: "Publicación de Transworld",
-        imagen_url: row.imagen_url,
-        enlace_url: row.enlace_url,
-      }));
+      .filter((row) => isSharePointImageUrl(row.image_url))
+      .map((row) => normalizeLinkedInPost(row));
   } catch (error) {
     console.warn("[LINKEDIN] No se pudo leer linkedin_posts:", error.message);
     return [];
@@ -374,9 +378,9 @@ async function syncPostsToDb(posts) {
     await db.query("DELETE FROM linkedin_posts");
     for (const post of posts.slice(0, 3)) {
       await db.query(
-        `INSERT INTO linkedin_posts (imagen_url, enlace_url, fecha_creacion)
+        `INSERT INTO linkedin_posts (image_url, link_url, created_at)
          VALUES ($1, $2, NOW())`,
-        [post.imagen_url, post.enlace_url],
+        [post.image_url, post.link_url],
       );
     }
   } catch (error) {

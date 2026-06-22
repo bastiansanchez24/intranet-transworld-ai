@@ -288,8 +288,11 @@
                 let tipoLabel = "Documento";
                 if (doc.tipo === "reglamento") tipoLabel = "Reglamento Interno";
                 else if (doc.tipo === "otros") tipoLabel = "Otros Documentos";
-                else if (doc.tipo) {
-                  const partes = doc.tipo.split("_");
+                else if (doc.type === "reglamento") tipoLabel = "Reglamento Interno";
+                else if (doc.type === "otros") tipoLabel = "Otros Documentos";
+                else if (doc.tipo || doc.type) {
+                  const tipo = doc.tipo || doc.type;
+                  const partes = tipo.split("_");
                   if (partes.length === 2) {
                     tipoLabel = partes[0] + " (" + partes[1] + ")";
                   }
@@ -305,7 +308,7 @@
                 item.innerHTML = `
                             <div class="search-item-icon">${icon}</div>
                             <div>
-                                <div class="search-item-title">${doc.nombre}</div>
+                                <div class="search-item-title">${doc.name || doc.nombre}</div>
                                 <div class="search-item-type">${tipoLabel}</div>
                             </div>
                         `;

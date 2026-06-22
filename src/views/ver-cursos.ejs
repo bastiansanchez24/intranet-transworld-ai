@@ -119,24 +119,24 @@
 
     <% if (cursos && cursos.length > 0) { %>
         <% cursos.forEach(curso => { %>
-            <div class="curso-card" style="cursor: pointer;" onclick="window.location.href='/cursos/evaluacion/<%= curso.curso_id || curso.id %>'">
+            <div class="curso-card" style="cursor: pointer;" onclick="window.location.href='/cursos/evaluacion/<%= curso.course_id || curso.id %>'">
                 <div class="curso-info">
-                    <h3 class="curso-title"><%= curso.titulo %></h3>
+                    <h3 class="curso-title"><%= curso.title %></h3>
                     <div class="curso-meta">
                         <span>Completado el: 
                             <strong>
-                                <%= curso.fecha_completado ? new Date(curso.fecha_completado).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' %>
+                                <%= curso.completed_at ? new Date(curso.completed_at).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' %>
                             </strong>
                         </span>
                     </div>
                 </div>
                 <div class="curso-stats">
                     <div class="stat-box">
-                        <p class="stat-value"><%= curso.intentos %></p>
+                        <p class="stat-value"><%= curso.attempts %></p>
                         <p class="stat-label">Intentos</p>
                     </div>
                     <div class="stat-box">
-                        <p class="stat-value stat-nota"><%= Math.round(curso.nota) %>%</p>
+                        <p class="stat-value stat-nota"><%= Math.round(curso.score) %>%</p>
                         <p class="stat-label">Aprobación</p>
                     </div>
                 </div>

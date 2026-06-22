@@ -15,6 +15,7 @@ const {
   canLogin,
 } = require("../constants/roles");
 const linkedinService = require("../services/linkedinService");
+const { courseStatusFromDb } = require("../utils/schemaMappers");
 const { generateUniqueUsuarioId } = require("../utils/userId");
 
 function getBaseUrl(req) {
@@ -143,9 +144,9 @@ async function notifyTIAdminsNewUser(firstName, lastName, email, isTransworld) {
   const { rows } = await pool.query(
     `SELECT u.email
      FROM users u
-     JOIN area_trabajo at ON at.id = u.area_trabajo_id
+     JOIN work_areas at ON at.id = u.work_area_id
      WHERE u.role IN ($1, $2)
-       AND at.nombre_area ILIKE 'TI'
+       AND at.area_name ILIKE 'TI'
        AND u.email IS NOT NULL AND TRIM(u.email) <> ''`,
     [ROLES.ADMINISTRADOR, "admin"],
   );
@@ -282,7 +283,7 @@ router.post("/login", async (req, res) => {
     try {
       ({ rows } = await pool.query(
         `SELECT id, first_name, last_name, email, role, email_confirmed,
-                password_hash, password_salt, foto, must_change_password,
+                password_hash, password_salt, photo, must_change_password,
                 confirm_token, confirm_expires, home_tutorial_seen, last_login_at
          FROM users WHERE email = $1 LIMIT 1`,
         [email],
@@ -291,7 +292,7 @@ router.post("/login", async (req, res) => {
       if (queryErr.code !== "42703") throw queryErr;
       ({ rows } = await pool.query(
         `SELECT id, first_name, last_name, email, role, email_confirmed,
-                password_hash, password_salt, foto, must_change_password,
+                password_hash, password_salt, photo, must_change_password,
                 confirm_token, confirm_expires
          FROM users WHERE email = $1 LIMIT 1`,
         [email],
@@ -366,7 +367,8 @@ router.post("/login", async (req, res) => {
       email: u.email,
       role: normalizeRole(u.role),
       nombre: u.first_name + (u.last_name ? " " + u.last_name : ""),
-      foto: u.foto || null,
+      foto: u.photo || null,
+      photo: u.photo || null,
       must_change_password: u.must_change_password,
       home_tutorial_seen: u.home_tutorial_seen !== false,
       show_home_tutorial: showHomeTutorial,
@@ -504,7 +506,7 @@ router.post(
 
       await pool.query(
         `INSERT INTO users
-        (id, first_name, last_name, email, password_hash, password_salt, role, email_confirmed, confirm_token, confirm_expires, foto, must_change_password, area_trabajo_id, fecha_nacimiento, telefono, usuario_intranet, home_tutorial_seen)
+        (id, first_name, last_name, email, password_hash, password_salt, role, email_confirmed, confirm_token, confirm_expires, photo, must_change_password, work_area_id, birth_date, phone, is_intranet_user, home_tutorial_seen)
        VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE, $8, $9, NULL, FALSE, NULL, $10, $11, TRUE, FALSE)`,
         [
           generatedUserId,
@@ -527,7 +529,7 @@ router.post(
             generatedUserId,
             req.file.buffer,
           );
-          await pool.query("UPDATE users SET foto = $1 WHERE id = $2", [
+          await pool.query("UPDATE users SET photo = $1 WHERE id = $2", [
             foto,
             generatedUserId,
           ]);
@@ -636,7 +638,7 @@ router.post("/verify-email", async (req, res) => {
 
   try {
     const { rows } = await pool.query(
-      `SELECT id, first_name, email, email_confirmed, confirm_token, confirm_expires, role, area_trabajo_id, must_change_password
+      `SELECT id, first_name, email, email_confirmed, confirm_token, confirm_expires, role, work_area_id, must_change_password
        FROM users WHERE email = $1 LIMIT 1`,
       [email],
     );
@@ -690,7 +692,7 @@ router.post("/verify-email", async (req, res) => {
     // Si el administrador creó al usuario desde la intranet ya validó el correo
     // y le asignó un área de trabajo, por lo que se le permite ingresar aunque
     // su correo sea de un dominio externo.
-    const createdByAdmin = u.area_trabajo_id != null;
+    const createdByAdmin = u.work_area_id != null;
     const roleOnVerify =
       isExternalDomainEmail(u.email) && !createdByAdmin
         ? ROLES.DESHABILITADO
@@ -702,7 +704,7 @@ router.post("/verify-email", async (req, res) => {
            confirm_token = NULL,
            confirm_expires = NULL,
            role = $2,
-           usuario_intranet = $3
+           is_intranet_user = $3
        WHERE id = $1`,
       [u.id, roleOnVerify, roleOnVerify === ROLES.USUARIO],
     );
@@ -1008,20 +1010,20 @@ router.get("/perfil/cursos", async (req, res) => {
 
   try {
     const sqlCursos = `
-      SELECT cu.curso_id, c.titulo, cu.nota, cu.intentos, cu.fecha_completado, cu.estado
-      FROM capacitaciones_usuarios cu
-      JOIN cursos c ON cu.curso_id = c.id
-      WHERE cu.usuario_id = $1 AND cu.estado = 'Evaluado'
-      ORDER BY cu.fecha_completado DESC
+      SELECT cu.course_id AS curso_id, c.title AS titulo, cu.score AS nota, cu.attempts AS intentos, cu.completed_at AS fecha_completado, cu.status AS estado_db
+      FROM user_course_progress cu
+      JOIN courses c ON cu.course_id = c.id
+      WHERE cu.user_id = $1 AND cu.status = 'evaluated'
+      ORDER BY cu.completed_at DESC
     `;
 
     const sqlPuntaje = `
-      SELECT COALESCE(SUM(nota), 0) AS puntaje_total 
-      FROM capacitaciones_usuarios 
-      WHERE usuario_id = $1 AND estado = 'Evaluado'
+      SELECT COALESCE(SUM(score), 0) AS puntaje_total 
+      FROM user_course_progress 
+      WHERE user_id = $1 AND status = 'evaluated'
     `;
 
-    const sqlTotalCursos = `SELECT COUNT(*) AS total FROM cursos WHERE activo = true`;
+    const sqlTotalCursos = `SELECT COUNT(*) AS total FROM courses WHERE is_active = true`;
 
     const [resultCursos, resultPuntaje, resultTotal] = await Promise.all([
       pool.query(sqlCursos, [user.id]),
@@ -1029,7 +1031,10 @@ router.get("/perfil/cursos", async (req, res) => {
       pool.query(sqlTotalCursos),
     ]);
 
-    const cursosRealizados = resultCursos.rows;
+    const cursosRealizados = resultCursos.rows.map((row) => ({
+      ...row,
+      estado: courseStatusFromDb(row.estado_db),
+    }));
     const puntajeTotal = resultPuntaje.rows[0].puntaje_total;
     const totalCursosActivos = parseInt(resultTotal.rows[0].total) || 0;
 
