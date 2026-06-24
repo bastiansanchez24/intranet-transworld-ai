@@ -1,51 +1,59 @@
 (function (global) {
   function initPersonaEditarForm() {
-    const eliminarInput = document.getElementById('eliminar_foto');
-    const btnRemove = document.getElementById('btn-remove-photo');
-    const selectBtn = document.getElementById('btn-select-photo');
     const form = document.getElementById('formEditarPersona');
-
-    if (!form || typeof global.ProfilePhotoCropper === 'undefined') {
+    if (!form) {
       return function noop() {};
     }
 
-    const photoCropper = global.ProfilePhotoCropper.init({
-      fileInputId: 'foto',
-      previewImgId: 'photo-preview-img',
-      previewPlaceholderId: 'photo-placeholder',
-      selectBtnId: 'btn-select-photo',
-      overlayId: 'fotoCropOverlay',
-      cropImgId: 'fotoCropImage',
-      closeBtnId: 'fotoCropClose',
-      cancelBtnId: 'fotoCropCancel',
-      saveBtnId: 'fotoCropSave',
-      errorElId: 'fotoCropError',
-      maxSizeMb: 5,
-      outputSize: 400,
-      outputFilename: 'foto-perfil.jpg',
-      saveLabel: 'Aplicar recorte',
-      onCropped: function () {
-        eliminarInput.value = '0';
-        btnRemove.hidden = false;
-        selectBtn.textContent = 'Cambiar foto';
-      },
-    });
+    const destroyFns = [];
 
-    function onRemovePhoto() {
-      if (!confirm('¿Quitar la foto de este colaborador?')) return;
-      photoCropper.clearPhoto();
-      eliminarInput.value = '1';
-      btnRemove.hidden = true;
-      selectBtn.textContent = 'Seleccionar foto';
+    const eliminarInput = document.getElementById('eliminar_foto');
+    const btnRemove = document.getElementById('btn-remove-photo');
+    const selectBtn = document.getElementById('btn-select-photo');
+
+    if (typeof global.ProfilePhotoCropper !== 'undefined') {
+      const photoCropper = global.ProfilePhotoCropper.init({
+        fileInputId: 'foto',
+        previewImgId: 'photo-preview-img',
+        previewPlaceholderId: 'photo-placeholder',
+        selectBtnId: 'btn-select-photo',
+        overlayId: 'fotoCropOverlay',
+        cropImgId: 'fotoCropImage',
+        closeBtnId: 'fotoCropClose',
+        cancelBtnId: 'fotoCropCancel',
+        saveBtnId: 'fotoCropSave',
+        errorElId: 'fotoCropError',
+        maxSizeMb: 5,
+        outputSize: 400,
+        outputFilename: 'foto-perfil.jpg',
+        saveLabel: 'Aplicar recorte',
+        onCropped: function () {
+          eliminarInput.value = '0';
+          btnRemove.hidden = false;
+          selectBtn.textContent = 'Cambiar foto';
+        },
+      });
+
+      function onRemovePhoto() {
+        if (!confirm('¿Quitar la foto de este colaborador?')) return;
+        photoCropper.clearPhoto();
+        eliminarInput.value = '1';
+        btnRemove.hidden = true;
+        selectBtn.textContent = 'Seleccionar foto';
+      }
+
+      btnRemove?.addEventListener('click', onRemovePhoto);
+      destroyFns.push(function () {
+        btnRemove?.removeEventListener('click', onRemovePhoto);
+        photoCropper.clearPhoto();
+      });
     }
-
-    btnRemove?.addEventListener('click', onRemovePhoto);
 
     const emailInput = document.getElementById('email');
     const emailError = document.getElementById('email-error');
     const fechaInput = document.getElementById('fecha_nacimiento');
     const fechaLabel = document.getElementById('fecha_nacimiento_label');
-    const telefonoField = document.querySelector('[data-phone-chile]');
+    const telefonoField = form.querySelector('[data-phone-chile]');
     const telefonoLocal = telefonoField?.querySelector('.phone-field__local');
     const telefonoError = document.getElementById('telefono-error');
     const FECHA_REQUERIDA_MSG =
@@ -138,12 +146,16 @@
     form.addEventListener('submit', onSubmit);
     syncFechaRequired();
 
-    return function destroy() {
-      btnRemove?.removeEventListener('click', onRemovePhoto);
+    destroyFns.push(function () {
       emailInput?.removeEventListener('input', onEmailInput);
       telefonoLocal?.removeEventListener('input', onTelefonoInput);
       form.removeEventListener('submit', onSubmit);
-      photoCropper.clearPhoto();
+    });
+
+    return function destroy() {
+      destroyFns.forEach(function (fn) {
+        fn();
+      });
     };
   }
 

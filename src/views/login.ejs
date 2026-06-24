@@ -802,8 +802,11 @@
       });
 
       const registerForm = document.querySelector('[data-view="register"] form');
+      const phoneField = PhoneChile.initField(telefonoField, { onChange: updateSubmitState });
+
       if (registerForm) {
         registerForm.addEventListener('submit', function () {
+          phoneField?.sync();
           const blob = photoCropper.getBlob();
           if (blob) {
             const file = new File([blob], 'foto-perfil.jpg', { type: 'image/jpeg' });
@@ -878,7 +881,6 @@
 
       passwordInput.addEventListener('input', onPasswordChange);
       password2Input.addEventListener('input', onPasswordChange);
-      PhoneChile.initField(telefonoField, { onChange: updateSubmitState });
     })();
   </script>
   <% } %>

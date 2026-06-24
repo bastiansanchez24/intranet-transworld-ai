@@ -2,6 +2,8 @@
   const nombreColaborador = [(persona.first_name || ''), (persona.last_name || '')].filter(Boolean).join(' ') || 'este colaborador';
   const tieneFoto = Boolean(persona.photo);
   const tieneCorreoRegistrado = Boolean(persona.email && String(persona.email).trim());
+  const phoneFull = persona.phone || '';
+  const phoneLocal = phoneFull.startsWith('+56') ? phoneFull.slice(3).trim() : '';
 %>
 
 <div class="modal-editar-layout layout-horizontal-form">
@@ -68,10 +70,10 @@
         </div>
         <div class="campo">
           <label for="telefono_local">Teléfono</label>
-          <div class="phone-field" data-phone-chile>
+          <div class="phone-field" data-phone-chile id="editar_phone_field">
             <span class="phone-field__prefix" aria-hidden="true">+56</span>
-            <input type="tel" id="telefono_local" class="phone-field__local" placeholder="9 1234 5678" maxlength="11" inputmode="numeric" autocomplete="tel-national" aria-label="Número celular sin código de país">
-            <input type="hidden" name="phone" id="telefono" value="<%= persona.phone || '' %>">
+            <input type="tel" id="telefono_local" class="phone-field__local" placeholder="9 1234 5678" maxlength="11" inputmode="numeric" autocomplete="tel-national" aria-label="Número celular sin código de país" value="<%= phoneLocal %>">
+            <input type="hidden" name="phone" id="telefono" value="<%= phoneFull %>">
           </div>
           <span class="field-error" id="telefono-error" role="alert"></span>
         </div>

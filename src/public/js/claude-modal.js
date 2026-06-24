@@ -127,38 +127,74 @@
     });
   }
 
-  async function openClaudeModal() {
+  let openingPromise = null;
+  const FAB_TOOLTIP_DEFAULT = "Trabajemos en un nuevo proyecto...";
+  const FAB_TOOLTIP_LOADING = "Cargando asistente…";
+
+  function setTriggerLoading(loading, trigger) {
+    const el = trigger || document.getElementById("claudeFab");
+    if (!el) return;
+
+    el.classList.toggle("is-loading", loading);
+    el.setAttribute("aria-busy", loading ? "true" : "false");
+
+    const tooltip = el.querySelector(".claude-fab-tooltip");
+    if (tooltip) {
+      tooltip.textContent = loading ? FAB_TOOLTIP_LOADING : FAB_TOOLTIP_DEFAULT;
+    }
+
+    if (loading) {
+      el.dataset.prevAriaLabel = el.getAttribute("aria-label") || "";
+      el.setAttribute("aria-label", FAB_TOOLTIP_LOADING);
+    } else if ("prevAriaLabel" in el.dataset) {
+      el.setAttribute("aria-label", el.dataset.prevAriaLabel);
+      delete el.dataset.prevAriaLabel;
+    }
+  }
+
+  async function openClaudeModal(trigger) {
+    if (openingPromise) return openingPromise;
+
     const overlay = getOverlay();
     if (!overlay) return;
 
-    if (!window.claudeChat) {
-      window.claudeChat = new ClaudeChat();
-    }
+    openingPromise = (async () => {
+      setTriggerLoading(true, trigger);
 
-    try {
-      await window.claudeChat.ensureBootstrap();
-    } catch (err) {
-      console.error("Error al cargar Claude:", err);
-      alert("No se pudo abrir el asistente. Intenta nuevamente.");
-      return;
-    }
-
-    if (window.IntranetModal) {
-      window.IntranetModal.open(overlay);
-    } else {
-      overlay.style.display = "flex";
-      overlay.classList.add("is-open");
-      overlay.setAttribute("aria-hidden", "false");
-      document.documentElement.classList.add("modal-open");
-      document.body.classList.add("modal-open");
-    }
-
-    requestAnimationFrame(() => {
-      showLimitsNoticeIfNeeded();
-      if (!shouldShowLimitsNotice()) {
-        document.getElementById("messageInput")?.focus();
+      if (!window.claudeChat) {
+        window.claudeChat = new ClaudeChat();
       }
-    });
+
+      try {
+        await window.claudeChat.ensureBootstrap();
+      } catch (err) {
+        console.error("Error al cargar Claude:", err);
+        alert("No se pudo abrir el asistente. Intenta nuevamente.");
+        return;
+      } finally {
+        setTriggerLoading(false, trigger);
+        openingPromise = null;
+      }
+
+      if (window.IntranetModal) {
+        window.IntranetModal.open(overlay);
+      } else {
+        overlay.style.display = "flex";
+        overlay.classList.add("is-open");
+        overlay.setAttribute("aria-hidden", "false");
+        document.documentElement.classList.add("modal-open");
+        document.body.classList.add("modal-open");
+      }
+
+      requestAnimationFrame(() => {
+        showLimitsNoticeIfNeeded();
+        if (!shouldShowLimitsNotice()) {
+          document.getElementById("messageInput")?.focus();
+        }
+      });
+    })();
+
+    return openingPromise;
   }
 
   function closeClaudeModal() {
@@ -202,7 +238,7 @@
     const trigger = e.target.closest("[data-claude-open]");
     if (trigger) {
       e.preventDefault();
-      openClaudeModal();
+      openClaudeModal(trigger);
     }
   });
 

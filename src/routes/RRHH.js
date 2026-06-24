@@ -385,9 +385,13 @@ router.get("/editar/:id", requireRole.administrador(), async (req, res) => {
 
     if (rows.length === 0) return res.status(404).send("Usuario no encontrado");
 
+    const phoneRaw = rows[0].phone ?? rows[0].telefono;
+    const phoneDisplay =
+      formatPhoneForDisplay(phoneRaw) || phoneRaw || "";
     const persona = mapPersonaForView({
       ...rows[0],
-      telefono: formatPhoneForDisplay(rows[0].phone ?? rows[0].telefono) || rows[0].phone || rows[0].telefono,
+      phone: phoneDisplay,
+      telefono: phoneDisplay,
     });
 
     if (req.query.partial === "1") {

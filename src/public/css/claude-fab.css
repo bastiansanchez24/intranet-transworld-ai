@@ -72,6 +72,40 @@
   pointer-events: none;
 }
 
+.claude-fab-spinner {
+  display: none;
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: claude-fab-spin 0.7s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes claude-fab-spin {
+  to { transform: rotate(360deg); }
+}
+
+.claude-fab.is-loading {
+  pointer-events: none;
+  cursor: wait;
+  transform: scale(1);
+}
+
+.claude-fab.is-loading .claude-fab-logo {
+  display: none;
+}
+
+.claude-fab.is-loading .claude-fab-spinner {
+  display: block;
+}
+
+.claude-fab.is-loading .claude-fab-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0) scale(1);
+}
+
 .claude-fab-tooltip {
   position: absolute;
   right: calc(100% + 16px);
@@ -143,6 +177,12 @@
 
   .claude-fab:hover .claude-fab-tooltip,
   .claude-fab:focus-visible .claude-fab-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  .claude-fab.is-loading .claude-fab-tooltip {
+    opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
   }
 }

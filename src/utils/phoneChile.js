@@ -44,14 +44,16 @@ function validateChileMobilePhone(phone, { required = false } = {}) {
     return { valid: true, value: null, storageValue: null, error: null };
   }
 
-  if (!isValidChileMobilePhone(value)) {
+  const displayValue = formatPhoneForDisplay(value) || value;
+
+  if (!isValidChileMobilePhone(displayValue)) {
     return { valid: false, value: null, storageValue: null, error: CHILE_MOBILE_ERROR };
   }
 
   return {
     valid: true,
-    value,
-    storageValue: toStoragePhone(value),
+    value: displayValue,
+    storageValue: toStoragePhone(displayValue),
     error: null,
   };
 }

@@ -404,13 +404,17 @@ router.post(
   uploadProfilePhoto.single("foto_file"),
   async (req, res) => {
     // Para repoblar el formulario si hay un error (sin contraseñas ni foto).
+    const phoneRaw = req.body.phone || req.body.telefono || "";
+    const birthDateRaw =
+      req.body.birth_date || req.body.fecha_nacimiento || "";
+
     const formData = {
       first_name: req.body.first_name || "",
       last_name: req.body.last_name || "",
       username: stripEmailLocalPart(req.body.username),
       domain: String(req.body.domain || "").trim().toLowerCase(),
-      telefono: req.body.telefono || "",
-      fecha_nacimiento: req.body.fecha_nacimiento || "",
+      phone: phoneRaw,
+      birth_date: birthDateRaw,
     };
 
     try {
@@ -426,9 +430,8 @@ router.post(
       const email = normalizeCorporateEmail(usernameInput, selectedDomain);
       const password = String(req.body.password || "");
       const password2 = String(req.body.password2 || "");
-      const fechaNacimiento =
-        String(req.body.fecha_nacimiento || "").trim() || null;
-      const telefonoCheck = validateChileMobilePhone(req.body.telefono, {
+      const fechaNacimiento = String(birthDateRaw).trim() || null;
+      const telefonoCheck = validateChileMobilePhone(phoneRaw, {
         required: true,
       });
       const telefono = telefonoCheck.storageValue;

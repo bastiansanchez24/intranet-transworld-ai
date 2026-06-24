@@ -1,4 +1,12 @@
 <style>
+  /* --- CONTENEDOR PRINCIPAL DE LA PÁGINA --- */
+  .tickets-contenedor {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
   /* --- CONTENEDOR SUPERIOR --- */
   .cabecera-tickets {
       display: flex;
@@ -9,14 +17,25 @@
       gap: 15px;
   }
 
+  /* --- CONTENEDOR SCROLL DE LA TABLA --- */
+  .tabla-tickets-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  }
+
   /* --- ESTILOS DE LA TABLA --- */
   .tabla-tickets { 
-      width: 100%; 
+      width: 100%;
+      min-width: 1150px;
       border-collapse: collapse; 
       background: white; 
-      border-radius: 8px; 
-      overflow: hidden; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+      border-radius: 8px;
   }
   .tabla-tickets th, .tabla-tickets td { 
       padding: 15px; 
@@ -113,8 +132,94 @@
     background: var(--color-surface-elevated, #e8ecf0);
     border-color: var(--color-border, #bbb);
   }
+
+  /* Columna estado más ancha */
+  .tabla-tickets th.col-estado,
+  .tabla-tickets td.col-estado {
+    min-width: 155px;
+    white-space: nowrap;
+  }
+
+  .tabla-tickets td.col-estado .badge {
+    white-space: nowrap;
+  }
+
+  /* Columnas importancia y estado centradas */
+  .tabla-tickets th.col-importancia,
+  .tabla-tickets td.col-importancia,
+  .tabla-tickets th.col-estado,
+  .tabla-tickets td.col-estado {
+    text-align: center;
+  }
+
+  .tabla-tickets td.col-titulo {
+    color: #0056b3;
+    font-weight: 500;
+    min-width: 200px;
+    max-width: 300px;
+  }
+
+  /* Vista móvil: solo título, importancia y estado */
+  @media (max-width: 768px) {
+    .tickets-contenedor {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    .tabla-tickets {
+      min-width: 0;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .tabla-tickets-scroll {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    .tabla-tickets .col-ocultar-mobile {
+      display: none;
+    }
+
+    .tabla-tickets th.col-titulo,
+    .tabla-tickets td.col-titulo {
+      min-width: 0;
+      max-width: none;
+      width: 42%;
+      word-break: break-word;
+    }
+
+    .tabla-tickets th,
+    .tabla-tickets td {
+      padding: 10px 6px;
+    }
+
+    .tabla-tickets th.col-importancia,
+    .tabla-tickets td.col-importancia {
+      width: 22%;
+      white-space: nowrap;
+    }
+
+    .tabla-tickets th.col-estado,
+    .tabla-tickets td.col-estado {
+      min-width: 0;
+      width: 36%;
+      white-space: normal;
+    }
+
+    .tabla-tickets td.col-importancia .badge,
+    .tabla-tickets td.col-estado .badge {
+      font-size: 0.72em;
+      padding: 4px 6px;
+      white-space: normal;
+      line-height: 1.2;
+    }
+  }
 </style>
 
+<div class="tickets-contenedor">
 <div class="cabecera-tickets">
   <div>
     <h2 style="color: #003a70; margin: 0; font-size: 2rem;"><%= titulo || 'Soporte de TI' %></h2>
@@ -137,23 +242,24 @@
   </div>
 </div>
 
+<div class="tabla-tickets-scroll">
 <table class="tabla-tickets" id="ticketsTable">
   <thead>
     <tr>
       <% let cIdx = 0; %>
-      <th onclick="sortTable(<%= cIdx++ %>)">ID <span class="sort-icon"></span></th>
-      <th onclick="sortTable(<%= cIdx++ %>)">Título <span class="sort-icon"></span></th>
-      <th onclick="sortTable(<%= cIdx++ %>)">Categoría <span class="sort-icon"></span></th>
-      <th onclick="sortTable(<%= cIdx++ %>)">Importancia <span class="sort-icon"></span></th>
-      <th onclick="sortTable(<%= cIdx++ %>)">Estado <span class="sort-icon"></span></th>
+      <th class="col-id col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">ID <span class="sort-icon"></span></th>
+      <th class="col-titulo" onclick="sortTable(<%= cIdx++ %>)">Título <span class="sort-icon"></span></th>
+      <th class="col-categoria col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Categoría <span class="sort-icon"></span></th>
+      <th class="col-importancia" onclick="sortTable(<%= cIdx++ %>)">Importancia <span class="sort-icon"></span></th>
+      <th class="col-estado" onclick="sortTable(<%= cIdx++ %>)">Estado <span class="sort-icon"></span></th>
       <% if (user && typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-        <th onclick="sortTable(<%= cIdx++ %>)">Tomado por <span class="sort-icon"></span></th>
+        <th class="col-asignado col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Tomado por <span class="sort-icon"></span></th>
       <% } %>
-      <th onclick="sortTable(<%= cIdx++ %>)">Solicitante <span class="sort-icon"></span></th>
-      <th onclick="sortTable(<%= cIdx++ %>)">Correo <span class="sort-icon"></span></th>
-      <th onclick="sortTable(<%= cIdx++ %>)">Creado <span class="sort-icon"></span></th>
-      <th onclick="sortTable(<%= cIdx++ %>)">Últ. Respuesta <span class="sort-icon"></span></th>
-      <th onclick="sortTable(<%= cIdx++ %>)">T. Respuesta <span class="sort-icon"></span></th>
+      <th class="col-solicitante col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Solicitante <span class="sort-icon"></span></th>
+      <th class="col-correo col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Correo <span class="sort-icon"></span></th>
+      <th class="col-creado col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Creado <span class="sort-icon"></span></th>
+      <th class="col-ult-respuesta col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Últ. Respuesta <span class="sort-icon"></span></th>
+      <th class="col-t-respuesta col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">T. Respuesta <span class="sort-icon"></span></th>
     </tr>
   </thead>
   <tbody>
@@ -195,30 +301,28 @@
       %>
         <tr class="clickable-row <%= esNoLeido ? 'fila-no-leida' : '' %>" data-href="/sistemas/tickets/<%= t.id %>" data-estado="<%= t.status %>">
           
-          <td data-sort="<%= t.id %>">
-            <%= t.id %>
+          <td class="col-id col-ocultar-mobile" data-sort="<%= t.id %>"><%= t.id %></td>
+          <td class="col-titulo" title="<%= t.title %>">
             <% if (esNoLeido) { %><span class="badge-nuevo-ticket">Nuevo</span><% } %>
-          </td>
-          <td style="color: #0056b3; font-weight: 500; min-width: 200px; max-width: 300px;" title="<%= t.title %>">
             <div style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; line-height: 1.2;">
               <%= t.title %>
             </div>
           </td>
-          <td><%= t.category || '-' %></td>
-          <td data-sort="<%= t.priority %>"><span class="badge <%= badgePrioridad %>"><%= prioridadLabels[t.priority] || t.priority %></span></td>
-          <td data-sort="<%= t.status %>"><span class="badge <%= badgeEstado %>"><%= estadoLabels[t.status] || t.status %></span></td>
+          <td class="col-categoria col-ocultar-mobile"><%= t.category || '-' %></td>
+          <td class="col-importancia" data-sort="<%= t.priority %>"><span class="badge <%= badgePrioridad %>"><%= prioridadLabels[t.priority] || t.priority %></span></td>
+          <td class="col-estado" data-sort="<%= t.status %>"><span class="badge <%= badgeEstado %>"><%= estadoLabels[t.status] || t.status %></span></td>
           
           <% if (user && typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-            <td style="font-weight: 600; color: <%= t.assigned_to ? '#28a745' : '#888' %>;">
+            <td class="col-asignado col-ocultar-mobile" style="font-weight: 600; color: <%= t.assigned_to ? '#28a745' : '#888' %>;">
                 <%= t.assigned_to || 'Sin asignar' %>
             </td>
           <% } %>
 
-          <td><%= t.requester_name %></td>
-          <td style="color: #555; font-size: 0.9em;"><%= t.requester_email %></td>
-          <td data-sort="<%= t.created_at ? new Date(t.created_at).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strCreado %></td>
-          <td data-sort="<%= t.fecha_ultima_respuesta ? new Date(t.fecha_ultima_respuesta).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strUltima %></td>
-          <td style="color: #003a70; font-weight: 600; font-size: 0.9em;"><%= tRespuesta %></td>
+          <td class="col-solicitante col-ocultar-mobile"><%= t.requester_name %></td>
+          <td class="col-correo col-ocultar-mobile" style="color: #555; font-size: 0.9em;"><%= t.requester_email %></td>
+          <td class="col-creado col-ocultar-mobile" data-sort="<%= t.created_at ? new Date(t.created_at).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strCreado %></td>
+          <td class="col-ult-respuesta col-ocultar-mobile" data-sort="<%= t.fecha_ultima_respuesta ? new Date(t.fecha_ultima_respuesta).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strUltima %></td>
+          <td class="col-t-respuesta col-ocultar-mobile" style="color: #003a70; font-weight: 600; font-size: 0.9em;"><%= tRespuesta %></td>
           
         </tr>
       <% }) %>
@@ -229,6 +333,9 @@
     <% } %>
   </tbody>
 </table>
+</div>
+
+</div>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
