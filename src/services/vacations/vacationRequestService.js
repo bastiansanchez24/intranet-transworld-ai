@@ -144,11 +144,12 @@ async function approveRequest({ requestId, reviewerId, notes }) {
     }
 
     const days = requestDays(request);
-    const periodId = await balanceService.consumeDaysFifo(
+    const { firstPeriodId, allocations } = await balanceService.consumeDaysFifo(
       client,
       request.user_id,
       days,
     );
+    await balanceService.savePeriodAllocations(client, requestId, allocations);
 
     const { rows: updated } = await client.query(
       `UPDATE vacation_requests
@@ -161,7 +162,7 @@ async function approveRequest({ requestId, reviewerId, notes }) {
         VACATION_STATUS.APPROVED,
         reviewerId,
         notes ? String(notes).trim() : null,
-        periodId,
+        firstPeriodId,
         requestId,
       ],
     );
@@ -180,23 +181,55 @@ async function approveRequest({ requestId, reviewerId, notes }) {
 }
 
 async function rejectRequest({ requestId, reviewerId, reason }) {
-  const request = await getRequestById(requestId);
-  if (!request) return { ok: false, error: "Solicitud no encontrada." };
-  if (request.status !== VACATION_STATUS.PENDING) {
-    return { ok: false, error: "Solo se pueden rechazar solicitudes pendientes." };
-  }
   if (!reason || !String(reason).trim()) {
     return { ok: false, error: "Debes indicar el motivo del rechazo." };
   }
 
-  const { rows } = await db.query(
-    `UPDATE vacation_requests
-     SET status = $1, reviewed_by = $2, reviewed_at = NOW(),
-         reviewer_notes = $3, updated_at = NOW()
-     WHERE id = $4 RETURNING *`,
-    [VACATION_STATUS.REJECTED, reviewerId, String(reason).trim(), requestId],
-  );
-  return { ok: true, request: rows[0] };
+  const client = await db.getClient();
+  try {
+    await client.query("BEGIN");
+
+    const { rows: lockRows } = await client.query(
+      `SELECT * FROM vacation_requests WHERE id = $1 FOR UPDATE`,
+      [requestId],
+    );
+    const request = lockRows[0];
+    if (!request) {
+      await client.query("ROLLBACK");
+      return { ok: false, error: "Solicitud no encontrada." };
+    }
+    if (request.status !== VACATION_STATUS.PENDING) {
+      await client.query("ROLLBACK");
+      return { ok: false, error: "Solo se pueden rechazar solicitudes pendientes." };
+    }
+
+    const { rows } = await client.query(
+      `UPDATE vacation_requests
+       SET status = $1, reviewed_by = $2, reviewed_at = NOW(),
+           reviewer_notes = $3, updated_at = NOW()
+       WHERE id = $4 AND status = $5
+       RETURNING *`,
+      [
+        VACATION_STATUS.REJECTED,
+        reviewerId,
+        String(reason).trim(),
+        requestId,
+        VACATION_STATUS.PENDING,
+      ],
+    );
+    if (rows.length === 0) {
+      await client.query("ROLLBACK");
+      return { ok: false, error: "Solo se pueden rechazar solicitudes pendientes." };
+    }
+
+    await client.query("COMMIT");
+    return { ok: true, request: rows[0] };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 /**
@@ -232,12 +265,20 @@ async function cancelRequest({ requestId, userId, isAdmin = false }) {
           error: "No se puede cancelar una solicitud aprobada que ya comenzó.",
         };
       }
-      // Libera los días consumidos.
-      await balanceService.releaseDays(
+      // Libera los días consumidos (desglose FIFO si existe; fallback legacy).
+      const allocations = await balanceService.getPeriodAllocations(
         client,
-        request.vacation_period_id,
-        requestDays(request),
+        requestId,
       );
+      if (allocations.length > 0) {
+        await balanceService.releaseAllocations(client, allocations);
+      } else {
+        await balanceService.releaseDays(
+          client,
+          request.vacation_period_id,
+          requestDays(request),
+        );
+      }
     } else {
       await client.query("ROLLBACK");
       return { ok: false, error: "Esta solicitud no se puede cancelar." };
