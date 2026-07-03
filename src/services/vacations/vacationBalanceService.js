@@ -192,11 +192,12 @@ function round2(n) {
 /**
  * Consume días de los períodos vigentes en orden FIFO (más antiguo primero).
  * Debe ejecutarse dentro de una transacción (client) tras bloquear con FOR UPDATE.
- * @returns {number|null} id del primer período consumido (para vacation_period_id)
+ * @returns {{ firstPeriodId: number|null, allocations: { periodId: number, days: number }[] }}
  */
 async function consumeDaysFifo(client, userId, days) {
   let remaining = Number(days);
   let firstPeriodId = null;
+  const allocations = [];
 
   const today = toDateOnly(new Date());
   // Bloquea los períodos vigentes para evitar condiciones de carrera al aprobar.
@@ -217,13 +218,44 @@ async function consumeDaysFifo(client, userId, days) {
       [take, p.id],
     );
     if (firstPeriodId === null) firstPeriodId = p.id;
+    allocations.push({ periodId: p.id, days: take });
     remaining -= take;
   }
 
   if (remaining > 0.001) {
     throw new Error("Saldo insuficiente al consumir días de vacaciones.");
   }
-  return firstPeriodId;
+  return { firstPeriodId, allocations };
+}
+
+/** Persiste el desglose FIFO de una solicitud aprobada. */
+async function savePeriodAllocations(client, requestId, allocations) {
+  if (!allocations.length) return;
+  for (const { periodId, days } of allocations) {
+    await client.query(
+      `INSERT INTO vacation_request_period_allocations
+         (vacation_request_id, vacation_period_id, days)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (vacation_request_id, vacation_period_id) DO UPDATE SET
+         days = EXCLUDED.days`,
+      [requestId, periodId, Number(days)],
+    );
+  }
+}
+
+/** Lee el desglose FIFO guardado al aprobar (vacío en solicitudes legacy). */
+async function getPeriodAllocations(client, requestId) {
+  const { rows } = await client.query(
+    `SELECT vacation_period_id AS period_id, days
+     FROM vacation_request_period_allocations
+     WHERE vacation_request_id = $1
+     ORDER BY vacation_period_id ASC`,
+    [requestId],
+  );
+  return rows.map((row) => ({
+    periodId: row.period_id,
+    days: Number(row.days),
+  }));
 }
 
 /** Libera días devueltos al cancelar una solicitud aprobada. */
@@ -235,6 +267,13 @@ async function releaseDays(client, periodId, days) {
      WHERE id = $2`,
     [Number(days), periodId],
   );
+}
+
+/** Libera el desglose FIFO completo de una solicitud cancelada. */
+async function releaseAllocations(client, allocations) {
+  for (const { periodId, days } of allocations) {
+    await releaseDays(client, periodId, days);
+  }
 }
 
 /** Aplica un ajuste manual de saldo + auditoría. */
@@ -272,6 +311,9 @@ module.exports = {
   getAvailableBalance,
   getBalanceSummary,
   consumeDaysFifo,
+  savePeriodAllocations,
+  getPeriodAllocations,
   releaseDays,
+  releaseAllocations,
   applyAdjustment,
 };

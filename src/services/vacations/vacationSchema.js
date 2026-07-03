@@ -63,6 +63,16 @@ const DDL_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_vacation_requests_status ON vacation_requests (status)`,
   `CREATE INDEX IF NOT EXISTS idx_vacation_requests_dates ON vacation_requests (start_date, end_date)`,
 
+  // vacation_request_period_allocations — desglose FIFO por período al aprobar
+  `CREATE TABLE IF NOT EXISTS vacation_request_period_allocations (
+    vacation_request_id INTEGER NOT NULL REFERENCES vacation_requests(id) ON DELETE CASCADE,
+    vacation_period_id  INTEGER NOT NULL REFERENCES vacation_periods(id) ON DELETE CASCADE,
+    days                NUMERIC(5,2) NOT NULL CHECK (days > 0),
+    PRIMARY KEY (vacation_request_id, vacation_period_id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_vacation_request_period_allocations_period
+    ON vacation_request_period_allocations (vacation_period_id)`,
+
   // vacation_balance_adjustments
   `CREATE TABLE IF NOT EXISTS vacation_balance_adjustments (
     id                 SERIAL PRIMARY KEY,
