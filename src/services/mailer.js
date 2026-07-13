@@ -30,29 +30,36 @@ Transworld Power & Telcom SpA
 
 // Configuración de la API de Brevo
 const apiInstance = new Brevo.TransactionalEmailsApi();
+const brevoApiKey = process.env.BREVO_API_KEY || process.env.SMTP_PASS || '';
 apiInstance.setApiKey(
   Brevo.TransactionalEmailsApiApiKeys.apiKey,
-  process.env.BREVO_API_KEY || process.env.SMTP_PASS
+  brevoApiKey
 );
 
-const sendMail = async ({ to, subject, text, html, bcc }) => {
+const sendMail = async ({ to, subject, text, html, bcc, skipFooter = false, senderName }) => {
+  if (!brevoApiKey) {
+    throw new Error('Falta BREVO_API_KEY o SMTP_PASS (API key de Brevo) en las variables de entorno');
+  }
+  if (!process.env.MAIL_FROM) {
+    throw new Error('Falta MAIL_FROM (remitente verificado en Brevo) en las variables de entorno');
+  }
+
   const sendSmtpEmail = new Brevo.SendSmtpEmail();
 
   sendSmtpEmail.subject = subject;
   
   // Si hay texto plano, le adjuntamos la firma en texto plano
   if (text) {
-    sendSmtpEmail.textContent = text + "\n\n" + EMAIL_FOOTER_TEXT;
+    sendSmtpEmail.textContent = skipFooter ? text : text + "\n\n" + EMAIL_FOOTER_TEXT;
   }
   
   // Si hay HTML, le adjuntamos la firma en HTML
   if (html) {
-    // Cerramos los divs correctamente por si acaso
-    sendSmtpEmail.htmlContent = html + EMAIL_FOOTER_HTML;
+    sendSmtpEmail.htmlContent = skipFooter ? html : html + EMAIL_FOOTER_HTML;
   }
 
   sendSmtpEmail.sender = { 
-    name: "Intranet Transworld", 
+    name: senderName || "Intranet Transworld", 
     email: process.env.MAIL_FROM 
   };
   
@@ -70,10 +77,11 @@ const sendMail = async ({ to, subject, text, html, bcc }) => {
 
   try {
     const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Correo enviado exitosamente vía API de Brevo');
+    console.log('✅ Correo enviado exitosamente vía API de Brevo');
     return data;
   } catch (error) {
-    console.error('Error al enviar vía API de Brevo:', error);
+    const detail = error?.response?.data || error?.body || error?.message;
+    console.error('❌ Error al enviar vía API de Brevo:', detail);
     throw error;
   }
 };

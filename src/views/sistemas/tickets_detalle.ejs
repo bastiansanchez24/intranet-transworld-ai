@@ -1,62 +1,11 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title><%= formatPageTitle(titulo) %></title>
-  <link rel="stylesheet" href="/css/styles.css" />
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; }
-    .ticket-container { max-width: 900px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 30px; }
-    
-    .cabecera-detalle { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-    .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.85em; font-weight: bold; }
-    .bg-success { background-color: #28a745; color: white; }
-    .bg-warning { background-color: #ffc107; color: #333; }
-    .bg-danger { background-color: #dc3545; color: white; }
-    .bg-secondary { background-color: #6c757d; color: white; }
-    .bg-primary { background-color: #007bff; color: white; }
-
-    .char-counter { font-size: 0.8rem; color: #666; text-align: right; margin-top: 4px; margin-bottom: 10px; }
-    .char-counter.limit-reached { color: #dc3545; font-weight: bold; }
-    
-    .seccion-info p { margin: 5px 0; color: #555; }
-    .seccion-info strong { color: #333; }
-
-    .historial-container { margin-top: 30px; }
-    .mensaje-card { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-    .mensaje-card.soporte { border-left: 5px solid #003a70; background: #f0f7ff; }
-    .mensaje-card.usuario { border-left: 5px solid #28a745; }
-    .mensaje-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9em; color: #666; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-    
-    .form-respuesta { margin-top: 30px; background: #fff; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
-    textarea, select, input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; font-family: inherit; box-sizing: border-box; }
-    .btn { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    .btn-primario { background-color: #003a70; color: white; }
-    .btn-primario:hover { background-color: #002a52; }
-    .btn-secundario { background-color: #6c757d; color: white; text-decoration: none; }
-    .btn-success { background-color: #28a745; color: white; }
-
-    .acciones-rapidas { margin-top: 20px; display: flex; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
-    
-    .adjuntos-wrapper { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
-    .seccion-adjunto { margin-bottom: 15px; }
-    .titulo-adjunto { font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-    .grid-imagenes { display: flex; gap: 15px; flex-wrap: wrap; }
-    .thumb-imagen { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; transition: transform 0.2s; }
-    .thumb-imagen:hover { transform: scale(1.05); }
-    .lista-archivos { list-style: none; padding: 0; margin: 0; }
-    .lista-archivos li { margin-bottom: 5px; }
-    .lista-archivos a { text-decoration: none; color: #0056b3; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; }
-    .lista-archivos a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
+<div class="contenedor contenedor--narrow ticket-detail-view <%= (typeof isModal !== 'undefined' && isModal) ? 'ticket-detail-view--modal' : '' %>">
+  <% if (typeof isModal === 'undefined' || !isModal) { %>
+  <div class="ticket-detail-back">
+    <a href="/sistemas/tickets" class="link-volver">← Volver al Listado</a>
+  </div>
+  <% } %>
 
 <div class="ticket-container">
-  
-  <div style="margin-bottom: 15px;">
-    <a href="/sistemas/tickets" class="btn btn-secundario">← Volver al Listado</a>
-  </div>
 
   <% 
     const estadoLabels = { open: 'Abierto', in_progress: 'En curso', pending_close: 'Pendiente de cierre', closed: 'Cerrado' };
@@ -76,28 +25,31 @@
 
   <div class="cabecera-detalle">
     <div>
-      <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-        <h2 style="margin: 0; color: #003a70;">Ticket #<%= ticket.id %></h2>
-        <span class="badge <%= badgeEstado %>" style="font-size: 0.9em;"><%= estadoLabels[ticket.status] || ticket.status %></span>
+      <div class="ticket-header-main">
+        <h2 class="ticket-detail-heading">Ticket #<%= ticket.id %></h2>
+        <span class="badge <%= badgeEstado %>"><%= estadoLabels[ticket.status] || ticket.status %></span>
         
         <% if (user && typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-            <button id="btnTomarTicket" onclick="tomarTicket(<%= ticket.id %>)" 
-                    style="padding: 6px 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: 0.3s;
-                    <%= ticket.assigned_to ? 'background-color: #28a745; color: white;' : 'background-color: #0056b3; color: white;' %>">
+            <button
+              id="btnTomarTicket"
+              type="button"
+              data-take-ticket="<%= ticket.id %>"
+              class="btn-tomar-ticket <%= ticket.assigned_to ? 'is-assigned' : '' %>"
+            >
                 <%= ticket.assigned_to ? 'Ticket tomado por ' + ticket.assigned_to : 'Tomar Ticket' %>
             </button>
         <% } %>
 
       </div>
-      <h3 style="margin: 10px 0 0 0; color: #333;"><%= ticket.title %></h3>
+      <h3 class="ticket-detail-subtitle"><%= ticket.title %></h3>
     </div>
-    <div style="text-align: right; color: #666; font-size: 0.9em;">
-      <p style="margin: 0;"><strong>Creado:</strong> <%= new Date(ticket.created_at).toLocaleString('es-CL') %></p>
+    <div class="ticket-detail-meta">
+      <p><strong>Creado:</strong> <%= new Date(ticket.created_at).toLocaleString('es-CL') %></p>
       <% if (ticket.fecha_resolucion) { %>
-        <p style="margin: 5px 0 0 0;"><strong>Pendiente de cierre:</strong> <%= new Date(ticket.fecha_resolucion).toLocaleString('es-CL') %></p>
+        <p><strong>Pendiente de cierre:</strong> <%= new Date(ticket.fecha_resolucion).toLocaleString('es-CL') %></p>
       <% } %>
       <% if (ticket.fecha_cierre) { %>
-        <p style="margin: 5px 0 0 0;"><strong>Cerrado:</strong> <%= new Date(ticket.fecha_cierre).toLocaleString('es-CL') %></p>
+        <p><strong>Cerrado:</strong> <%= new Date(ticket.fecha_cierre).toLocaleString('es-CL') %></p>
       <% } %>
     </div>
   </div>
@@ -108,9 +60,9 @@
       <strong>Categoría:</strong> <%= ticket.category || 'Sin clasificar' %> | 
       <strong>Prioridad:</strong> <span class="badge <%= badgePrioridad %>"><%= prioridadLabels[ticket.priority] || ticket.priority %></span>
     </p>
-    <div style="margin-top: 20px; padding: 15px; background: #fdfdfd; border-radius: 6px; border: 1px solid #eee;">
-      <strong style="display:block; margin-bottom: 10px; color: #003a70;">Descripción del requerimiento:</strong>
-      <p style="white-space: pre-wrap; font-family: monospace; color: #444; font-size: 1rem;"><%= ticket.description %></p>
+    <div class="ticket-description-box">
+      <strong class="ticket-description-label">Descripción del requerimiento:</strong>
+      <p class="ticket-description-text"><%= ticket.description %></p>
       
       <% 
         let ticketAdjuntos = [];
@@ -156,7 +108,7 @@
   </div>
 
   <div class="historial-container">
-    <h3 style="color: #003a70; border-bottom: 2px solid #eee; padding-bottom: 10px;">Historial de Mensajes</h3>
+    <h3 class="ticket-section-title">Historial de Mensajes</h3>
     
     <% if (respuestas && respuestas.length > 0) { %>
       <% respuestas.forEach(r => { 
@@ -167,7 +119,7 @@
             <strong><%= r.remitente %></strong>
             <span><%= new Date(r.fecha).toLocaleString('es-CL') %></span>
           </div>
-          <p style="white-space: pre-wrap; margin: 0; color: #333;"><%= r.mensaje %></p>
+          <p class="ticket-message-text"><%= r.mensaje %></p>
           
           <% 
             let respAdjuntos = [];
@@ -177,7 +129,7 @@
             }
           %>
           <% if(respAdjuntos && respAdjuntos.length > 0) { %>
-            <div class="adjuntos-wrapper" style="border-top-color: #ddd;">
+            <div class="adjuntos-wrapper adjuntos-wrapper--reply">
               
               <% const imagenes = respAdjuntos.filter(a => a.tipo === 'image'); %>
               <% if(imagenes.length > 0) { %>
@@ -186,7 +138,7 @@
                   <div class="grid-imagenes">
                     <% imagenes.forEach(img => { %>
                       <a href="<%= img.url %>" target="_blank" title="<%= img.nombre %>">
-                        <img src="<%= img.url %>" alt="Adjunto" class="thumb-imagen" style="width:80px; height:80px;">
+                        <img src="<%= img.url %>" alt="Adjunto" class="thumb-imagen thumb-imagen--small">
                       </a>
                     <% }) %>
                   </div>
@@ -215,21 +167,21 @@
         </div>
       <% }) %>
     <% } else { %>
-      <p style="color: #777; font-style: italic;">Aún no hay respuestas en este ticket.</p>
+      <p class="ticket-empty-message">Aún no hay respuestas en este ticket.</p>
     <% } %>
   </div>
 
   <% if (ticket.status === 'pending_close' && user.email === ticket.requester_email) { %>
     <div class="acciones-rapidas">
-      <div style="flex: 1;">
-        <h4 style="margin: 0 0 10px 0; color: #28a745;">El equipo de TI ha marcado este ticket como Pendiente de cierre.</h4>
-        <p style="margin: 0 0 10px 0; font-size: 0.9em; color: #555;">Por favor, confirma si tu problema fue solucionado para cerrar el ticket, o recházalo si aún necesitas ayuda.</p>
-        <div style="display: flex; gap: 10px;">
+      <div class="acciones-rapidas__body">
+        <h4 class="acciones-rapidas__title">El equipo de TI ha marcado este ticket como Pendiente de cierre.</h4>
+        <p class="acciones-rapidas__text">Por favor, confirma si tu problema fue solucionado para cerrar el ticket, o recházalo si aún necesitas ayuda.</p>
+        <div class="acciones-rapidas__forms">
           <form action="/sistemas/tickets/<%= ticket.id %>/confirmar" method="POST">
             <button type="submit" class="btn btn-success">Confirmar Solución</button>
           </form>
           <form action="/sistemas/tickets/<%= ticket.id %>/rechazar" method="POST">
-            <button type="submit" class="btn" style="background-color: #dc3545; color: white;" onclick="return confirm('¿Estás seguro de reabrir el ticket?')">Aún tengo problemas</button>
+            <button type="submit" class="btn btn-danger" data-confirm-message="¿Estás seguro de reabrir el ticket?">Aún tengo problemas</button>
           </form>
         </div>
       </div>
@@ -239,12 +191,12 @@
   <% if (ticket.status !== 'closed') { %>
     
     <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-      <div class="form-respuesta" style="border-top: 4px solid #003a70;">
-        <h3 style="margin-top: 0; color: #003a70;">Panel de Gestión (TI)</h3>
+      <div class="form-respuesta form-respuesta--admin">
+        <h3 class="ticket-detail-subtitle">Panel de Gestión (TI)</h3>
         
         <form id="form-upload-admin" action="/sistemas/tickets/<%= ticket.id %>/actualizar" method="POST">
-          <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-            <div style="flex: 1;">
+          <div class="ticket-form-grid">
+            <div>
               <label>Categoría:</label>
               <select name="category">
                 <option value="SAP" <%= ticket.category==='SAP'?'selected':'' %>>SAP</option>
@@ -254,7 +206,7 @@
                 <option value="Otro" <%= ticket.category==='Otro'?'selected':'' %>>Otro</option>
               </select>
             </div>
-            <div style="flex: 1;">
+            <div>
               <label>Prioridad:</label>
               <select name="priority">
                 <option value="low" <%= ticket.priority==='low'?'selected':'' %>>Baja</option>
@@ -262,9 +214,9 @@
                 <option value="high" <%= ticket.priority==='high'?'selected':'' %>>Alta</option>
               </select>
             </div>
-            <div style="flex: 1;">
+            <div>
               <label>Estado:</label>
-              <select name="status" style="background-color: #fffdf5; border-color: #ffc107; font-weight: bold;">
+              <select name="status" class="ticket-status-select">
                 <option value="open" <%= ticket.status==='open'?'selected':'' %>>Abierto</option>
                 <option value="in_progress" <%= ticket.status==='in_progress'?'selected':'' %>>En curso</option>
                 <option value="pending_close" <%= ticket.status==='pending_close'?'selected':'' %>>Marcar como Pendiente de cierre</option>
@@ -277,27 +229,27 @@
           <textarea id="mensajeAdmin" name="mensaje_respuesta" rows="4" placeholder="Escribe aquí para notificar al usuario..." maxlength="2000"></textarea>
           <div id="charCountAdmin" class="char-counter">0 / 2000 caracteres</div>
 
-          <label style="font-weight: bold; margin-top: 10px; display: block;">Adjuntar archivos (opcional):</label>
-          <input type="file" id="archivos_admin" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="margin-bottom: 10px;">
+          <label class="ticket-files-label">Adjuntar archivos (opcional):</label>
+          <input type="file" id="archivos_admin" class="ticket-file-input" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
           <input type="hidden" name="adjuntos_data" id="adjuntos_data_admin">
-          <div id="upload-status-admin" style="font-size: 0.9em; margin-bottom: 15px;"></div>
+          <div id="upload-status-admin" class="ticket-upload-status"></div>
 
-          <button type="submit" class="btn btn-primario" id="btn-submit-admin" style="width: 100%;">Actualizar Ticket</button>
+          <button type="submit" class="btn btn-primario ticket-submit-full" id="btn-submit-admin">Actualizar Ticket</button>
         </form>
       </div>
 
     <% } else { %>
       
       <div class="form-respuesta">
-        <h3 style="margin-top: 0;">Añadir un comentario</h3>
+        <h3 class="ticket-detail-subtitle">Añadir un comentario</h3>
         <form id="form-upload-user" action="/sistemas/tickets/<%= ticket.id %>/responder" method="POST">
           <textarea id="mensajeUser" name="mensaje_respuesta" rows="4" placeholder="Escribe tu mensaje aquí..." required maxlength="2000"></textarea>
           <div id="charCountUser" class="char-counter">0 / 2000 caracteres</div>
           
-          <label style="font-weight: bold; margin-top: 10px; display: block;">Adjuntar archivos (opcional):</label>
-          <input type="file" id="archivos_user" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="margin-bottom: 10px;">
+          <label class="ticket-files-label">Adjuntar archivos (opcional):</label>
+          <input type="file" id="archivos_user" class="ticket-file-input" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
           <input type="hidden" name="adjuntos_data" id="adjuntos_data_user">
-          <div id="upload-status-user" style="font-size: 0.9em; margin-bottom: 15px;"></div>
+          <div id="upload-status-user" class="ticket-upload-status"></div>
 
           <button type="submit" class="btn btn-primario" id="btn-submit-user">Enviar Mensaje</button>
         </form>
@@ -305,126 +257,11 @@
     <% } %>
 
   <% } else { %>
-    <div style="margin-top: 30px; text-align: center; padding: 20px; background: #e9ecef; border-radius: 8px;">
-      <h3 style="color: #555; margin: 0;">Este ticket se encuentra cerrado.</h3>
-      <p style="margin: 5px 0 0 0; color: #777;">Si tienes un problema similar, por favor abre un nuevo ticket.</p>
+    <div class="ticket-closed-box">
+      <h3>Este ticket se encuentra cerrado.</h3>
+      <p>Si tienes un problema similar, por favor abre un nuevo ticket.</p>
     </div>
   <% } %>
 
 </div>
-
-<script>
-    // --- LÓGICA DE BOTÓN TOMAR TICKET ---
-    async function tomarTicket(ticketId) {
-        const btn = document.getElementById('btnTomarTicket');
-        
-        if (btn.innerText.includes('tomado exitosamente')) return; 
-        
-        btn.disabled = true;
-        btn.innerText = 'Asignando...';
-        
-        try {
-            const res = await fetch(`/sistemas/tickets/${ticketId}/tomar`, { method: 'POST' });
-            const data = await res.json();
-            
-            if (data.success) {
-                btn.style.backgroundColor = '#28a745'; // Verde
-                btn.innerText = 'Ticket tomado exitosamente.';
-                
-                setTimeout(() => {
-                   btn.innerText = 'Ticket tomado por ' + data.assigned_to;
-                   btn.disabled = false;
-                }, 2500);
-            } else {
-                alert('Error: ' + data.error);
-                btn.disabled = false;
-                btn.innerText = 'Tomar Ticket';
-            }
-        } catch (err) {
-            console.error(err);
-            btn.disabled = false;
-            btn.innerText = 'Tomar Ticket';
-        }
-    }
-
-    // --- CONTADORES DE CARACTERES ---
-    const MAX_CHARS = 2000;
-    function initCharCounter(textareaId, counterId) {
-        const textarea = document.getElementById(textareaId);
-        const counter = document.getElementById(counterId);
-        if (textarea && counter) {
-            textarea.addEventListener('input', function() {
-                const currentLength = this.value.length;
-                counter.innerText = `${currentLength} / ${MAX_CHARS} caracteres`;
-                
-                if (currentLength >= MAX_CHARS) {
-                    counter.classList.add('limit-reached');
-                } else {
-                    counter.classList.remove('limit-reached');
-                }
-            });
-        }
-    }
-
-    initCharCounter('mensajeAdmin', 'charCountAdmin');
-    initCharCounter('mensajeUser', 'charCountUser');
-
-    // --- LÓGICA DE SUBIDA LOCAL PARA MÚLTIPLES ARCHIVOS ---
-    function setupLocalUpload(formId, inputFilesId, hiddenDataId, statusId, btnSubmitId) {
-      const form = document.getElementById(formId);
-      const inputFiles = document.getElementById(inputFilesId);
-      const hiddenInput = document.getElementById(hiddenDataId);
-      const statusDiv = document.getElementById(statusId);
-      const btnSubmit = document.getElementById(btnSubmitId);
-
-      if (!form || !inputFiles) return;
-
-      form.addEventListener('submit', async (e) => {
-        const files = inputFiles.files;
-        if (files.length === 0) return; 
-
-        e.preventDefault(); 
-        if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.innerText = 'Subiendo archivos...'; }
-        statusDiv.innerHTML = `<span style="color:#0056b3">Preparando subida (${files.length} archivo/s)...</span>`;
-
-        try {
-          let uploadedList = [];
-
-          for (let i = 0; i < files.length; i++) {
-             const file = files[i];
-             statusDiv.innerHTML = `<span style="color:#0056b3">Subiendo archivo ${i+1} de ${files.length}: ${file.name}...</span>`;
-
-             const formData = new FormData();
-             formData.append('file', file);
-
-             let type = 'raw'; let dbType = 'doc';
-             if (file.type.startsWith('video/')) { type = 'video'; dbType = 'video'; } 
-             else if (file.type.startsWith('image/')) { type = 'image'; dbType = 'image'; } 
-             else if (file.type === 'application/pdf') { type = 'image'; dbType = 'pdf'; }
-
-             const resUp = await fetch('/sistemas/tickets/upload', { method: 'POST', body: formData });
-             if (!resUp.ok) throw new Error('Fallo subida');
-             const data = await resUp.json();
-
-             uploadedList.push({ url: data.secure_url, nombre: file.name, tipo: dbType });
-          }
-
-          hiddenInput.value = JSON.stringify(uploadedList);
-          statusDiv.innerHTML = `<span style="color:green">Subida lista. Guardando...</span>`;
-          form.submit();
-
-        } catch (err) {
-          console.error(err);
-          statusDiv.innerHTML = `<span style="color:red">Error</span>`;
-          if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerText = 'Intentar de nuevo'; }
-        }
-      });
-    }
-
-    setupLocalUpload('form-upload-admin', 'archivos_admin', 'adjuntos_data_admin', 'upload-status-admin', 'btn-submit-admin');
-    setupLocalUpload('form-upload-user', 'archivos_user', 'adjuntos_data_user', 'upload-status-user', 'btn-submit-user');
-
-</script>
-
-</body>
-</html>
+</div>

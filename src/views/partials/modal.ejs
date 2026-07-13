@@ -1,0 +1,23 @@
+<div
+  id="<%= id %>"
+  class="modal-overlay <%= typeof overlayClass !== 'undefined' ? overlayClass : '' %>"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="<%= titleId %>"
+  aria-hidden="true"
+>
+  <div class="modal-content2 <%= typeof panelClass !== 'undefined' ? panelClass : '' %>">
+    <button
+      type="button"
+      class="modal-content2-close"
+      aria-label="<%= typeof closeLabel !== 'undefined' ? closeLabel : 'Cerrar modal' %>"
+      data-modal-close
+    >&times;</button>
+
+    <% if (typeof title !== 'undefined' && title) { %>
+      <h3 id="<%= titleId %>" class="modal-title <%= typeof titleClass !== 'undefined' ? titleClass : '' %>"><%= title %></h3>
+    <% } %>
+
+    <%- body %>
+  </div>
+</div>

@@ -1,0 +1,1751 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Registro al Evento · Transworld Connect</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                background: #0b1530;
+                font-family: "Outfit", sans-serif;
+            }
+
+            input,
+            select {
+                font-family: "Outfit", sans-serif;
+            }
+
+            input:focus,
+            select:focus {
+                outline: none;
+            }
+
+            button {
+                font-family: "Outfit", sans-serif;
+            }
+
+            @keyframes twFloat {
+                0% {
+                    transform: translateY(0) translateX(0);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 0.7;
+                }
+                90% {
+                    opacity: 0.5;
+                }
+                100% {
+                    transform: translateY(-110vh) translateX(30px);
+                    opacity: 0;
+                }
+            }
+
+            @keyframes twGlowPulse {
+                0%,
+                100% {
+                    opacity: 0.35;
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 0.65;
+                    transform: scale(1.15);
+                }
+            }
+
+            @keyframes twCardIn {
+                0% {
+                    opacity: 0;
+                    transform: translateY(28px) scale(0.97);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            @keyframes twFieldIn {
+                0% {
+                    opacity: 0;
+                    transform: translateY(14px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes twShake {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                20% {
+                    transform: translateX(-7px);
+                }
+                40% {
+                    transform: translateX(7px);
+                }
+                60% {
+                    transform: translateX(-4px);
+                }
+                80% {
+                    transform: translateX(4px);
+                }
+            }
+
+            @keyframes twPop {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.6);
+                }
+                70% {
+                    transform: scale(1.06);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            @keyframes twSpin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes twScan {
+                0%,
+                100% {
+                    top: 6%;
+                }
+                50% {
+                    top: 88%;
+                }
+            }
+
+            @keyframes twCheckDraw {
+                to {
+                    stroke-dashoffset: 0;
+                }
+            }
+
+            .hidden {
+                display: none !important;
+            }
+
+            .page {
+                position: relative;
+                min-height: 100vh;
+                overflow: hidden;
+                background-image: url("img/FONDO-TW-CONNECT.png");
+                background-size: cover;
+                background-position: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 48px 24px;
+                box-sizing: border-box;
+            }
+
+            .page-overlay {
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(
+                    ellipse 60% 80% at 50% 50%,
+                    rgba(6, 12, 32, 0) 0%,
+                    rgba(6, 12, 32, 0.55) 100%
+                );
+                pointer-events: none;
+            }
+
+            .glow {
+                position: absolute;
+                border-radius: 50%;
+                filter: blur(40px);
+                animation: twGlowPulse 7s ease-in-out infinite;
+                pointer-events: none;
+            }
+
+            .glow--lime {
+                width: 560px;
+                height: 560px;
+                left: -160px;
+                bottom: -200px;
+                background: radial-gradient(
+                    circle,
+                    rgba(139, 197, 64, 0.28) 0%,
+                    rgba(139, 197, 64, 0) 70%
+                );
+            }
+
+            .glow--blue {
+                width: 640px;
+                height: 640px;
+                right: -200px;
+                top: -220px;
+                filter: blur(50px);
+                background: radial-gradient(
+                    circle,
+                    rgba(70, 120, 255, 0.3) 0%,
+                    rgba(70, 120, 255, 0) 70%
+                );
+                animation-duration: 9s;
+                animation-delay: 1.5s;
+            }
+
+            #particles {
+                position: absolute;
+                inset: 0;
+                overflow: hidden;
+                pointer-events: none;
+            }
+
+            .card {
+                position: relative;
+                width: 100%;
+                max-width: 460px;
+                border-radius: 24px;
+                background: rgba(10, 18, 42, 0.62);
+                backdrop-filter: blur(22px) saturate(1.3);
+                -webkit-backdrop-filter: blur(22px) saturate(1.3);
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                box-shadow:
+                    0 30px 80px rgba(0, 0, 0, 0.55),
+                    0 0 0 1px rgba(139, 197, 64, 0.08),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                animation: twCardIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+                overflow: hidden;
+            }
+
+            .card-accent {
+                height: 3px;
+                background: linear-gradient(
+                    90deg,
+                    rgba(139, 197, 64, 0) 0%,
+                    #8bc540 30%,
+                    #c4f24a 50%,
+                    #8bc540 70%,
+                    rgba(139, 197, 64, 0) 100%
+                );
+            }
+
+            .card-body {
+                padding: 40px 40px 36px;
+            }
+
+            .loader {
+                text-align: center;
+                color: rgba(255, 255, 255, 0.65);
+                font-size: 15px;
+                padding: 20px 0;
+            }
+
+            .loader-spinner {
+                width: 28px;
+                height: 28px;
+                border: 2.5px solid rgba(255, 255, 255, 0.15);
+                border-top-color: #c4f24a;
+                border-radius: 50%;
+                display: inline-block;
+                animation: twSpin 0.7s linear infinite;
+                margin-bottom: 14px;
+            }
+
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 14px;
+                border-radius: 999px;
+                background: rgba(139, 197, 64, 0.12);
+                border: 1px solid rgba(139, 197, 64, 0.35);
+                margin-bottom: 18px;
+            }
+
+            .badge-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #a3e635;
+                box-shadow: 0 0 8px #a3e635;
+            }
+
+            .badge-text {
+                font-size: 11.5px;
+                font-weight: 600;
+                letter-spacing: 2.5px;
+                color: #c4f24a;
+                text-transform: uppercase;
+            }
+
+            .header-block {
+                text-align: center;
+                animation: twFieldIn 0.6s 0.15s cubic-bezier(0.22, 1, 0.36, 1)
+                    both;
+            }
+
+            .header-title {
+                margin: 0;
+                font-size: 26px;
+                font-weight: 800;
+                color: #ffffff;
+                letter-spacing: -0.5px;
+            }
+
+            .header-sub {
+                margin: 10px 0 0;
+                font-size: 14.5px;
+                font-weight: 400;
+                color: rgba(255, 255, 255, 0.65);
+                line-height: 1.5;
+            }
+
+            .header-event {
+                font-size: 22px;
+                font-weight: 700;
+                color: #c4f24a;
+            }
+
+            .fields {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                margin-top: 30px;
+            }
+
+            .field-wrap {
+                animation-name: twFieldIn;
+                animation-duration: 0.6s;
+                animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+                animation-fill-mode: both;
+            }
+
+            .field-inner {
+                position: relative;
+            }
+
+            .field-inner.shake {
+                animation: twShake 0.45s ease;
+            }
+
+            .field-input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 24px 18px 10px;
+                font-size: 15.5px;
+                font-weight: 500;
+                color: #ffffff;
+                background: rgba(255, 255, 255, 0.055);
+                border: 1.5px solid rgba(255, 255, 255, 0.14);
+                border-radius: 14px;
+                transition:
+                    border-color 0.25s,
+                    background 0.25s,
+                    box-shadow 0.25s;
+                caret-color: #c4f24a;
+            }
+
+            .field-input:focus {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(163, 230, 53, 0.75);
+                box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.13);
+            }
+
+            .field-input.error {
+                border-color: rgba(255, 110, 140, 0.7);
+            }
+
+            .field-input.filled + .field-label,
+            .field-input:focus + .field-label {
+                top: 9px;
+                font-size: 11px;
+            }
+
+            .field-input.error + .field-label {
+                color: #ff8fa3;
+            }
+
+            .field-input:focus + .field-label {
+                color: #c4f24a;
+            }
+
+            .field-label {
+                position: absolute;
+                left: 18px;
+                top: 17px;
+                font-size: 15px;
+                font-weight: 500;
+                color: rgba(255, 255, 255, 0.55);
+                pointer-events: none;
+                transition:
+                    top 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                    font-size 0.22s,
+                    color 0.22s;
+                letter-spacing: 0.2px;
+            }
+
+            .field-valid {
+                position: absolute;
+                right: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: rgba(139, 197, 64, 0.18);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                animation: twPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+            }
+
+            .field-valid::after {
+                content: "";
+                width: 9px;
+                height: 5px;
+                border-left: 2px solid #a3e635;
+                border-bottom: 2px solid #a3e635;
+                transform: rotate(-45deg) translate(0, -1px);
+                display: block;
+            }
+
+            .field-input.valid ~ .field-valid {
+                display: flex;
+            }
+
+            .field-select {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 17px 40px 17px 18px;
+                font-size: 15.5px;
+                font-weight: 500;
+                color: rgba(255, 255, 255, 0.55);
+                background: rgba(255, 255, 255, 0.055);
+                border: 1.5px solid rgba(255, 255, 255, 0.14);
+                border-radius: 14px;
+                transition:
+                    border-color 0.25s,
+                    background 0.25s,
+                    box-shadow 0.25s,
+                    color 0.25s;
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                cursor: pointer;
+            }
+
+            .field-select.filled {
+                color: #ffffff;
+            }
+
+            .field-select option {
+                color: #0b1530;
+                background: #ffffff;
+            }
+
+            .field-select:focus {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(163, 230, 53, 0.75);
+                box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.13);
+            }
+
+            .field-select.error {
+                border-color: rgba(255, 110, 140, 0.7);
+            }
+
+            .field-select-arrow {
+                position: absolute;
+                right: 18px;
+                top: 50%;
+                width: 9px;
+                height: 9px;
+                border-right: 2px solid rgba(255, 255, 255, 0.6);
+                border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+                rotate: 45deg;
+                pointer-events: none;
+                margin-top: -6px;
+            }
+
+            .field-error {
+                margin: 6px 4px 0;
+                font-size: 12.5px;
+                color: #ff8fa3;
+                font-weight: 500;
+                display: none;
+            }
+
+            .field-error.visible {
+                display: block;
+            }
+
+            .submit-wrap {
+                margin-top: 28px;
+                animation: twFieldIn 0.6s 0.75s cubic-bezier(0.22, 1, 0.36, 1)
+                    both;
+            }
+
+            .btn-submit {
+                position: relative;
+                width: 100%;
+                padding: 17px;
+                border: none;
+                border-radius: 14px;
+                background: linear-gradient(
+                    135deg,
+                    #8bc540 0%,
+                    #a8dc4a 50%,
+                    #8bc540 100%
+                );
+                background-size: 200% 200%;
+                color: #0b1530;
+                font-size: 16px;
+                font-weight: 700;
+                letter-spacing: 0.3px;
+                cursor: pointer;
+                box-shadow:
+                    0 10px 30px rgba(139, 197, 64, 0.35),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+                transition:
+                    transform 0.2s,
+                    box-shadow 0.25s,
+                    background-position 0.4s;
+                overflow: hidden;
+            }
+
+            .btn-submit:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow:
+                    0 16px 40px rgba(139, 197, 64, 0.5),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+                background-position: 100% 100%;
+            }
+
+            .btn-submit:active:not(:disabled) {
+                transform: translateY(0) scale(0.98);
+            }
+
+            .btn-submit:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+
+            .btn-submit-inner {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                justify-content: center;
+            }
+
+            .btn-spinner {
+                width: 17px;
+                height: 17px;
+                border: 2.5px solid rgba(11, 21, 48, 0.25);
+                border-top-color: #0b1530;
+                border-radius: 50%;
+                display: inline-block;
+                animation: twSpin 0.7s linear infinite;
+            }
+
+            .form-note {
+                margin: 16px 0 0;
+                text-align: center;
+                font-size: 12px;
+                color: rgba(255, 255, 255, 0.45);
+                line-height: 1.5;
+            }
+
+            .error-box {
+                margin-top: 20px;
+                padding: 14px 18px;
+                border-radius: 12px;
+                border: 1px solid rgba(255, 110, 140, 0.5);
+                background: rgba(255, 110, 140, 0.1);
+                color: #ff8fa3;
+                font-size: 13.5px;
+                font-weight: 500;
+                text-align: center;
+                display: none;
+            }
+
+            .error-box.visible {
+                display: block;
+                animation: twShake 0.45s ease;
+            }
+
+            #success {
+                padding: 40px 40px 36px;
+                text-align: center;
+            }
+
+            .success-check-wrap {
+                animation: twPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+            }
+
+            .success-check-circle {
+                width: 64px;
+                height: 64px;
+                margin: 0 auto;
+                border-radius: 50%;
+                background: rgba(139, 197, 64, 0.15);
+                border: 1.5px solid rgba(139, 197, 64, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 0 30px rgba(139, 197, 64, 0.35);
+            }
+
+            .success-check-circle path {
+                stroke-dasharray: 30;
+                stroke-dashoffset: 30;
+                animation: twCheckDraw 0.5s 0.3s ease forwards;
+            }
+
+            .success-title {
+                margin: 20px 0 0;
+                font-size: 27px;
+                font-weight: 800;
+                color: #ffffff;
+                animation: twFieldIn 0.5s 0.15s both;
+            }
+
+            .success-desc {
+                margin: 8px 0 0;
+                font-size: 14px;
+                color: rgba(255, 255, 255, 0.65);
+                animation: twFieldIn 0.5s 0.25s both;
+            }
+
+            .qr-wrap {
+                position: relative;
+                display: inline-block;
+                margin-top: 26px;
+                padding: 16px;
+                background: #ffffff;
+                border-radius: 18px;
+                box-shadow:
+                    0 20px 50px rgba(0, 0, 0, 0.45),
+                    0 0 0 1px rgba(139, 197, 64, 0.3),
+                    0 0 40px rgba(139, 197, 64, 0.2);
+                animation: twPop 0.55s 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+            }
+
+            .success-qr {
+                width: 168px;
+                height: 168px;
+                object-fit: contain;
+                display: block;
+            }
+
+            .qr-scan {
+                position: absolute;
+                left: 8px;
+                right: 8px;
+                height: 3px;
+                border-radius: 3px;
+                background: linear-gradient(
+                    90deg,
+                    rgba(139, 197, 64, 0),
+                    #8bc540,
+                    rgba(139, 197, 64, 0)
+                );
+                box-shadow: 0 0 12px rgba(139, 197, 64, 0.8);
+                animation: twScan 3s ease-in-out infinite;
+                pointer-events: none;
+            }
+
+            .summary-box {
+                margin-top: 22px;
+                padding: 14px 18px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                text-align: left;
+                animation: twFieldIn 0.5s 0.5s both;
+            }
+
+            .summary-label {
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                color: rgba(255, 255, 255, 0.4);
+                text-transform: uppercase;
+            }
+
+            .summary-name {
+                margin-top: 6px;
+                font-size: 15px;
+                font-weight: 600;
+                color: #ffffff;
+            }
+
+            .summary-meta {
+                font-size: 13px;
+                color: rgba(255, 255, 255, 0.6);
+            }
+
+            .summary-id {
+                margin-top: 4px;
+                font-size: 12.5px;
+                color: #c4f24a;
+                font-weight: 600;
+            }
+
+            .success-actions {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+                margin-top: 20px;
+                animation: twFieldIn 0.5s 0.6s both;
+            }
+
+            .btn-download {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 13px 28px;
+                border: none;
+                border-radius: 14px;
+                background: linear-gradient(
+                    135deg,
+                    #8bc540 0%,
+                    #a8dc4a 50%,
+                    #8bc540 100%
+                );
+                background-size: 200% 200%;
+                color: #0b1530;
+                font-size: 15px;
+                font-weight: 700;
+                cursor: pointer;
+                box-shadow: 0 10px 30px rgba(139, 197, 64, 0.35);
+                transition:
+                    transform 0.2s,
+                    box-shadow 0.25s,
+                    background-position 0.4s;
+            }
+
+            .btn-download:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 16px 40px rgba(139, 197, 64, 0.5);
+                background-position: 100% 100%;
+            }
+
+            .btn-download:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+
+            .btn-reset {
+                padding: 11px 22px;
+                border-radius: 999px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                background: transparent;
+                color: rgba(255, 255, 255, 0.75);
+                font-size: 13.5px;
+                font-weight: 600;
+                cursor: pointer;
+                transition:
+                    border-color 0.2s,
+                    color 0.2s,
+                    background 0.2s;
+            }
+
+            .btn-reset:hover {
+                border-color: rgba(139, 197, 64, 0.6);
+                color: #c4f24a;
+                background: rgba(139, 197, 64, 0.08);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page">
+            <div class="page-overlay"></div>
+            <div class="glow glow--lime"></div>
+            <div class="glow glow--blue"></div>
+            <div id="particles"></div>
+
+            <div class="card" id="card">
+                <div class="card-accent"></div>
+
+                <div id="loading" class="card-body loader">
+                    <div class="loader-spinner"></div>
+                    <div>Cargando datos del evento...</div>
+                </div>
+
+                <div id="form-container" class="hidden">
+                    <div class="card-body">
+                        <div class="header-block">
+                            <h1
+                                class="header-title"
+                                id="nombreEventoTitulo"
+                            >
+                                Cargando evento...
+                            </h1>
+                            <p class="header-sub">
+                                Reserva tu lugar<span
+                                    id="fechaEventoTitulo"
+                                    class="header-event"
+                                ></span>
+                            </p>
+                        </div>
+
+                        <form id="registroForm">
+                            <div class="fields">
+                                <div
+                                    class="field-wrap"
+                                    style="animation-delay: 0.25s"
+                                >
+                                    <div class="field-inner" data-field="nombre">
+                                        <input
+                                            class="field-input"
+                                            type="text"
+                                            id="nombre"
+                                            autocomplete="off"
+                                            placeholder=" "
+                                        />
+                                        <label class="field-label" for="nombre"
+                                            >Nombre y Apellido</label
+                                        >
+                                        <span class="field-valid"></span>
+                                    </div>
+                                    <div
+                                        class="field-error"
+                                        data-error-for="nombre"
+                                    ></div>
+                                </div>
+
+                                <div
+                                    class="field-wrap"
+                                    style="animation-delay: 0.34s"
+                                >
+                                    <div
+                                        class="field-inner"
+                                        data-field="empresa"
+                                    >
+                                        <input
+                                            class="field-input"
+                                            type="text"
+                                            id="empresa"
+                                            autocomplete="off"
+                                            placeholder=" "
+                                        />
+                                        <label class="field-label" for="empresa"
+                                            >Empresa</label
+                                        >
+                                        <span class="field-valid"></span>
+                                    </div>
+                                    <div
+                                        class="field-error"
+                                        data-error-for="empresa"
+                                    ></div>
+                                </div>
+
+                                <div
+                                    class="field-wrap"
+                                    style="animation-delay: 0.43s"
+                                >
+                                    <div class="field-inner" data-field="cargo">
+                                        <input
+                                            class="field-input"
+                                            type="text"
+                                            id="cargo"
+                                            autocomplete="off"
+                                            placeholder=" "
+                                        />
+                                        <label class="field-label" for="cargo"
+                                            >Cargo</label
+                                        >
+                                        <span class="field-valid"></span>
+                                    </div>
+                                    <div
+                                        class="field-error"
+                                        data-error-for="cargo"
+                                    ></div>
+                                </div>
+
+                                <div
+                                    class="field-wrap"
+                                    style="animation-delay: 0.52s"
+                                >
+                                    <div
+                                        class="field-inner"
+                                        data-field="telefono"
+                                    >
+                                        <input
+                                            class="field-input"
+                                            type="tel"
+                                            id="telefono"
+                                            autocomplete="off"
+                                            placeholder=" "
+                                        />
+                                        <label
+                                            class="field-label"
+                                            for="telefono"
+                                            >Teléfono</label
+                                        >
+                                        <span class="field-valid"></span>
+                                    </div>
+                                    <div
+                                        class="field-error"
+                                        data-error-for="telefono"
+                                    ></div>
+                                </div>
+
+                                <div
+                                    class="field-wrap"
+                                    style="animation-delay: 0.61s"
+                                >
+                                    <div class="field-inner" data-field="email">
+                                        <input
+                                            class="field-input"
+                                            type="email"
+                                            id="email"
+                                            autocomplete="off"
+                                            placeholder=" "
+                                        />
+                                        <label class="field-label" for="email"
+                                            >Correo Electrónico</label
+                                        >
+                                        <span class="field-valid"></span>
+                                    </div>
+                                    <div
+                                        class="field-error"
+                                        data-error-for="email"
+                                    ></div>
+                                </div>
+
+                                <div
+                                    id="bloque-wrap"
+                                    class="field-wrap hidden"
+                                    style="animation-delay: 0.72s"
+                                >
+                                    <div class="field-inner" data-field="bloque">
+                                        <select
+                                            class="field-select"
+                                            id="bloque"
+                                            disabled
+                                        >
+                                            <option value="" disabled selected>
+                                                Cargando bloques...
+                                            </option>
+                                        </select>
+                                        <span class="field-select-arrow"></span>
+                                    </div>
+                                    <div
+                                        class="field-error"
+                                        data-error-for="bloque"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <div class="submit-wrap">
+                                <button
+                                    type="submit"
+                                    class="btn-submit"
+                                    id="btnEnviar"
+                                >
+                                    Registrarme y obtener QR
+                                </button>
+                                <p class="form-note">
+                                    Al registrarte recibirás tu código QR de
+                                    acceso<br />en tu correo electrónico.
+                                </p>
+                            </div>
+                        </form>
+
+                        <div id="error" class="error-box"></div>
+                    </div>
+                </div>
+
+                <div id="success" class="hidden">
+                    <div class="success-check-wrap">
+                        <div class="success-check-circle">
+                            <svg width="30" height="30" viewBox="0 0 30 30">
+                                <path
+                                    d="M7 15.5 L13 21.5 L23 9.5"
+                                    fill="none"
+                                    stroke="#a3e635"
+                                    stroke-width="3"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                ></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h2 id="successTitle" class="success-title">
+                        ¡Estás dentro!
+                    </h2>
+                    <p class="success-desc">
+                        Presenta este código QR en la entrada del evento.<br />
+                        También te lo enviamos a tu correo electrónico.
+                    </p>
+
+                    <div class="qr-wrap">
+                        <img
+                            id="successQr"
+                            class="success-qr"
+                            src=""
+                            alt="Código QR de Acceso"
+                        />
+                        <div class="qr-scan" data-html2canvas-ignore="true"></div>
+                    </div>
+
+                    <div class="summary-box">
+                        <div class="summary-label">Registro confirmado</div>
+                        <div id="summaryName" class="summary-name"></div>
+                        <div id="summaryMeta" class="summary-meta"></div>
+                        <div id="summaryId" class="summary-id"></div>
+                    </div>
+
+                    <div class="success-actions">
+                        <button
+                            id="btnDescargarQr"
+                            class="btn-download"
+                            data-html2canvas-ignore="true"
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                                ></path>
+                                <polyline
+                                    points="7 10 12 15 17 10"
+                                ></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Descargar pase
+                        </button>
+                        <button
+                            type="button"
+                            id="btnReset"
+                            class="btn-reset"
+                            data-html2canvas-ignore="true"
+                        >
+                            Registrar otra persona
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const EVENTO_SUPABASE_URL = window.__ENV__?.EVENTO_SUPABASE_URL || "";
+            const EVENTO_SUPABASE_ANON_KEY =
+                window.__ENV__?.EVENTO_SUPABASE_ANON_KEY || "";
+
+            if (!EVENTO_SUPABASE_URL || !EVENTO_SUPABASE_ANON_KEY) {
+                console.error(
+                    "[registro] Faltan EVENTO_SUPABASE_URL / EVENTO_SUPABASE_ANON_KEY en el entorno del servidor",
+                );
+            }
+
+            const { createClient } = supabase;
+            const _supabase = createClient(
+                EVENTO_SUPABASE_URL,
+                EVENTO_SUPABASE_ANON_KEY,
+            );
+
+            const params = new URLSearchParams(window.location.search);
+            const EVENTO_ID = params.get("id") || params.get("evento_id");
+
+            let eventoNombre = "";
+            let eventoFecha = "";
+            let registroId = "";
+            let qrBase64 = "";
+            let bloquesEvento = [];
+
+            const fieldDefs = [
+                { id: "nombre", label: "Nombre y Apellido" },
+                { id: "empresa", label: "Empresa" },
+                { id: "cargo", label: "Cargo" },
+                { id: "telefono", label: "Teléfono" },
+                { id: "email", label: "Correo Electrónico" },
+            ];
+
+            function validateField(id, value) {
+                const val = (value || "").trim();
+                if (id === "bloque") {
+                    if (!bloquesEvento.length) return null;
+                    if (!val) return "Este campo es obligatorio";
+                    return null;
+                }
+                if (!val) return "Este campo es obligatorio";
+                if (id === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val))
+                    return "Ingresa un correo válido";
+                if (id === "telefono" && !/^[+\d\s()-]{7,}$/.test(val))
+                    return "Ingresa un teléfono válido";
+                return null;
+            }
+
+            function updateSelectState(select) {
+                const filled = select.value.trim().length > 0;
+                const err = validateField(select.id, select.value);
+                const errorEl = document.querySelector(
+                    `[data-error-for="${select.id}"]`,
+                );
+                const showError =
+                    !!err &&
+                    (filled || errorEl.classList.contains("visible"));
+                select.classList.toggle("filled", filled);
+                select.classList.toggle("error", showError);
+            }
+
+            function updateFieldState(input) {
+                const err = validateField(input.id, input.value);
+                const filled = input.value.trim().length > 0;
+                input.classList.toggle("filled", filled);
+                input.classList.toggle("valid", filled && !err);
+                input.classList.toggle("error", !!err && filled);
+            }
+
+            function makeParticles(count = 26) {
+                const container = document.getElementById("particles");
+                let seed = 12345;
+                const rnd = () => {
+                    seed = (seed * 1664525 + 1013904223) >>> 0;
+                    return seed / 4294967296;
+                };
+
+                for (let i = 0; i < count; i++) {
+                    const size = 2 + rnd() * 4;
+                    const lime = rnd() > 0.45;
+                    const dot = document.createElement("div");
+                    dot.style.cssText = [
+                        "position:absolute",
+                        `left:${rnd() * 100}%`,
+                        "bottom:-20px",
+                        `width:${size}px`,
+                        `height:${size}px`,
+                        "border-radius:50%",
+                        lime
+                            ? "background:rgba(163,230,53,.85)"
+                            : "background:rgba(140,180,255,.7)",
+                        lime
+                            ? "box-shadow:0 0 10px rgba(163,230,53,.8)"
+                            : "box-shadow:0 0 8px rgba(140,180,255,.7)",
+                        `animation:twFloat ${14 + rnd() * 18}s linear ${-rnd() * 30}s infinite`,
+                        "pointer-events:none",
+                    ].join(";");
+                    container.appendChild(dot);
+                }
+            }
+
+            function setFieldError(id, message) {
+                const input = document.getElementById(id);
+                const errorEl = document.querySelector(
+                    `[data-error-for="${id}"]`,
+                );
+                const inner = document.querySelector(
+                    `[data-field="${id}"]`,
+                );
+
+                if (message) {
+                    input.classList.add("error");
+                    errorEl.textContent = message;
+                    errorEl.classList.add("visible");
+                    inner.classList.add("shake");
+                    setTimeout(() => inner.classList.remove("shake"), 500);
+                } else {
+                    errorEl.textContent = "";
+                    errorEl.classList.remove("visible");
+                    if (input.tagName === "SELECT") {
+                        updateSelectState(input);
+                    } else {
+                        updateFieldState(input);
+                    }
+                }
+            }
+
+            function clearAllFieldErrors() {
+                fieldDefs.forEach((f) => setFieldError(f.id, null));
+                setFieldError("bloque", null);
+            }
+
+            function validateForm() {
+                let valid = true;
+                fieldDefs.forEach((f) => {
+                    const input = document.getElementById(f.id);
+                    const err = validateField(f.id, input.value);
+                    if (err) {
+                        setFieldError(f.id, err);
+                        valid = false;
+                    } else {
+                        setFieldError(f.id, null);
+                    }
+                });
+
+                const bloque = document.getElementById("bloque");
+                if (bloquesEvento.length) {
+                    const bloqueErr = validateField("bloque", bloque.value);
+                    if (bloqueErr) {
+                        setFieldError("bloque", bloqueErr);
+                        valid = false;
+                    } else {
+                        setFieldError("bloque", null);
+                    }
+                }
+
+                return valid;
+            }
+
+            function firstNameFrom(fullName) {
+                return (fullName || "").trim().split(/\s+/)[0] || "";
+            }
+
+            function ticketIdFrom(id) {
+                const short = id.replace(/-/g, "").slice(0, 8).toUpperCase();
+                return `TWC-${short}`;
+            }
+
+            function etiquetaBloque(bloqueId) {
+                const bloque = bloquesEvento.find((b) => b.id === bloqueId);
+                return bloque ? bloque.etiqueta : "";
+            }
+
+            const PLACEHOLDER_BLOQUE =
+                "Selecciona el bloque al que asistirás";
+
+            function toggleBloqueField(mostrar) {
+                const wrap = document.getElementById("bloque-wrap");
+                wrap.classList.toggle("hidden", !mostrar);
+            }
+
+            function renderBloques(bloques) {
+                const select = document.getElementById("bloque");
+
+                if (!bloques.length) {
+                    select.innerHTML = "";
+                    select.disabled = true;
+                    select.removeAttribute("required");
+                    toggleBloqueField(false);
+                    return;
+                }
+
+                toggleBloqueField(true);
+                select.innerHTML = "";
+
+                const placeholder = document.createElement("option");
+                placeholder.value = "";
+                placeholder.textContent = PLACEHOLDER_BLOQUE;
+                placeholder.disabled = true;
+                placeholder.selected = true;
+                select.appendChild(placeholder);
+
+                bloques.forEach((bloque) => {
+                    const opt = document.createElement("option");
+                    opt.value = bloque.id;
+                    opt.textContent = bloque.etiqueta;
+                    select.appendChild(opt);
+                });
+
+                select.disabled = false;
+                select.required = true;
+            }
+
+            async function cargarBloques() {
+                const { data, error } = await _supabase
+                    .from("evento_bloques")
+                    .select("id, etiqueta, orden")
+                    .eq("evento_id", EVENTO_ID)
+                    .or("activo.eq.true,activo.is.null")
+                    .order("orden", { ascending: true });
+
+                if (error) {
+                    console.error("Error cargando bloques:", error);
+                    bloquesEvento = [];
+                    renderBloques([]);
+                    return;
+                }
+
+                bloquesEvento = data || [];
+                renderBloques(bloquesEvento);
+            }
+
+            async function cargarEvento() {
+                if (!EVENTO_ID) {
+                    mostrarError(
+                        "Enlace incompleto. No se especificó un evento.",
+                    );
+                    return;
+                }
+
+                if (!EVENTO_SUPABASE_URL || !EVENTO_SUPABASE_ANON_KEY) {
+                    mostrarError(
+                        "Falta configuración de Supabase (evento) en el servidor.",
+                    );
+                    return;
+                }
+
+                try {
+                    const { data, error } = await _supabase
+                        .from("eventos")
+                        .select("nombre, fecha")
+                        .eq("id", EVENTO_ID)
+                        .maybeSingle();
+
+                    if (error) throw error;
+                    if (!data) throw new Error("Evento no encontrado");
+
+                    eventoNombre = data.nombre;
+                    eventoFecha = data.fecha || "";
+
+                    if (
+                        eventoFecha.includes("-") &&
+                        eventoFecha.split("-")[0].length === 4
+                    ) {
+                        const [anio, mes, dia] = eventoFecha.split("-");
+                        eventoFecha = `${dia}-${mes}-${anio}`;
+                    }
+
+                    document.getElementById("nombreEventoTitulo").innerText =
+                        eventoNombre;
+                    document.getElementById("fechaEventoTitulo").innerText =
+                        eventoFecha ? ` · ${eventoFecha}` : "";
+                    document.getElementById("loading").classList.add("hidden");
+                    document
+                        .getElementById("form-container")
+                        .classList.remove("hidden");
+
+                    await cargarBloques();
+                } catch (err) {
+                    console.error("Error cargando evento:", err);
+                    mostrarError(
+                        "No se pudo cargar la información del evento. Verifique el enlace.",
+                    );
+                }
+            }
+
+            function generarUUID() {
+                if (typeof crypto !== "undefined" && crypto.randomUUID) {
+                    return crypto.randomUUID();
+                }
+                return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+                    /[xy]/g,
+                    function (c) {
+                        var r = (Math.random() * 16) | 0,
+                            v = c == "x" ? r : (r & 0x3) | 0x8;
+                        return v.toString(16);
+                    },
+                );
+            }
+
+            const convertirABase64 = (blob) =>
+                new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = (error) => reject(error);
+                });
+
+            function setSubmitting(submitting) {
+                const btn = document.getElementById("btnEnviar");
+                btn.disabled = submitting;
+                btn.innerHTML = submitting
+                    ? '<span class="btn-submit-inner"><span class="btn-spinner"></span>Generando tu QR…</span>'
+                    : "Registrarme y obtener QR";
+            }
+
+            function mostrarExito(datos, base64Qr) {
+                const nombre = datos.nombre_completo;
+                const first = firstNameFrom(nombre);
+
+                document.getElementById("successTitle").innerText =
+                    first ? `¡Estás dentro, ${first}!` : "¡Estás dentro!";
+                document.getElementById("summaryName").innerText = nombre;
+                document.getElementById("summaryMeta").innerText = [
+                    datos.cargo,
+                    datos.empresa,
+                    datos.bloque_etiqueta,
+                ]
+                    .filter(Boolean)
+                    .join(" · ");
+                document.getElementById("summaryId").innerText =
+                    `ID ${ticketIdFrom(registroId)}`;
+                qrBase64 = base64Qr;
+                document.getElementById("successQr").src = base64Qr;
+
+                document.getElementById("form-container").classList.add("hidden");
+                document.getElementById("success").classList.remove("hidden");
+                document.getElementById("error").classList.remove("visible");
+            }
+
+            function resetFormulario() {
+                document.getElementById("registroForm").reset();
+                clearAllFieldErrors();
+                fieldDefs.forEach((f) => {
+                    const input = document.getElementById(f.id);
+                    input.classList.remove("filled", "valid", "error");
+                });
+                const bloque = document.getElementById("bloque");
+                bloque.selectedIndex = 0;
+                bloque.classList.remove("filled", "error");
+                toggleBloqueField(bloquesEvento.length > 0);
+                if (bloquesEvento.length) {
+                    bloque.disabled = false;
+                    bloque.required = true;
+                } else {
+                    bloque.disabled = true;
+                    bloque.removeAttribute("required");
+                }
+                qrBase64 = "";
+                document.getElementById("successQr").removeAttribute("src");
+                document.getElementById("success").classList.add("hidden");
+                document
+                    .getElementById("form-container")
+                    .classList.remove("hidden");
+                setSubmitting(false);
+            }
+
+            fieldDefs.forEach((f) => {
+                const input = document.getElementById(f.id);
+                input.addEventListener("input", () => {
+                    setFieldError(f.id, null);
+                    updateFieldState(input);
+                });
+                input.addEventListener("blur", () => updateFieldState(input));
+            });
+
+            const bloqueSelect = document.getElementById("bloque");
+            bloqueSelect.addEventListener("change", () => {
+                setFieldError("bloque", null);
+                updateSelectState(bloqueSelect);
+            });
+            bloqueSelect.addEventListener("blur", () =>
+                updateSelectState(bloqueSelect),
+            );
+
+            const form = document.getElementById("registroForm");
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                document.getElementById("error").classList.remove("visible");
+
+                if (!validateForm()) return;
+
+                setSubmitting(true);
+
+                const emailIngresado = document
+                    .getElementById("email")
+                    .value.trim()
+                    .toLowerCase();
+
+                try {
+                    const { data: registrosExistentes, error: errorBusqueda } =
+                        await _supabase.rpc("verificar_duplicado", {
+                            p_evento_id: EVENTO_ID,
+                            p_email: emailIngresado,
+                        });
+
+                    if (errorBusqueda) {
+                        console.error("[registro] fallo verificar_duplicado:", errorBusqueda);
+                        throw new Error(
+                            `(verificar_duplicado) ${errorBusqueda.message || errorBusqueda.details || "error desconocido"}`,
+                        );
+                    }
+
+                    if (registrosExistentes && registrosExistentes.length > 0) {
+                        const usuarioPrevio = registrosExistentes[0];
+                        mostrarError(
+                            `El correo ${emailIngresado} ya se encuentra registrado a nombre de ${usuarioPrevio.nombre_completo}.`,
+                        );
+                        setSubmitting(false);
+                        return;
+                    }
+
+                    registroId = generarUUID();
+
+                    const bloqueId = bloquesEvento.length
+                        ? document.getElementById("bloque").value.trim()
+                        : "";
+
+                    const formData = {
+                        id: registroId,
+                        nombre_completo:
+                            document.getElementById("nombre").value.trim(),
+                        empresa: document.getElementById("empresa").value.trim(),
+                        cargo: document.getElementById("cargo").value.trim(),
+                        telefono:
+                            document.getElementById("telefono").value.trim(),
+                        email: emailIngresado,
+                        bloque_id: bloqueId || null,
+                        evento_id: EVENTO_ID,
+                        acreditado: false,
+                    };
+
+                    const { error } = await _supabase
+                        .from("registrados")
+                        .insert([formData]);
+                    if (error) {
+                        console.error("[registro] fallo insert registrados:", error, formData);
+                        const msg = (error.message || "").toLowerCase();
+                        if (msg.includes("cupo")) {
+                            throw new Error(
+                                "El bloque seleccionado ya no tiene cupos disponibles. Elige otro bloque.",
+                            );
+                        }
+                        throw new Error(
+                            `(insert registrados) ${error.message || error.details || "error desconocido"}`,
+                        );
+                    }
+
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=jpeg&data=${encodeURIComponent(registroId)}`;
+                    const responseQr = await fetch(qrUrl);
+                    const blobQr = await responseQr.blob();
+                    const base64Qr = await convertirABase64(blobQr);
+
+                    const datosExito = {
+                        ...formData,
+                        bloque_etiqueta: etiquetaBloque(bloqueId),
+                    };
+
+                    // Envío de QR por correo (no bloquea el éxito en pantalla si falla)
+                    try {
+                        const mailRes = await fetch("/registro-forms/enviar-qr", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                email: emailIngresado,
+                                nombre: formData.nombre_completo,
+                                empresa: formData.empresa,
+                                cargo: formData.cargo,
+                                eventoNombre,
+                                eventoFecha,
+                                bloque: datosExito.bloque_etiqueta || "",
+                                registroId,
+                            }),
+                        });
+                        if (!mailRes.ok) {
+                            const mailBody = await mailRes.json().catch(() => ({}));
+                            console.error("[registro] fallo envío correo:", mailRes.status, mailBody);
+                        }
+                    } catch (mailErr) {
+                        console.error("[registro] error red al enviar correo:", mailErr);
+                    }
+
+                    mostrarExito(datosExito, base64Qr);
+                } catch (err) {
+                    console.error(err);
+                    mostrarError("Error al registrar: " + err.message);
+                    setSubmitting(false);
+                }
+            });
+
+            async function asegurarQrListo() {
+                const img = document.getElementById("successQr");
+                if (!qrBase64) return;
+
+                img.removeAttribute("src");
+                img.src = qrBase64;
+
+                if (img.decode) {
+                    try {
+                        await img.decode();
+                    } catch (_) {
+                        /* ignorar */
+                    }
+                } else {
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                    });
+                }
+            }
+
+            function wrapText(ctx, text, maxWidth) {
+                const words = (text || "").split(" ");
+                const lines = [];
+                let line = "";
+
+                words.forEach((word) => {
+                    const test = line ? `${line} ${word}` : word;
+                    if (ctx.measureText(test).width > maxWidth && line) {
+                        lines.push(line);
+                        line = word;
+                    } else {
+                        line = test;
+                    }
+                });
+
+                if (line) lines.push(line);
+                return lines.length ? lines : [""];
+            }
+
+            async function generarImagenPasePlano() {
+                await asegurarQrListo();
+
+                const qrImg = document.getElementById("successQr");
+                if (!qrImg || !qrBase64) {
+                    throw new Error("QR no disponible");
+                }
+
+                const title = document.getElementById("successTitle").innerText;
+                const desc =
+                    document.querySelector(".success-desc")?.innerText || "";
+                const name =
+                    document.getElementById("summaryName")?.innerText || "";
+                const meta =
+                    document.getElementById("summaryMeta")?.innerText || "";
+                const ticket =
+                    document.getElementById("summaryId")?.innerText || "";
+
+                const width = 420;
+                const padding = 36;
+                const contentWidth = width - padding * 2;
+                const qrSize = 200;
+                const qrPad = 12;
+                const lineHeight = 20;
+
+                const measureCanvas = document.createElement("canvas");
+                const measureCtx = measureCanvas.getContext("2d");
+                measureCtx.font = "400 13px Outfit, sans-serif";
+                const metaLines = meta
+                    ? wrapText(measureCtx, meta, contentWidth)
+                    : [];
+
+                const height =
+                    padding +
+                    28 +
+                    18 +
+                    24 +
+                    (qrSize + qrPad * 2) +
+                    28 +
+                    16 +
+                    18 +
+                    (meta ? metaLines.length * lineHeight : 0) +
+                    (ticket ? 24 : 0) +
+                    padding;
+
+                const canvas = document.createElement("canvas");
+                const scale = 2;
+                canvas.width = width * scale;
+                canvas.height = height * scale;
+                const ctx = canvas.getContext("2d");
+                ctx.scale(scale, scale);
+
+                ctx.fillStyle = "#0b1530";
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "700 24px Outfit, sans-serif";
+                ctx.fillText(title, width / 2, padding + 24);
+
+                ctx.fillStyle = "rgba(255,255,255,0.75)";
+                ctx.font = "400 14px Outfit, sans-serif";
+                ctx.fillText(desc, width / 2, padding + 48);
+
+                const qrBoxSize = qrSize + qrPad * 2;
+                const qrX = (width - qrBoxSize) / 2;
+                const qrY = padding + 68;
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(qrX, qrY, qrBoxSize, qrBoxSize);
+                ctx.drawImage(qrImg, qrX + qrPad, qrY + qrPad, qrSize, qrSize);
+
+                let y = qrY + qrBoxSize + 28;
+                ctx.fillStyle = "rgba(255,255,255,0.5)";
+                ctx.font = "600 11px Outfit, sans-serif";
+                ctx.fillText("REGISTRO CONFIRMADO", width / 2, y);
+
+                y += 22;
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "600 15px Outfit, sans-serif";
+                ctx.fillText(name, width / 2, y);
+
+                if (meta) {
+                    y += 22;
+                    ctx.fillStyle = "rgba(255,255,255,0.7)";
+                    ctx.font = "400 13px Outfit, sans-serif";
+                    metaLines.forEach((line) => {
+                        ctx.fillText(line, width / 2, y);
+                        y += lineHeight;
+                    });
+                }
+
+                if (ticket) {
+                    y += 6;
+                    ctx.fillStyle = "#c4f24a";
+                    ctx.font = "600 13px Outfit, sans-serif";
+                    ctx.fillText(ticket, width / 2, y);
+                }
+
+                return canvas.toDataURL("image/jpeg", 0.92);
+            }
+
+            document
+                .getElementById("btnDescargarQr")
+                .addEventListener("click", async () => {
+                    const btn = document.getElementById("btnDescargarQr");
+                    const scanLine = document.querySelector(".qr-scan");
+
+                    const textoOriginal = btn.innerHTML;
+                    btn.innerHTML = "Generando pase...";
+                    btn.disabled = true;
+                    if (scanLine) scanLine.style.visibility = "hidden";
+
+                    try {
+                        const imgData = await generarImagenPasePlano();
+                        const a = document.createElement("a");
+                        a.href = imgData;
+
+                        const nombreArchivo = eventoNombre
+                            ? `Pase_Acceso_${eventoNombre.replace(/\s+/g, "_")}.jpg`
+                            : "Pase_Acceso.jpg";
+                        a.download = nombreArchivo;
+
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    } catch (error) {
+                        console.error(
+                            "Error al descargar la imagen completa:",
+                            error,
+                        );
+                        alert(
+                            "No se pudo generar la imagen automáticamente. Por favor, toma una captura de pantalla.",
+                        );
+                    } finally {
+                        if (scanLine) scanLine.style.visibility = "";
+                        btn.innerHTML = textoOriginal;
+                        btn.disabled = false;
+                    }
+                });
+
+            document
+                .getElementById("btnReset")
+                .addEventListener("click", resetFormulario);
+
+            function mostrarError(msg) {
+                document.getElementById("loading").classList.add("hidden");
+                document
+                    .getElementById("form-container")
+                    .classList.remove("hidden");
+                const errBox = document.getElementById("error");
+                errBox.innerText = msg;
+                errBox.classList.add("visible");
+            }
+
+            makeParticles(26);
+            cargarEvento();
+        </script>
+    </body>
+</html>

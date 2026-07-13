@@ -1,0 +1,16 @@
+<p class="ticket-modal-description">Describe tu problema o requerimiento tecnico a continuacion.</p>
+
+<div class="ticket-modal-user-box">
+  <p>
+    <strong>Solicitante:</strong>
+    <%= currentUser ? displayName : 'Usuario' %>
+    <span>(<%= currentUser && currentUser.email ? currentUser.email : 'Sin correo' %>)</span>
+  </p>
+</div>
+
+<%- include('ticket-create-form', {
+  formId: 'formCrearTicketNavbar',
+  fieldPrefix: 'ticketModal',
+  modalId: 'modalNuevoTicketNavbar',
+  showCancel: true
+}) %>

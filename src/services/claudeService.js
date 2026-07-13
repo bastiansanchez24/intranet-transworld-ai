@@ -112,8 +112,9 @@ class ClaudeService {
     this.economicModel = "claude-haiku-4-5";
     this.models = [
       { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", tokens: 200000 },
-      { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", tokens: 1000000 },
+      { id: "claude-sonnet-5", name: "Claude Sonnet 5", tokens: 1000000 },
       { id: "claude-opus-4-8", name: "Claude Opus 4.8", tokens: 1000000 },
+      { id: "claude-fable-5", name: "Claude Fable 5", tokens: 1000000},
     ];
 
     this.defaultModel = this.economicModel;

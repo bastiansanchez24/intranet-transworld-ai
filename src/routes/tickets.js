@@ -227,6 +227,8 @@ router.get("/tickets", async (req, res) => {
       titulo: "Soporte",
       tickets,
       user: user,
+      extraCss: ["/css/tickets.css"],
+      extraJs: ["/js/tickets-list.js"],
     });
   } catch (err) {
     console.error(err);
@@ -238,6 +240,7 @@ router.get("/tickets/nuevo", (req, res) => {
   res.render("sistemas/ticket_nuevo", {
     titulo: "Abrir Nuevo Ticket",
     user: req.session.user,
+    extraCss: ["/css/tickets.css"],
   });
 });
 
@@ -590,11 +593,16 @@ router.get("/tickets/:id", async (req, res) => {
     }
     invalidateNotificationCount(req);
 
+    const isModal = req.query.modal === 'true';
+
     res.render("sistemas/tickets_detalle", {
       titulo: `Ticket #${id}`,
       ticket: ticketResults[0],
       respuestas: respuestasResults.map(mapTicketReplyForView),
       user: user,
+      layout: isModal ? false : "layout",
+      isModal: isModal,
+      extraCss: isModal ? [] : ["/css/tickets.css"],
     });
   } catch (err) {
     console.error(err);

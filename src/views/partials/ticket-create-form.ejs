@@ -1,0 +1,58 @@
+<form
+  id="<%= formId %>"
+  action="/sistemas/tickets/crear"
+  method="POST"
+  class="ticket-modal-form <%= typeof formClass !== 'undefined' ? formClass : '' %>"
+  data-ticket-create-form
+  <%= typeof modalId !== 'undefined' && modalId ? `data-ticket-modal-id="${modalId}"` : '' %>
+>
+  <label for="<%= fieldPrefix %>Titulo">Resumen del problema (Titulo)</label>
+  <input type="text" id="<%= fieldPrefix %>Titulo" name="title" placeholder="Ej: No puedo acceder a la carpeta compartida de Ventas" required>
+
+  <div class="ticket-modal-row">
+    <div>
+      <label for="<%= fieldPrefix %>Categoria">Categoria</label>
+      <select id="<%= fieldPrefix %>Categoria" name="category">
+        <option value="SAP">Soporte Tecnico</option>
+        <option value="Salesforce">Software / ERP</option>
+        <option value="Intranet">Infraestructura / Red</option>
+        <option value="Hardware">Hardware (Impresoras, PC, etc.)</option>
+        <option value="Otro" selected>Otro</option>
+      </select>
+    </div>
+    <div>
+      <label for="<%= fieldPrefix %>Prioridad">Prioridad sugerida</label>
+      <select id="<%= fieldPrefix %>Prioridad" name="priority">
+        <option value="low">Baja (No impide trabajar)</option>
+        <option value="medium" selected>Media (Dificulta el trabajo)</option>
+        <option value="high">Alta (Urgente / Operacion detenida)</option>
+      </select>
+    </div>
+  </div>
+
+  <label for="<%= fieldPrefix %>Descripcion">Descripcion detallada</label>
+  <textarea
+    id="<%= fieldPrefix %>Descripcion"
+    name="description"
+    placeholder="Explica detalladamente que sucede..."
+    required
+    maxlength="2000"
+    data-ticket-description
+  ></textarea>
+  <div class="ticket-modal-counter" data-ticket-counter>0 / 2000</div>
+
+  <label class="ticket-modal-files-label" for="<%= fieldPrefix %>FileInput">Adjuntar archivos (Opcional)</label>
+  <input type="hidden" name="adjuntos_data" value="[]" data-ticket-attachments>
+  <div class="ticket-modal-upload-row">
+    <button type="button" class="btn-secundario" data-ticket-select-files>Seleccionar archivos</button>
+    <span class="ticket-modal-upload-status" data-ticket-upload-status>Sin archivos seleccionados</span>
+  </div>
+  <input type="file" id="<%= fieldPrefix %>FileInput" data-ticket-file-input multiple accept="image/*,video/*,.pdf,.doc,.docx" hidden>
+
+  <div class="ticket-modal-actions">
+    <% if (typeof showCancel !== 'undefined' && showCancel) { %>
+      <button type="button" class="btn-secundario" data-modal-close>Cancelar</button>
+    <% } %>
+    <button type="submit" class="btn-primario" data-ticket-submit><%= typeof submitLabel !== 'undefined' ? submitLabel : 'Enviar Requerimiento' %></button>
+  </div>
+</form>

@@ -1,30 +1,6 @@
-<style>
-  /* --- ESTILOS BASE EJECUTIVOS PARA TICKETERA --- */
-  .link-volver { display: inline-block; background: #f8fafc; border: 1px solid #cbd5e0; color: #4a5568; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
-  .link-volver:hover { background: #edf2f7; color: #1a202c; }
-  
-  .tarjeta { background: #fff; border: 1px solid #e0e6ed; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-  
-  .form-ticket label { font-weight: 700; color: #4a5568; display: block; margin-bottom: 6px; font-size: 0.95rem; }
-  .form-ticket input[type="text"], 
-  .form-ticket select, 
-  .form-ticket textarea { 
-    width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95rem; background: #f8fafc; box-sizing: border-box; transition: all 0.2s; font-family: inherit; 
-  }
-  .form-ticket input:focus, 
-  .form-ticket select:focus, 
-  .form-ticket textarea:focus { border-color: #003a70; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(0, 58, 112, 0.1); }
-  
-  .btn-primario { background: #003a70; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; font-size: 1rem; }
-  .btn-primario:hover { background: #002a52; }
-  
-  .btn-secundario { background: #ffffff; color: #4a5568; border: 1px solid #cbd5e0; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
-  .btn-secundario:hover { background: #f8fafc; color: #1a202c; border-color: #a0aec0;}
-  
-  .small-text { font-size: 0.85rem; color: #718096; }
-</style>
 <div class="contenedor contenedor--narrow">
-  <div style="margin-bottom: 20px;">
+  <% const ticketCreateUser = (typeof usuario !== 'undefined' && usuario) ? usuario : ((typeof user !== 'undefined' && user) ? user : {}); %>
+  <div class="ticket-detail-back">
     <a href="/sistemas/tickets" class="link-volver">← Volver a la Soporte de TI</a>
   </div>
 
@@ -33,148 +9,19 @@
     <p class="page-description">Describe tu problema o requerimiento técnico a continuación.</p>
   </div>
 
-  <div class="tarjeta" style="max-width: 700px; margin-top: 20px;">
-    <form id="formCrearTicket" action="/sistemas/tickets/crear" method="POST" class="form-ticket">
-      
-      <div style="background: #f0f4fb; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dde3ec;">
-        <p style="margin: 0; font-size: 0.9rem; color: #555;">
-          <strong>Solicitante:</strong> <%= usuario.nombre || usuario.username || 'Usuario' %>
-          <span style="margin-left: 10px; color: #003a70;">(<%= usuario.email || 'Sin correo' %>)</span>
-        </p>
-      </div>
+  <div class="ticket-create-card">
+    <div class="ticket-modal-user-box">
+      <p>
+        <strong>Solicitante:</strong>
+        <%= ticketCreateUser.nombre || ticketCreateUser.username || 'Usuario' %>
+        <span>(<%= ticketCreateUser.email || 'Sin correo' %>)</span>
+      </p>
+    </div>
 
-      <div style="margin-bottom: 15px;">
-        <label for="titulo">Resumen del problema (Título)</label>
-        <input type="text" id="titulo" name="title" placeholder="Ej: No puedo acceder a la carpeta compartida de Ventas" required>
-      </div>
-
-      <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
-        <div style="flex: 1; min-width: 200px;">
-          <label for="categoria">Categoría</label>
-          <select id="categoria" name="category">
-            <option value="SAP">Soporte Técnico</option>
-            <option value="Salesforce">Software / ERP</option>
-            <option value="Intranet">Infraestructura / Red</option>
-            <option value="Hardware">Hardware (Impresoras, PC, etc.)</option>
-            <option value="Otro" selected>Otro</option>
-          </select>
-        </div>
-
-        <div style="flex: 1; min-width: 200px;">
-          <label for="prioridad">Prioridad sugerida</label>
-          <select id="prioridad" name="priority">
-            <option value="low">Baja (No impide trabajar)</option>
-            <option value="medium" selected>Media (Dificulta el trabajo)</option>
-            <option value="high">Alta (Urgente / Operación detenida)</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 15px;">
-        <label for="descripcion">Descripción detallada</label>
-        
-        <textarea 
-            id="descripcion" 
-            name="description" 
-            placeholder="Explica detalladamente qué sucede..." 
-            required 
-            maxlength="2000"
-            oninput="updateCharCount(this, 'descCounter')"
-            style="min-height: 150px; min-width: 150px; max-height: 600px; max-width: 600px;"
-        ></textarea>
-        <div id="descCounter" style="font-size: 0.8rem; color: #666; text-align: right; margin-top: 4px;">0 / 2000</div>
-      
-      </div>
-
-      <div style="margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-        <label style="display:block; margin-bottom:5px; font-weight:bold;">Adjuntar archivos (Opcional)</label>
-        <input type="hidden" name="adjuntos_data" id="adjuntos_data" value="[]">
-        
-        <div style="display:flex; gap:10px; align-items:center;">
-            <button type="button" class="btn btn-secundario" onclick="document.getElementById('fileInput').click()">Seleccionar archivos</button>
-            <div id="statusUpload" class="small-text" style="font-style: italic; color: #666;">Sin archivos seleccionados</div>
-        </div>
-        <input type="file" id="fileInput" multiple accept="image/*,video/*,.pdf,.doc,.docx" style="display: none;" onchange="document.getElementById('statusUpload').textContent = this.files.length + ' archivos listos para subir.'">
-      </div>
-
-      <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
-        <button type="submit" class="btn btn-primario" style="padding: 12px 30px; font-weight: bold;">
-          Enviar Requerimiento
-        </button>
-      </div>
-    </form>
+    <%- include('../partials/ticket-create-form', {
+      formId: 'formCrearTicket',
+      fieldPrefix: 'ticketPage',
+      showCancel: false
+    }) %>
   </div>
 </div>
-
-<script>
-  function updateCharCount(textarea, counterId) {
-      const maxLength = 2000;
-      const currentLength = textarea.value.length;
-      const counter = document.getElementById(counterId);
-      if (counter) {
-          counter.innerText = `${currentLength} / ${maxLength}`;
-          counter.style.color = currentLength >= maxLength ? '#dc3545' : '#666';
-          counter.style.fontWeight = currentLength >= maxLength ? 'bold' : 'normal';
-      }
-  }
-
-  function setupFormUpload(formId, fileInputId, hiddenInputId, statusId) {
-    const form = document.getElementById(formId);
-    if (!form) return;
-
-    const fileInput = document.getElementById(fileInputId);
-    const hiddenInput = document.getElementById(hiddenInputId);
-    const statusDiv = document.getElementById(statusId);
-    const btnSubmit = form.querySelector('button[type="submit"]');
-
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const files = Array.from(fileInput.files);
-      if (files.length === 0) { form.submit(); return; }
-
-      for (let f of files) {
-         const isVideo = f.type.startsWith('video/');
-         const limit = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
-         if (f.size > limit) { alert(`Archivo muy pesado: ${f.name}`); return; }
-      }
-
-        try {
-        btnSubmit.disabled = true;
-        btnSubmit.innerText = 'Subiendo archivos...';
-        statusDiv.style.color = '#e67e22';
-        statusDiv.innerHTML = `Iniciando subida...`;
-
-        let uploadedList = [];
-        for (let file of files) {
-           const formData = new FormData();
-           formData.append('file', file);
-
-           let type = 'raw'; let dbType = 'doc';
-           if (file.type.startsWith('video/')) { type = 'video'; dbType = 'video'; } 
-           else if (file.type.startsWith('image/')) { type = 'image'; dbType = 'image'; } 
-           else if (file.type === 'application/pdf') { type = 'image'; dbType = 'pdf'; }
-
-           const resUp = await fetch('/sistemas/tickets/upload', { method: 'POST', body: formData });
-           if (!resUp.ok) throw new Error('Fallo subida');
-           const data = await resUp.json();
-
-           uploadedList.push({ url: data.secure_url, nombre: file.name, tipo: dbType });
-        }
-
-        hiddenInput.value = JSON.stringify(uploadedList);
-        statusDiv.style.color = 'green';
-        statusDiv.innerHTML = `Listo. Creando ticket...`;
-        form.submit();
-
-      } catch (err) {
-        console.error(err);
-        statusDiv.style.color = 'red';
-        statusDiv.innerHTML = `Error`;
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = 'Enviar Requerimiento';
-      }
-    });
-  }
-
-  setupFormUpload('formCrearTicket', 'fileInput', 'adjuntos_data', 'statusUpload');
-</script>

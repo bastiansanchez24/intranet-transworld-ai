@@ -111,6 +111,15 @@
   function bindOverlayDismiss() {
     document.addEventListener('click', (e) => {
       const target = e.target;
+      const closeButton = target.closest('[data-modal-close]');
+      if (closeButton) {
+        const overlay = closeButton.closest('.modal-overlay, .modal-imagen');
+        if (overlay) {
+          close(overlay);
+          return;
+        }
+      }
+
       if (
         (target.classList.contains('modal-overlay') ||
           target.classList.contains('modal-imagen')) &&

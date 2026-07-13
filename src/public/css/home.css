@@ -7,6 +7,8 @@
   flex-direction: column;
   gap: 28px;
   min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 /* ── Tarjeta glass — usa tokens globales ── */
@@ -20,6 +22,8 @@
   border-radius: var(--glass-radius, 16px);
   box-shadow: var(--glass-shadow), var(--glass-inset);
   isolation: isolate;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -89,6 +93,8 @@
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 24px;
   align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .home-dash--bottom {
@@ -102,6 +108,11 @@
   min-width: 0;
 }
 
+.home-section {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .home-dash__main {
   display: flex;
   flex-direction: column;
@@ -112,8 +123,10 @@
 /* ── Indicadores financieros ── */
 .home-finance {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .home-finance__item {
@@ -161,6 +174,14 @@
   gap: 6px;
   font-size: 0.95rem;
   font-weight: 700;
+  min-width: 0;
+}
+
+.home-finance__value > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-finance__trend {
@@ -174,16 +195,21 @@
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .home-widget {
   padding: 14px 16px;
   min-height: 118px;
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   gap: 12px;
   position: relative;
+  overflow: hidden;
 }
 
 .home-widget--weather,
@@ -420,6 +446,8 @@
   gap: 14px;
   height: 100%;
   min-height: 160px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .home-quick__card {
@@ -432,6 +460,8 @@
   text-align: center;
   text-decoration: none;
   color: var(--corp-blue, #003a70);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .home-quick__card img {
@@ -1069,6 +1099,10 @@
     grid-template-columns: 1fr;
   }
 
+  .home-widgets {
+    grid-template-columns: 1fr;
+  }
+
   .home-quick {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
@@ -1086,7 +1120,7 @@
 
 @media (max-width: 600px) {
   .home-finance {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
   }
 
@@ -1107,10 +1141,28 @@
 
   .home-finance__trend {
     font-size: 0.68rem;
+    flex-shrink: 0;
   }
 
   .home-widgets {
     grid-template-columns: 1fr;
+  }
+
+  .home-widget__forecast {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  .home-widget__forecast-temp {
+    font-size: 0.58rem;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  .home-menu-week__label {
+    min-width: 0;
+    width: 62px;
   }
 
   .home-quick {
@@ -1121,6 +1173,10 @@
     align-items: flex-start;
   }
 
+  .home-comms__text-card {
+    padding: 24px 16px;
+  }
+
   .home-gallery__overlay {
     padding: 32px 14px 16px;
   }
@@ -1128,6 +1184,46 @@
   .home-gallery__dots {
     max-width: calc(100% - 110px);
   }
+
+  .home-news__list {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* ── Modal editar menú semanal ── */
+.modal-overlay.modal-editar-menu > .modal-content2 {
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(0, 58, 112, 0.12);
+  box-shadow: 0 18px 44px rgba(0, 20, 40, 0.28);
+}
+
+.modal-overlay.modal-editar-menu .modal-form-input {
+  background: #ffffff;
+  color: #1f2937;
+}
+
+html[data-theme="dark"] .modal-overlay.modal-editar-menu > .modal-content2 {
+  background: #1a2332;
+  border-color: #3b4a65;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="dark"] .modal-overlay.modal-editar-menu .modal-form-input {
+  background: #243147;
+  border-color: #3b4a65;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .modal-overlay.modal-editar-menu .modal-form-label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .modal-overlay.modal-editar-menu h3 {
+  color: #a8d4ff;
+  border-bottom-color: #3b4a65;
 }
 
 /* ── Tutorial de bienvenida (primer ingreso) ── */

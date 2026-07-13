@@ -1,215 +1,4 @@
-<style>
-  /* --- CONTENEDOR PRINCIPAL DE LA PÁGINA --- */
-  .tickets-contenedor {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-  }
-
-  /* --- CONTENEDOR SCROLL DE LA TABLA --- */
-  .tabla-tickets-scroll {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-    overflow-y: visible;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  }
-
-  /* --- ESTILOS DE LA TABLA --- */
-  .tabla-tickets { 
-      width: 100%;
-      min-width: 1150px;
-      border-collapse: collapse; 
-      background: white; 
-      border-radius: 8px;
-  }
-  .tabla-tickets th, .tabla-tickets td { 
-      padding: 15px; 
-      text-align: left; 
-      border-bottom: 1px solid #eee; 
-  }
-  .tabla-tickets thead { 
-      background-color: #003a70; 
-      color: white; 
-  }
-  
-  /* Filas Clickeables */
-  .tabla-tickets tbody tr {
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-  }
-  .tabla-tickets tbody tr:hover {
-    background-color: #eef4fb; 
-  }
-
-  /* Encabezados Ordenables */
-  .tabla-tickets th {
-    cursor: pointer;
-    user-select: none; 
-    position: relative;
-    padding-right: 20px; 
-  }
-  .tabla-tickets th:hover {
-    background-color: #002a52;
-  }
-
-  /* Flechas de ordenamiento */
-  .sort-icon {
-    font-size: 0.8em;
-    margin-left: 5px;
-    opacity: 0.5;
-  }
-  .th-sort-asc .sort-icon::after { content: "▲"; opacity: 1; }
-  .th-sort-desc .sort-icon::after { content: "▼"; opacity: 1; }
-
-  /* --- SISTEMA DE NOTIFICACIONES (NO LEÍDOS) --- */
-  .fila-no-leida {
-    background-color: #fffdf5 !important;
-    border-left: 4px solid #ff9500 !important;
-  }
-  .fila-no-leida td {
-    font-weight: 700 !important;
-  }
-  .badge-nuevo-ticket {
-    background-color: #ff3b30;
-    color: white;
-    font-size: 0.65rem;
-    padding: 2px 6px;
-    border-radius: 12px;
-    margin-left: 8px;
-    vertical-align: middle;
-    text-transform: uppercase;
-  }
-  
-  /* --- BADGES DE ESTADO Y PRIORIDAD --- */
-  .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.85em; font-weight: bold; }
-  .bg-success { background-color: #28a745; color: white; }
-  .bg-warning { background-color: #ffc107; color: #333; }
-  .bg-danger { background-color: #dc3545; color: white; }
-  .bg-secondary { background-color: #6c757d; color: white; }
-  .bg-primary { background-color: #007bff; color: white; }
-
-  .btn-primario {
-      background-color: #003a70;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.3s;
-  }
-  .btn-primario:hover {
-      background-color: #002a52;
-  }
-
-  .btn-toggle-cerrados {
-    padding: 10px 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    background: var(--color-surface-muted, #f4f6f8);
-    border: 1px solid var(--color-border-strong, #ccc);
-    border-radius: 6px;
-    color: var(--color-text-muted, #555);
-    transition: all 0.2s;
-  }
-  .btn-toggle-cerrados:hover {
-    background: var(--color-surface-elevated, #e8ecf0);
-    border-color: var(--color-border, #bbb);
-  }
-
-  /* Columna estado más ancha */
-  .tabla-tickets th.col-estado,
-  .tabla-tickets td.col-estado {
-    min-width: 155px;
-    white-space: nowrap;
-  }
-
-  .tabla-tickets td.col-estado .badge {
-    white-space: nowrap;
-  }
-
-  /* Columnas importancia y estado centradas */
-  .tabla-tickets th.col-importancia,
-  .tabla-tickets td.col-importancia,
-  .tabla-tickets th.col-estado,
-  .tabla-tickets td.col-estado {
-    text-align: center;
-  }
-
-  .tabla-tickets td.col-titulo {
-    color: #0056b3;
-    font-weight: 500;
-    min-width: 200px;
-    max-width: 300px;
-  }
-
-  /* Vista móvil: solo título, importancia y estado */
-  @media (max-width: 768px) {
-    .tickets-contenedor {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    .tabla-tickets {
-      min-width: 0;
-      width: 100%;
-      table-layout: fixed;
-    }
-
-    .tabla-tickets-scroll {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    .tabla-tickets .col-ocultar-mobile {
-      display: none;
-    }
-
-    .tabla-tickets th.col-titulo,
-    .tabla-tickets td.col-titulo {
-      min-width: 0;
-      max-width: none;
-      width: 42%;
-      word-break: break-word;
-    }
-
-    .tabla-tickets th,
-    .tabla-tickets td {
-      padding: 10px 6px;
-    }
-
-    .tabla-tickets th.col-importancia,
-    .tabla-tickets td.col-importancia {
-      width: 22%;
-      white-space: nowrap;
-    }
-
-    .tabla-tickets th.col-estado,
-    .tabla-tickets td.col-estado {
-      min-width: 0;
-      width: 36%;
-      white-space: normal;
-    }
-
-    .tabla-tickets td.col-importancia .badge,
-    .tabla-tickets td.col-estado .badge {
-      font-size: 0.72em;
-      padding: 4px 6px;
-      white-space: normal;
-      line-height: 1.2;
-    }
-  }
-</style>
-
-<div class="tickets-contenedor">
+<div class="contenedor" data-ticket-list-admin="<%= (typeof isAdministrador !== 'undefined' && isAdministrador) ? 'true' : 'false' %>">
 <div class="page-header page-header--toolbar">
   <div class="page-header__text">
     <h2 class="page-title"><%= titulo || 'Soporte de TI' %></h2>
@@ -218,16 +7,16 @@
 
   <div class="page-header-actions">
     <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-    <button id="btnToggleCerrados" type="button" class="btn-toggle-cerrados" onclick="toggleCerrados()">
-      <span id="eyeIcon" style="display: flex; align-items: center;">
+    <button id="btnToggleCerrados" type="button" class="btn-toggle-cerrados" data-toggle-closed-tickets>
+      <span id="eyeIcon" class="ticket-icon-inline" data-ticket-closed-icon>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486z"/><path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/><path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .707-.707 12 12-.708.707z"/></svg>
       </span>
-      <span id="eyeText">Mostrar Cerrados</span>
+      <span id="eyeText" data-ticket-closed-text>Mostrar Cerrados</span>
     </button>
     <% } %>
 
-    <a href="/sistemas/tickets/nuevo" class="btn-primario js-open-ticket-modal" style="padding: 10px 20px; display: flex; align-items: center; gap: 8px; font-weight: 600; text-decoration: none;">
-      <span style="font-size: 1.2rem; line-height: 1;">+</span> Abrir Nuevo Ticket
+    <a href="/sistemas/tickets/nuevo" class="btn-primario btn-ticket-create js-open-ticket-modal">
+      <span class="btn-ticket-create__icon">+</span> Abrir Nuevo Ticket
     </a>
   </div>
 </div><!-- /.page-header -->
@@ -237,19 +26,19 @@
   <thead>
     <tr>
       <% let cIdx = 0; %>
-      <th class="col-id col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">ID <span class="sort-icon"></span></th>
-      <th class="col-titulo" onclick="sortTable(<%= cIdx++ %>)">Título <span class="sort-icon"></span></th>
-      <th class="col-categoria col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Categoría <span class="sort-icon"></span></th>
-      <th class="col-importancia" onclick="sortTable(<%= cIdx++ %>)">Importancia <span class="sort-icon"></span></th>
-      <th class="col-estado" onclick="sortTable(<%= cIdx++ %>)">Estado <span class="sort-icon"></span></th>
+      <th class="col-id col-ocultar-mobile" data-sort-column="<%= cIdx++ %>">ID <span class="sort-icon"></span></th>
+      <th class="col-titulo" data-sort-column="<%= cIdx++ %>">Título <span class="sort-icon"></span></th>
+      <th class="col-categoria col-ocultar-mobile" data-sort-column="<%= cIdx++ %>">Categoría <span class="sort-icon"></span></th>
+      <th class="col-importancia" data-sort-column="<%= cIdx++ %>">Importancia <span class="sort-icon"></span></th>
+      <th class="col-estado" data-sort-column="<%= cIdx++ %>">Estado <span class="sort-icon"></span></th>
       <% if (user && typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-        <th class="col-asignado col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Tomado por <span class="sort-icon"></span></th>
+        <th class="col-asignado col-ocultar-mobile" data-sort-column="<%= cIdx++ %>">Tomado por <span class="sort-icon"></span></th>
       <% } %>
-      <th class="col-solicitante col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Solicitante <span class="sort-icon"></span></th>
-      <th class="col-correo col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Correo <span class="sort-icon"></span></th>
-      <th class="col-creado col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Creado <span class="sort-icon"></span></th>
-      <th class="col-ult-respuesta col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">Últ. Respuesta <span class="sort-icon"></span></th>
-      <th class="col-t-respuesta col-ocultar-mobile" onclick="sortTable(<%= cIdx++ %>)">T. Respuesta <span class="sort-icon"></span></th>
+      <th class="col-solicitante col-ocultar-mobile" data-sort-column="<%= cIdx++ %>">Solicitante <span class="sort-icon"></span></th>
+      <th class="col-correo col-ocultar-mobile" data-sort-column="<%= cIdx++ %>">Correo <span class="sort-icon"></span></th>
+      <th class="col-creado col-ocultar-mobile" data-sort-column="<%= cIdx++ %>">Creado <span class="sort-icon"></span></th>
+      <th class="col-ult-respuesta col-ocultar-mobile" data-sort-column="<%= cIdx++ %>">Últ. Respuesta <span class="sort-icon"></span></th>
+      <th class="col-t-respuesta col-ocultar-mobile" data-sort-column="<%= cIdx++ %>">T. Respuesta <span class="sort-icon"></span></th>
     </tr>
   </thead>
   <tbody>
@@ -287,7 +76,7 @@
           <td class="col-id col-ocultar-mobile" data-sort="<%= t.id %>"><%= t.id %></td>
           <td class="col-titulo" title="<%= t.title %>">
             <% if (esNoLeido) { %><span class="badge-nuevo-ticket">Nuevo</span><% } %>
-            <div style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; line-height: 1.2;">
+            <div class="ticket-title-clamp">
               <%= t.title %>
             </div>
           </td>
@@ -296,22 +85,22 @@
           <td class="col-estado" data-sort="<%= t.status %>"><span class="badge <%= badgeEstado %>"><%= estadoLabels[t.status] || t.status %></span></td>
           
           <% if (user && typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-            <td class="col-asignado col-ocultar-mobile" style="font-weight: 600; color: <%= t.assigned_to ? '#28a745' : '#888' %>;">
+            <td class="col-asignado col-ocultar-mobile ticket-assigned <%= t.assigned_to ? 'ticket-assigned--active' : '' %>">
                 <%= t.assigned_to || 'Sin asignar' %>
             </td>
           <% } %>
 
           <td class="col-solicitante col-ocultar-mobile"><%= t.requester_name %></td>
-          <td class="col-correo col-ocultar-mobile" style="color: #555; font-size: 0.9em;"><%= t.requester_email %></td>
-          <td class="col-creado col-ocultar-mobile" data-sort="<%= t.created_at ? new Date(t.created_at).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strCreado %></td>
-          <td class="col-ult-respuesta col-ocultar-mobile" data-sort="<%= t.fecha_ultima_respuesta ? new Date(t.fecha_ultima_respuesta).getTime() : 0 %>" style="color: #555; font-size: 0.85em;"><%= strUltima %></td>
-          <td class="col-t-respuesta col-ocultar-mobile" data-sort="<%= t.tiempo_respuesta_minutos != null ? t.tiempo_respuesta_minutos : -1 %>" style="color: #003a70; font-weight: 600; font-size: 0.9em;"><%= tRespuesta %></td>
+          <td class="col-correo col-ocultar-mobile ticket-table-muted"><%= t.requester_email %></td>
+          <td class="col-creado col-ocultar-mobile ticket-table-date" data-sort="<%= t.created_at ? new Date(t.created_at).getTime() : 0 %>"><%= strCreado %></td>
+          <td class="col-ult-respuesta col-ocultar-mobile ticket-table-date" data-sort="<%= t.fecha_ultima_respuesta ? new Date(t.fecha_ultima_respuesta).getTime() : 0 %>"><%= strUltima %></td>
+          <td class="col-t-respuesta col-ocultar-mobile ticket-response-time" data-sort="<%= t.tiempo_respuesta_minutos != null ? t.tiempo_respuesta_minutos : -1 %>"><%= tRespuesta %></td>
           
         </tr>
       <% }) %>
     <% } else { %>
       <tr>
-        <td colspan="<%= (user && typeof isAdministrador !== 'undefined' && isAdministrador) ? 11 : 10 %>" style="text-align: center; padding: 30px; color: #777;">No hay tickets registrados actualmente.</td>
+        <td colspan="<%= (user && typeof isAdministrador !== 'undefined' && isAdministrador) ? 11 : 10 %>" class="ticket-empty-table">No hay tickets registrados actualmente.</td>
       </tr>
     <% } %>
   </tbody>
@@ -320,81 +109,12 @@
 
 </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const rows = document.querySelectorAll(".clickable-row");
-    rows.forEach(row => {
-      row.addEventListener("click", () => {
-        window.location.href = row.getAttribute("data-href");
-      });
-    });
-  });
-
-  let sortDirection = {}; 
-  function sortTable(columnIndex) {
-    const table = document.getElementById("ticketsTable");
-    const tbody = table.querySelector("tbody");
-    const rows = Array.from(tbody.querySelectorAll("tr.clickable-row"));
-    const headers = table.querySelectorAll("th");
-
-    if(rows.length === 0) return;
-
-    sortDirection[columnIndex] = !sortDirection[columnIndex];
-    const isAscending = sortDirection[columnIndex];
-    
-    headers.forEach(th => {
-      th.classList.remove("th-sort-asc", "th-sort-desc");
-    });
-    headers[columnIndex].classList.add(isAscending ? "th-sort-asc" : "th-sort-desc");
-    
-    rows.sort((rowA, rowB) => {
-      const cellA = rowA.children[columnIndex];
-      const cellB = rowB.children[columnIndex];
-
-      let valA = cellA.getAttribute("data-sort") || cellA.innerText.trim().toLowerCase();
-      let valB = cellB.getAttribute("data-sort") || cellB.innerText.trim().toLowerCase();
-
-      const numA = parseFloat(valA);
-      const numB = parseFloat(valB);
-
-      if (!isNaN(numA) && !isNaN(numB)) {
-        return isAscending ? numA - numB : numB - numA;
-      }
-
-      if (valA < valB) return isAscending ? -1 : 1;
-      if (valA > valB) return isAscending ? 1 : -1;
-      return 0;
-    });
-    
-    rows.forEach(row => tbody.appendChild(row));
-  }
-
-  let mostrandoCerrados = true; 
-  function toggleCerrados() {
-    mostrandoCerrados = !mostrandoCerrados;
-    const rows = document.querySelectorAll(".tabla-tickets tbody tr.clickable-row");
-    const btnIcon = document.getElementById("eyeIcon");
-    const btnText = document.getElementById("eyeText");
-    
-    rows.forEach(row => {
-      const estado = row.getAttribute("data-estado");
-      if (estado === "closed") {
-        row.style.display = mostrandoCerrados ? "" : "none";
-      }
-    });
-    
-    if (mostrandoCerrados) {
-      btnIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>`;
-      btnText.innerText = "Ocultar Cerrados";
-    } else {
-      btnIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486z"/><path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/><path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .707-.707 12 12-.708.707z"/></svg>`;
-      btnText.innerText = "Mostrar Cerrados";
-    }
-  }
-
-  <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-  document.addEventListener("DOMContentLoaded", () => {
-    toggleCerrados();
-  });
-  <% } %>
-</script>
+<%- include('../partials/modal', {
+  id: 'modalVerTicketDetalle',
+  titleId: 'modalVerTicketDetalleTitulo',
+  title: 'Detalle de ticket',
+  overlayClass: 'modal-ticket-navbar',
+  panelClass: 'modal-ticket-navbar-content modal-ticket-detail-content',
+  titleClass: 'ticket-modal-title ticket-modal-title--sr',
+  body: include('../partials/ticket-detail-modal-content')
+}) %>

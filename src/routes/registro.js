@@ -40,7 +40,13 @@ router.get('/evento/:id', async (req, res) => {
 
 router.post('/evento/:id/registrar', async (req, res) => {
   const eventoId = req.params.id;
-  const { nombre_completo, empresa, cargo, telefono, email, acreditado } = req.body || {};
+  const body = req.body || {};
+  const nombre_completo = body.nombre_completo || body.full_name;
+  const empresa = body.empresa || body.company;
+  const cargo = body.cargo || body.job_title;
+  const telefono = body.telefono || body.phone;
+  const email = body.email;
+  const acreditado = body.acreditado ?? body.accredited;
 
   if (!eventoId) return res.status(400).json({ error: 'ID de evento requerido' });
   if (!nombre_completo || !empresa || !cargo || !telefono || !email) {
@@ -75,7 +81,14 @@ router.post('/evento/:id/registrar', async (req, res) => {
       [nuevoId, nombre_completo, empresa, cargo, telefono, emailNormalizado, eventoPk, acreditado || false]
     );
 
-    return res.json({ id: nuevoId });
+    return res.json({
+      id: nuevoId,
+      nombre_completo,
+      empresa,
+      cargo,
+      eventoNombre: evento.nombre,
+      eventoFecha: evento.fecha || '',
+    });
   } catch (err) {
     console.error('[Registro API] Error al registrar usuario:', err.message);
     return res.status(500).json({ error: 'Error interno al registrar usuario' });

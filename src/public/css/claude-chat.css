@@ -784,4 +784,20 @@
   .welcome-section { padding-top: 2vh; }
   .welcome-section h2 { font-size: 22px; }
   .composer-area { padding: 8px 10px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+
+  /* Modal a pantalla completa: respiro lateral para que el contenido no pegue a los bordes */
+  .claude-app--modal .claude-mobile-bar {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .claude-app--modal .chat-thread {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .claude-app--modal .composer-area {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
 }
