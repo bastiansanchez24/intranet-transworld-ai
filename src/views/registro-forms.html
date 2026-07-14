@@ -1049,27 +1049,22 @@
         </div>
 
         <script>
-            const EVENTO_SUPABASE_URL = window.__ENV__?.EVENTO_SUPABASE_URL || "";
-            const EVENTO_SUPABASE_ANON_KEY =
-                window.__ENV__?.EVENTO_SUPABASE_ANON_KEY || "";
-
-            if (!EVENTO_SUPABASE_URL || !EVENTO_SUPABASE_ANON_KEY) {
-                console.error(
-                    "[registro] Faltan EVENTO_SUPABASE_URL / EVENTO_SUPABASE_ANON_KEY en el entorno del servidor",
-                );
-            }
+            // Credenciales propias del form (independiente de la intranet)
+            const SUPABASE_URL = "https://evjocwzmlsyjixzihxep.supabase.co";
+            const SUPABASE_ANON_KEY =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2am9jd3ptbHN5aml4emloeGVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NTI0NTcsImV4cCI6MjA4NjIyODQ1N30.nO3QatVFN4GnfrDpWAEqf3-Qv95WBOMG2L7w3TNcBAc";
 
             const { createClient } = supabase;
-            const _supabase = createClient(
-                EVENTO_SUPABASE_URL,
-                EVENTO_SUPABASE_ANON_KEY,
-            );
+            const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             const params = new URLSearchParams(window.location.search);
             const EVENTO_ID = params.get("id") || params.get("evento_id");
 
             let eventoNombre = "";
             let eventoFecha = "";
+            let eventoFechaRaw = "";
+            let eventoLugar = "";
+            let eventoDireccion = "";
             let registroId = "";
             let qrBase64 = "";
             let bloquesEvento = [];
@@ -1208,6 +1203,19 @@
                 return valid;
             }
 
+            async function enviarCorreoQr(payload) {
+                // Bridge propio: src/registro/enviar-qr.js (Brevo), sin mailer de la intranet.
+                const mailRes = await fetch("/registro-forms/enviar-qr", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+                if (!mailRes.ok) {
+                    const body = await mailRes.json().catch(() => ({}));
+                    throw new Error(body.error || `HTTP ${mailRes.status}`);
+                }
+            }
+
             function firstNameFrom(fullName) {
                 return (fullName || "").trim().split(/\s+/)[0] || "";
             }
@@ -1289,25 +1297,21 @@
                     return;
                 }
 
-                if (!EVENTO_SUPABASE_URL || !EVENTO_SUPABASE_ANON_KEY) {
-                    mostrarError(
-                        "Falta configuración de Supabase (evento) en el servidor.",
-                    );
-                    return;
-                }
-
                 try {
                     const { data, error } = await _supabase
                         .from("eventos")
-                        .select("nombre, fecha")
+                        .select("nombre, fecha, lugar, direccion")
                         .eq("id", EVENTO_ID)
                         .maybeSingle();
 
                     if (error) throw error;
                     if (!data) throw new Error("Evento no encontrado");
 
-                    eventoNombre = data.nombre;
-                    eventoFecha = data.fecha || "";
+                    eventoNombre = data.nombre || "";
+                    eventoFechaRaw = data.fecha || "";
+                    eventoFecha = eventoFechaRaw;
+                    eventoLugar = data.lugar || "";
+                    eventoDireccion = data.direccion || "";
 
                     if (
                         eventoFecha.includes("-") &&
@@ -1508,7 +1512,7 @@
                         );
                     }
 
-                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=jpeg&data=${encodeURIComponent(registroId)}`;
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=jpeg&data=${registroId}`;
                     const responseQr = await fetch(qrUrl);
                     const blobQr = await responseQr.blob();
                     const base64Qr = await convertirABase64(blobQr);
@@ -1518,28 +1522,20 @@
                         bloque_etiqueta: etiquetaBloque(bloqueId),
                     };
 
-                    // Envío de QR por correo (no bloquea el éxito en pantalla si falla)
+                    // Envío de QR por Brevo (directo, sin intranet)
                     try {
-                        const mailRes = await fetch("/registro-forms/enviar-qr", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                email: emailIngresado,
-                                nombre: formData.nombre_completo,
-                                empresa: formData.empresa,
-                                cargo: formData.cargo,
-                                eventoNombre,
-                                eventoFecha,
-                                bloque: datosExito.bloque_etiqueta || "",
-                                registroId,
-                            }),
+                        await enviarCorreoQr({
+                            email: emailIngresado,
+                            nombre: formData.nombre_completo,
+                            eventoNombre,
+                            eventoFecha,
+                            eventoFechaRaw,
+                            eventoLugar,
+                            eventoDireccion,
+                            registroId,
                         });
-                        if (!mailRes.ok) {
-                            const mailBody = await mailRes.json().catch(() => ({}));
-                            console.error("[registro] fallo envío correo:", mailRes.status, mailBody);
-                        }
                     } catch (mailErr) {
-                        console.error("[registro] error red al enviar correo:", mailErr);
+                        console.error("[registro] error envío correo:", mailErr);
                     }
 
                     mostrarExito(datosExito, base64Qr);
