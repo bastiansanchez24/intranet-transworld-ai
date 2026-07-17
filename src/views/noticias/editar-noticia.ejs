@@ -302,7 +302,7 @@
       } else if (item.tipo === 'document' || item.resource_type === 'raw') {
         div.innerHTML = `
           <a href="${item.url}" target="_blank" rel="noopener noreferrer" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:6px;text-decoration:none;color:#1f2937;padding:8px;text-align:center;">
-            <span style="font-size:2rem;">📄</span>
+            <span style="font-size:2rem;"><%- include('../partials/icon', { name: 'file-text' }) %></span>
             <span style="font-size:0.72rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${item.nombre || 'Documento'}</span>
           </a>
           <button type="button" class="btn-remove-img" onclick="eliminarItem(${index})" title="Eliminar">&times;</button>

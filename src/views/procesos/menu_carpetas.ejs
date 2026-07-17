@@ -74,7 +74,7 @@
   <div class="grid-carpetas">
     <% areas.forEach(area => { %>
       <a href="/procesos/<%= seccionBase %>/<%= area.slug %>" class="folder-card-exec">
-        <div class="folder-icon-exec">📁</div>
+        <div class="folder-icon-exec"><%- include('../partials/icon', { name: 'folder' }) %></div>
         <div class="folder-info">
           <h3 class="folder-title-exec"><%= area.name %></h3>
           <span class="folder-count"><%= area.cantidad %> archivo(s)</span>

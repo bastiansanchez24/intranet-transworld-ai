@@ -94,7 +94,7 @@
     <div class="header-seccion">
         <div class="header-info">
             <h2 style="color: #003a70; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                🎓 Mis Cursos Realizados 
+                Mis Cursos Realizados
             </h2>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 5px;">
                 <span style="background: #e2e8f0; color: #4a5568; padding: 4px 12px; border-radius: 20px; font-size: 0.95rem; font-weight: 600;">
@@ -144,7 +144,7 @@
         <% }) %>
     <% } else { %>
         <div class="empty-state">
-            <div style="font-size: 4rem; margin-bottom: 15px;">📚</div>
+            <div style="font-size: 4rem; margin-bottom: 15px; color: #003a70;"><%- include('partials/icon', { name: 'book' }) %></div>
             <h3 style="color: #003a70; margin-bottom: 10px;">Aún no has completado ningún curso</h3>
             <p>Visita las áreas de la academia, estudia el material y aprueba las evaluaciones para que aparezcan aquí.</p>
             <a href="/cursos" class="btn-academia">Explorar la Academia</a>

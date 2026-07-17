@@ -7,7 +7,7 @@
 <div class="vac-wrap">
   <div class="vac-header">
     <div>
-      <h2 class="vac-title"><%= nombre %> <span class="vac-country"><%= countryFlag %> <%= countryLabel %></span></h2>
+      <h2 class="vac-title"><%= nombre %> <span class="vac-country"><%= countryLabel %></span></h2>
       <p class="vac-subtitle">
         Ingreso: <%= profile.hire_date ? new Date(profile.hire_date).toISOString().split('T')[0] : 'no registrado' %>
         · Disponible: <strong><%= summary.available %></strong>
@@ -55,7 +55,7 @@
               <td><%= p.adjusted %></td>
               <td><%= p.used %></td>
               <td><strong><%= p.available %></strong></td>
-              <td><%= p.expired ? '⚠️ Vencido' : (p.expiresAtFmt || '-') %></td>
+              <td><%= p.expired ? 'Vencido' : (p.expiresAtFmt || '-') %></td>
             </tr>
           <% }) %>
         </tbody>

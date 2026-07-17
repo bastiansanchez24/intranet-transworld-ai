@@ -171,7 +171,7 @@
       </div>
 
       <div class="global-search-wrapper">
-        <span class="search-icon-global">🔍</span>
+        <span class="search-icon-global"><%- include('../partials/icon', { name: 'search' }) %></span>
         <input
           type="text"
           id="buscadorGlobal"
@@ -189,7 +189,7 @@
 
       <div class="grid-opciones-exec">
         <a href="/procesos/procedimientos" class="card-opcion-exec">
-          <div class="card-icon-wrapper">📋</div>
+          <div class="card-icon-wrapper"><%- include('../partials/icon', { name: 'clipboard' }) %></div>
           <div class="card-content">
             <h3 class="card-title">Procedimientos</h3>
             <p class="card-desc">
@@ -199,7 +199,7 @@
         </a>
 
         <a href="/procesos/protocolos" class="card-opcion-exec">
-          <div class="card-icon-wrapper">🛡️</div>
+          <div class="card-icon-wrapper"><%- include('../partials/icon', { name: 'shield' }) %></div>
           <div class="card-content">
             <h3 class="card-title">Protocolos</h3>
             <p class="card-desc">
@@ -209,7 +209,7 @@
         </a>
 
         <a href="/procesos/reglamento" class="card-opcion-exec">
-          <div class="card-icon-wrapper">⚖️</div>
+          <div class="card-icon-wrapper"><%- include('../partials/icon', { name: 'scale' }) %></div>
           <div class="card-content">
             <h3 class="card-title">Reglamento Interno</h3>
             <p class="card-desc">
@@ -219,7 +219,7 @@
         </a>
 
         <a href="/procesos/otros" class="card-opcion-exec">
-          <div class="card-icon-wrapper">📁</div>
+          <div class="card-icon-wrapper"><%- include('../partials/icon', { name: 'folder' }) %></div>
           <div class="card-content">
             <h3 class="card-title">Otros Documentos</h3>
             <p class="card-desc">
@@ -275,8 +275,7 @@
                   }
                 }
 
-                const isPdf = doc.url.toLowerCase().endsWith(".pdf");
-                const icon = isPdf ? "📄" : "📝";
+                const icon = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
 
                 const item = document.createElement("a");
                 item.href = doc.url;

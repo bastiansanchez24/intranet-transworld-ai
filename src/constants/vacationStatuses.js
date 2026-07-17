@@ -50,8 +50,8 @@ const COUNTRY_LABELS = {
 };
 
 const COUNTRY_FLAGS = {
-  CL: "🇨🇱",
-  PE: "🇵🇪",
+  CL: "",
+  PE: "",
 };
 
 function vacationStatusLabel(status) {

@@ -94,7 +94,7 @@
 }
 
 .modal-content2-close:hover {
-  color: var(--color-heading, #003a70);
+  color: var(--color-heading, #0f4c81);
 }
 
 .modal-list-item {
@@ -113,7 +113,7 @@
 
 .modal-item-value {
   margin-left: 15px;
-  color: var(--color-heading, #003a70);
+  color: var(--color-heading, #0f4c81);
   font-weight: 500;
   text-align: right;
 }

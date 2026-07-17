@@ -4,16 +4,17 @@ const axios = require('axios');
 const LAT = -33.3742;
 const LON = -70.6725;
 
+// Claves de icono SVG (ver views/partials/icon.ejs)
 const WMO_CODES = {
-  0: '☀️',
-  1: '🌤️',
-  2: '⛅',
-  3: '☁️',
-  45: '🌫️', 48: '🌫️',
-  51: 'DRIZZLE', 53: 'DRIZZLE', 55: 'DRIZZLE',
-  61: '🌧️', 63: '🌧️', 65: '🌧️',
-  80: '🌦️', 81: '🌦️', 82: '🌦️',
-  95: '⛈️', 96: '⛈️', 99: '⛈️',
+  0: 'sun',
+  1: 'cloud-sun',
+  2: 'cloud-sun',
+  3: 'cloud',
+  45: 'fog', 48: 'fog',
+  51: 'cloud-rain', 53: 'cloud-rain', 55: 'cloud-rain',
+  61: 'cloud-rain', 63: 'cloud-rain', 65: 'cloud-rain',
+  80: 'cloud-rain', 81: 'cloud-rain', 82: 'cloud-rain',
+  95: 'cloud-storm', 96: 'cloud-storm', 99: 'cloud-storm',
 };
 
 const WMO_DESC = {
@@ -38,8 +39,7 @@ const WMO_DESC = {
 };
 
 function getWeatherIcon(code) {
-  if (WMO_CODES[code] === 'DRIZZLE') return '🌧️';
-  return WMO_CODES[code] || '⛅';
+  return WMO_CODES[code] || 'cloud-sun';
 }
 
 function getWeatherDesc(code) {

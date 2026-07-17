@@ -122,6 +122,13 @@ function renderAuthPage(res, view, options = {}) {
   return res.status(status).render("login", payload);
 }
 
+function wantsJsonResponse(req) {
+  return (
+    req.get("Accept")?.includes("application/json") ||
+    req.get("X-Requested-With") === "fetch"
+  );
+}
+
 function isTransworldEmail(email) {
   if (!email || !email.includes("@")) return false;
   return email.split("@")[1] === TRANSWORLD_EMAIL_DOMAIN;
@@ -255,9 +262,20 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { username, password, domain } = req.body;
+  const json = wantsJsonResponse(req);
+  const { username, password, domain } = req.body || {};
   const validUser = process.env.AUTH_USER;
   const validPass = process.env.AUTH_PASS;
+
+  const fail = (status, error) => {
+    if (json) return res.status(status).json({ ok: false, error });
+    return renderAuthPage(res, "login", { status, error });
+  };
+
+  const succeed = (redirect) => {
+    if (json) return res.json({ ok: true, redirect });
+    return res.redirect(redirect);
+  };
 
   if (username === validUser && password === validPass) {
     req.session.user = {
@@ -267,16 +285,13 @@ router.post("/login", async (req, res) => {
       email: null,
       foto: null,
     };
-    return res.redirect("/");
+    return succeed("/");
   }
 
   try {
     const email = normalizeCorporateEmail(username, domain);
     if (!email) {
-      return renderAuthPage(res, "login", {
-        status: 400,
-        error: "Debes ingresar un usuario corporativo válido.",
-      });
+      return fail(400, "Debes ingresar un usuario corporativo válido.");
     }
 
     let rows;
@@ -304,27 +319,18 @@ router.post("/login", async (req, res) => {
     }
 
     if (!rows.length) {
-      return renderAuthPage(res, "login", {
-        status: 401,
-        error: "Usuario no registrado en la intranet",
-      });
+      return fail(401, "Usuario no registrado en la intranet");
     }
 
     const u = rows[0];
 
     if (!u.password_hash || !u.password_salt) {
-      return renderAuthPage(res, "login", {
-        status: 401,
-        error: "Usuario o contraseña incorrectos",
-      });
+      return fail(401, "Usuario o contraseña incorrectos");
     }
 
     const computed = pbkdf2Hash(password, u.password_salt);
     if (!safeEqualHex(computed, u.password_hash)) {
-      return renderAuthPage(res, "login", {
-        status: 401,
-        error: "Usuario o contraseña incorrectos",
-      });
+      return fail(401, "Usuario o contraseña incorrectos");
     }
 
     if (!u.email_confirmed) {
@@ -336,7 +342,7 @@ router.post("/login", async (req, res) => {
         codeJustSent = true;
       }
       req.session.pendingEmailVerification = email;
-      return res.redirect(
+      return succeed(
         codeJustSent ? "/verify-email?sent=1" : "/verify-email",
       );
     }
@@ -349,10 +355,7 @@ router.post("/login", async (req, res) => {
         errorMsg =
           "Usuario deshabilitado, póngase en contacto con el administrador";
       }
-      return renderAuthPage(res, "login", {
-        status: 403,
-        error: errorMsg,
-      });
+      return fail(403, errorMsg);
     }
 
     delete req.session.pendingPasswordReset;
@@ -375,19 +378,15 @@ router.post("/login", async (req, res) => {
     };
 
     if (u.must_change_password) {
-      return res.redirect("/reset-password");
+      return succeed("/reset-password");
     }
 
     const redirectUrl = req.session.returnTo || "/";
     delete req.session.returnTo;
-    return res.redirect(redirectUrl);
+    return succeed(redirectUrl);
   } catch (err) {
     console.error("Login error:", err);
-    // FIX 1: se agrega info: null para que la vista no rompa
-    return renderAuthPage(res, "login", {
-      status: 500,
-      error: "Error interno del servidor",
-    });
+    return fail(500, "Error interno del servidor");
   }
 });
 
@@ -798,7 +797,18 @@ router.get("/forgot-password", (req, res) => {
 });
 
 router.post("/forgot-password", async (req, res) => {
-  const { email } = req.body;
+  const json = wantsJsonResponse(req);
+  const { email } = req.body || {};
+
+  const fail = (status, error) => {
+    if (json) return res.status(status).json({ ok: false, error });
+    return renderAuthPage(res, "forgot", { status, error });
+  };
+
+  const succeed = (redirect) => {
+    if (json) return res.json({ ok: true, redirect });
+    return res.redirect(redirect);
+  };
 
   try {
     const cleanEmail = String(email || "")
@@ -810,7 +820,7 @@ router.post("/forgot-password", async (req, res) => {
       [cleanEmail],
     );
 
-    if (!rows.length) return res.redirect("/login?reset=1");
+    if (!rows.length) return succeed("/login?reset=1");
 
     const user = rows[0];
 
@@ -833,13 +843,10 @@ router.post("/forgot-password", async (req, res) => {
       text: `Hola ${user.first_name},\n\nSe ha solicitado restablecer tu contraseña.\n\nTu nueva contraseña temporal es: ${tempPassword}\n\nPor favor inicia sesión con ella. El sistema te pedirá cambiarla inmediatamente.\n`,
     });
 
-    res.redirect("/login?reset=1");
+    return succeed("/login?reset=1");
   } catch (err) {
     console.error("Error en Forgot Password:", err);
-    renderAuthPage(res, "forgot", {
-      status: 500,
-      error: "Error interno al procesar la solicitud.",
-    });
+    return fail(500, "Error interno al procesar la solicitud.");
   }
 });
 
@@ -916,13 +923,6 @@ router.post("/reset-password", async (req, res) => {
 // ==========================================
 // CAMBIAR CONTRASEÑA
 // ==========================================
-function wantsJsonResponse(req) {
-  return (
-    req.get("Accept")?.includes("application/json") ||
-    req.get("X-Requested-With") === "fetch"
-  );
-}
-
 function redirectPasswordError(res, error) {
   return res.redirect(
     `/perfil?openPasswordModal=1&password_error=${encodeURIComponent(error)}`,

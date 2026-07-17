@@ -317,7 +317,7 @@ class ClaudeChat {
       ? [attachmentNames]
       : [];
     const att = names
-      .map((n) => `<div class="msg-attachment">📎 ${this.escapeHtml(n)}</div>`)
+      .map((n) => `<div class="msg-attachment">Adjunto: ${this.escapeHtml(n)}</div>`)
       .join("");
     el.innerHTML = `<div class="msg-body">${att}${this.escapeHtml(text)}</div>`;
     this.thread.appendChild(el);
@@ -333,7 +333,7 @@ class ClaudeChat {
       <div class="msg-avatar">${CLAUDE_LOGO_SVG}</div>
       <div class="msg-body">
         <div class="thinking-block" hidden>
-          <button class="thinking-toggle">💭 Razonamiento</button>
+          <button class="thinking-toggle">Razonamiento</button>
           <div class="thinking-content" hidden></div>
         </div>
         <div class="typing-dots"><span></span><span></span><span></span></div>
@@ -436,7 +436,7 @@ class ClaudeChat {
       parts.thinkingContent.hidden = true; // colapsar al terminar
     } catch (err) {
       parts.dots.remove();
-      parts.textEl.innerHTML = `<span style="color:#c0392b">⚠️ ${this.escapeHtml(err.message)}</span>`;
+      parts.textEl.innerHTML = `<span style="color:#c0392b">Error: ${this.escapeHtml(err.message)}</span>`;
       if (err.message.includes("límite")) this.thread.lastElementChild?.querySelector(".msg-body")?.prepend(
         Object.assign(document.createElement("p"), {
           style: "color:#b45309;font-size:13px;margin:0 0 8px",
@@ -575,7 +575,7 @@ class ClaudeChat {
       this.scrollToBottom();
     } catch (err) {
       parts.dots.remove();
-      parts.textEl.innerHTML = `<span style="color:#c0392b">⚠️ ${this.escapeHtml(err.message)}</span>`;
+      parts.textEl.innerHTML = `<span style="color:#c0392b">Error: ${this.escapeHtml(err.message)}</span>`;
     }
   }
 
@@ -626,10 +626,10 @@ class ClaudeChat {
       <h2>¡Empecemos con algo nuevo!</h2>
       <p>Pregúntame lo que quieras o adjunta un PDF, Word o Excel para analizarlo.</p>
       <div class="quick-actions">
-        <button class="quick-action" data-prompt="Ayúdame a redactar un correo profesional sobre ">📝 Redactar un correo</button>
-        <button class="quick-action" data-prompt="Resume y explica los puntos clave del siguiente texto: ">🔍 Resumir un texto</button>
-        <button class="quick-action" data-prompt="Explícame de forma sencilla cómo funciona ">📚 Explicar un concepto</button>
-        <button class="quick-action" data-action="extract">📄 Extraer datos de un documento</button>
+        <button class="quick-action" data-prompt="Ayúdame a redactar un correo profesional sobre ">Redactar un correo</button>
+        <button class="quick-action" data-prompt="Resume y explica los puntos clave del siguiente texto: ">Resumir un texto</button>
+        <button class="quick-action" data-prompt="Explícame de forma sencilla cómo funciona ">Explicar un concepto</button>
+        <button class="quick-action" data-action="extract">Extraer datos de un documento</button>
       </div>`;
     this.thread.appendChild(w);
     this.welcome = w;

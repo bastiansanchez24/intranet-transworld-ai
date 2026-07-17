@@ -94,8 +94,8 @@
           <label for="employment_country">País de contrato *</label>
           <% const pais = (persona.employment_country || 'CL'); %>
           <select id="employment_country" name="employment_country" required>
-            <option value="CL" <%= pais === 'CL' ? 'selected' : '' %>>🇨🇱 Chile</option>
-            <option value="PE" <%= pais === 'PE' ? 'selected' : '' %>>🇵🇪 Perú</option>
+            <option value="CL" <%= pais === 'CL' ? 'selected' : '' %>>Chile</option>
+            <option value="PE" <%= pais === 'PE' ? 'selected' : '' %>>Perú</option>
           </select>
           <span class="hint">Determina las reglas de vacaciones.</span>
         </div>

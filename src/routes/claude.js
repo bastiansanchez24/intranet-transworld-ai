@@ -370,7 +370,7 @@ router.post("/api/chat", async (req, res) => {
     messages.push({ role: "user", content: currentContent });
 
     // Guardar mensaje del usuario (texto + lista de adjuntos)
-    const attachmentPrefix = attachments.map((a) => `📎 ${a.filename}`).join("\n");
+    const attachmentPrefix = attachments.map((a) => `[Adjunto] ${a.filename}`).join("\n");
     const storedUserText = (attachmentPrefix ? `${attachmentPrefix}\n\n` : "") + userText;
     await db.query(
       "INSERT INTO claude_messages (conversation_id, role, content, created_at) VALUES ($1, $2, $3, NOW())",
@@ -505,7 +505,7 @@ router.post("/api/extract", upload.single("file"), async (req, res) => {
     }
 
     const userText = "Extraer información estructurada del documento";
-    const storedUserText = `📎 ${req.file.originalname}\n\n${userText}`;
+    const storedUserText = `[Adjunto] ${req.file.originalname}\n\n${userText}`;
     const assistantText = claudeService.formatExtractAsMarkdown(result.data);
 
     await db.query(

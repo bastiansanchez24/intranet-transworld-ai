@@ -5,6 +5,7 @@ process.env.TZ = "America/Santiago";
 require("dotenv").config();
 
 const express = require("express");
+const compression = require("compression");
 const path = require("path");
 const session = require("express-session");
 const expressLayouts = require("express-ejs-layouts");
@@ -21,7 +22,7 @@ const marketingRoutes = require("./routes/marketing");
 const docsRoutes = require("./routes/docs");
 const noticiasRoutes = require("./routes/noticias");
 const registroRoutes = require("./routes/registro");
-const { enviarQrHandler } = require("./registro/enviar-qr");
+const { enviarQrHandler } = require("./registro-forms/enviar-qr");
 const claudeRoutes = require("./routes/claude");
 const { ROLES, normalizeRole, isAdministrador } = require("./constants/roles");
 const { formatPageTitle } = require("./utils/pageTitle");
@@ -60,6 +61,7 @@ app.locals.formatPageTitle = formatPageTitle;
 // ================================
 // Middlewares Básicos
 // ================================
+app.use(compression());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -86,9 +88,10 @@ app.use("/content", async (req, res, next) => {
   }
 });
 
-app.use(express.static(path.join(__dirname, "public")));
+const staticOptions = { maxAge: "1d", etag: true };
+app.use(express.static(path.join(__dirname, "public"), staticOptions));
 // FIX: Servir archivos estáticos desde <root>/public (donde vive public/uploads unificado)
-app.use(express.static(path.join(__dirname, "..", "public")));
+app.use(express.static(path.join(__dirname, "..", "public"), staticOptions));
 
 // ================================
 // Sesiones
@@ -104,7 +107,7 @@ app.use(
 );
 
 // FIX: Unificado → <root>/public/uploads sirve /uploads/*
-app.use("/uploads", express.static(path.join(__dirname, "..", "public", "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "..", "public", "uploads"), { maxAge: "7d", etag: true }));
 
 // ================================
 // Variables Globales y Permisos
@@ -158,7 +161,7 @@ app.use("/", authRoutes); // Login/Registro (Públicas)
 
 // Registro de eventos: módulo autónomo (sin mailer/.env de la intranet)
 app.get("/registro-forms", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "registro-forms.html"));
+  res.sendFile(path.join(__dirname, "registro-forms", "registro-forms.html"));
 });
 app.post("/registro-forms/enviar-qr", enviarQrHandler);
 

@@ -119,7 +119,7 @@
 .btn-photo-select--dark,
 .btn-photo-change--dark {
   background: #ffffff;
-  color: #003a70;
+  color: #0f4c81;
 }
 
 .btn-photo-select--dark:hover,
@@ -129,7 +129,7 @@
 
 .btn-photo-select--light,
 .btn-photo-change--light {
-  background: linear-gradient(135deg, #003a70 0%, #0069c2 100%);
+  background: linear-gradient(135deg, #0f4c81 0%, #0069c2 100%);
   color: #fff;
 }
 
@@ -180,7 +180,7 @@
 .foto-crop-header h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #003a70;
+  color: #0f4c81;
 }
 
 .foto-crop-close {
@@ -259,7 +259,7 @@
 }
 
 .foto-crop-footer .btn-crop-save {
-  background: #003a70;
+  background: #0f4c81;
   color: #fff;
   border: none;
   padding: 10px 22px;
@@ -275,7 +275,7 @@
 }
 
 .foto-crop-footer .btn-crop-save:not(:disabled):hover {
-  background: #002a52;
+  background: #0b3a63;
 }
 
 .foto-crop-error {

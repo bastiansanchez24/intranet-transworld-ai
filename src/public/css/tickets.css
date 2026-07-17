@@ -24,7 +24,7 @@
 }
 
 .tabla-tickets thead {
-  background-color: #003a70;
+  background-color: #0f4c81;
   color: #ffffff;
 }
 
@@ -45,7 +45,7 @@
 }
 
 .tabla-tickets th:hover {
-  background-color: #002a52;
+  background-color: #0b3a63;
 }
 
 .sort-icon {
@@ -85,7 +85,7 @@
 .bg-primary { background-color: #007bff; color: #ffffff; }
 
 .btn-primario {
-  background-color: #003a70;
+  background-color: #0f4c81;
   color: #ffffff;
   border: none;
   border-radius: 4px;
@@ -94,7 +94,7 @@
 }
 
 .btn-primario:hover {
-  background-color: #002a52;
+  background-color: #0b3a63;
 }
 
 .btn-toggle-cerrados,
@@ -188,7 +188,7 @@
 }
 
 .ticket-response-time {
-  color: #003a70;
+  color: #0f4c81;
   font-weight: 600;
   font-size: 0.9em;
 }
@@ -260,7 +260,7 @@
 
 .ticket-detail-heading {
   margin: 0;
-  color: var(--color-primary, #003a70);
+  color: var(--color-primary, #0f4c81);
 }
 
 .ticket-detail-subtitle {
@@ -318,7 +318,7 @@
 .ticket-description-label {
   display: block;
   margin-bottom: 10px;
-  color: var(--color-primary, #003a70);
+  color: var(--color-primary, #0f4c81);
 }
 
 .ticket-description-text,
@@ -339,7 +339,7 @@
 }
 
 .ticket-section-title {
-  color: var(--color-primary, #003a70);
+  color: var(--color-primary, #0f4c81);
   border-bottom: 2px solid var(--color-border, #eeeeee);
   padding-bottom: 10px;
 }
@@ -353,8 +353,8 @@
 }
 
 .mensaje-card.soporte {
-  border-left: 5px solid var(--color-heading, #003a70);
-  background: rgba(0, 58, 112, 0.06);
+  border-left: 5px solid var(--color-heading, #0f4c81);
+  background: rgba(15, 76, 129, 0.06);
 }
 
 .mensaje-card.usuario {
@@ -381,7 +381,7 @@
 }
 
 .form-respuesta--admin {
-  border-top: 4px solid #003a70;
+  border-top: 4px solid #0f4c81;
 }
 
 .form-respuesta label,
@@ -449,8 +449,8 @@
 .ticket-detail-view textarea:focus,
 .ticket-detail-view select:focus {
   outline: none;
-  border-color: var(--color-heading, #003a70);
-  box-shadow: 0 0 0 3px rgba(0, 58, 112, 0.12);
+  border-color: var(--color-heading, #0f4c81);
+  box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
 }
 
 .btn {

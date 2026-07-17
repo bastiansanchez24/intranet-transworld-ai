@@ -1,4 +1,4 @@
-/* Estilos del módulo de Vacaciones — sigue la línea visual de RRHH (#003a70) */
+/* Estilos del módulo de Vacaciones — sigue la línea visual de RRHH (#0f4c81) */
 
 .vac-wrap {
   width: 100%;
@@ -16,7 +16,7 @@
   gap: 16px;
 }
 .vac-title {
-  color: #003a70;
+  color: #0f4c81;
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 4px 0;
@@ -33,7 +33,7 @@
   font-weight: 500;
   font-size: 0.875rem;
 }
-.vac-link-volver:hover { color: #003a70; }
+.vac-link-volver:hover { color: #0f4c81; }
 
 /* ---- Cards del dashboard ---- */
 .vac-grid {
@@ -42,20 +42,20 @@
   gap: 20px;
 }
 .vac-card {
-  background: #003a70;
-  border: 1px solid #002a52;
+  background: #0f4c81;
+  border: 1px solid #0b3a63;
   border-radius: 12px;
   padding: 25px;
   text-decoration: none;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 58, 112, 0.15);
+  box-shadow: 0 4px 6px rgba(15, 76, 129, 0.15);
 }
 .vac-card:hover {
   transform: translateY(-5px);
   background: #004a8f;
-  box-shadow: 0 10px 20px rgba(0, 58, 112, 0.25);
+  box-shadow: 0 10px 20px rgba(15, 76, 129, 0.25);
 }
 .vac-card-emoji { font-size: 1.8rem; margin-bottom: 12px; }
 .vac-card-title { color: #fff; font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
@@ -76,7 +76,7 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .vac-stat-label { color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
-.vac-stat-value { color: #003a70; font-size: 2rem; font-weight: 800; margin-top: 4px; }
+.vac-stat-value { color: #0f4c81; font-size: 2rem; font-weight: 800; margin-top: 4px; }
 .vac-stat-value.danger { color: #dc2626; }
 .vac-stat-value.warn { color: #d97706; }
 .vac-stat-unit { color: #94a3b8; font-size: 0.75rem; font-weight: 600; }
@@ -95,7 +95,7 @@
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
   font-weight: 700;
-  color: #003a70;
+  color: #0f4c81;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -156,8 +156,8 @@
 }
 .vac-form input:focus, .vac-form select:focus, .vac-form textarea:focus {
   outline: none;
-  border-color: #003a70;
-  box-shadow: 0 0 0 3px rgba(0, 58, 112, 0.12);
+  border-color: #0f4c81;
+  box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
 }
 .vac-form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
 .vac-hint { font-size: 0.8rem; color: #6b7280; margin-top: 4px; display: block; }
@@ -181,7 +181,7 @@
   border: none;
   font-family: inherit;
 }
-.vac-btn-primary { background: linear-gradient(135deg, #003a70 0%, #0069c2 100%); color: #fff; }
+.vac-btn-primary { background: linear-gradient(135deg, #0f4c81 0%, #0069c2 100%); color: #fff; }
 .vac-btn-approve { background: #16a34a; color: #fff; }
 .vac-btn-reject  { background: #dc2626; color: #fff; }
 .vac-btn-cancel  { background: #f1f5f9; color: #475569; }

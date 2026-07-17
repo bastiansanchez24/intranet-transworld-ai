@@ -2,572 +2,8 @@
   const puedeEditar = typeof isAdministrador !== 'undefined' && isAdministrador;
   const mostrarRol = typeof mostrarColumnaRol !== 'undefined' ? mostrarColumnaRol : puedeEditar;
 %>
-<style>
-  .contenedor-personal {
-    width: 100%;
-    padding-bottom: 60px;
-  }
 
-  .contenedor-personal .page-header {
-    margin-bottom: 25px;
-  }
-
-  .link-volver {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: transparent;
-    border: none;
-    color: #64748b;
-    padding: 6px 0;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: color 0.15s;
-  }
-  .link-volver:hover { color: #003a70; }
-
-  .panel {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    margin-bottom: 24px;
-    overflow-x: auto;
-    max-width: 100%;
-  }
-
-  .personal-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
-    flex-wrap: wrap;
-  }
-
-  .personal-search {
-    flex: 1;
-    min-width: 220px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #fff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    padding: 0 12px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-
-  .personal-search:focus-within {
-    border-color: #003a70;
-    box-shadow: 0 0 0 3px rgba(0, 58, 112, 0.1);
-  }
-
-  .personal-search-icon {
-    color: #94a3b8;
-    font-size: 0.95rem;
-    flex-shrink: 0;
-  }
-
-  .personal-search input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    padding: 10px 0;
-    font-size: 0.9rem;
-    color: #334155;
-    min-width: 0;
-  }
-
-  .personal-search input::placeholder { color: #94a3b8; }
-
-  .personal-filtro-area {
-    min-width: 200px;
-    padding: 10px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background: #fff;
-    font-size: 0.9rem;
-    color: #334155;
-    cursor: pointer;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-
-  .personal-filtro-area:focus {
-    outline: none;
-    border-color: #003a70;
-    box-shadow: 0 0 0 3px rgba(0, 58, 112, 0.1);
-  }
-
-  .personal-sin-resultados {
-    text-align: center;
-    color: #718096;
-    padding: 30px 16px;
-    display: none;
-  }
-
-  .personal-sin-resultados.show { display: block; }
-
-  .tabla-personal {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-    text-align: left;
-  }
-
-  .tabla-personal thead { border-bottom: 1px solid #e2e8f0; }
-
-  .tabla-personal th {
-    background: #ffffff;
-    color: #64748b;
-    font-weight: 700;
-    font-size: 0.8rem;
-    letter-spacing: 0.01em;
-    padding: 11px 14px;
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
-    border-bottom: 1px solid #e2e8f0;
-    transition: color 0.15s, background 0.15s;
-  }
-
-  .tabla-personal th:hover { color: #334155; background: #f1f5f9; }
-  .tabla-personal th.sortable-active { color: #003a70; }
-  .tabla-personal td {
-    padding: 11px 14px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-
-  .tabla-personal tbody tr:last-child td { border-bottom: none; }
-  .tabla-personal tbody tr:hover td { background-color: #f8fafc; }
-
-  .tabla-personal .col-nombre { font-weight: 600; }
-  .link-nombre-colaborador {
-    color: #003a70;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.15s;
-  }
-  .link-nombre-colaborador:hover {
-    color: #0069c2;
-    text-decoration: underline;
-  }
-  .nombre-solo { color: #003a70; font-weight: 600; }
-  .tabla-personal .col-correo { color: #4a5568; }
-  .tabla-personal .col-telefono { color: #4a5568; }
-
-  .avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #dce8f5; }
-  .avatar-fallback {
-    width: 38px; height: 38px; border-radius: 50%;
-    background: linear-gradient(135deg, #003a70, #0069c2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.9rem; color: #fff; font-weight: 700;
-  }
-
-  .pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
-
-  /* Chips por área de trabajo (ver src/constants/workAreas.js) */
-  .pill-area-default  { background: #e2e8f0; color: #475569; }
-  .pill-area-informatica { background: #dcfce7; color: #166534; }
-  .pill-area-logistica { background: #ede9fe; color: #5b21b6; }
-  .pill-area-bodega   { background: #fef3c7; color: #92400e; }
-  .pill-area-comercial { background: #fef9c3; color: #854d0e; }
-  .pill-area-ventas   { background: #ffedd5; color: #c2410c; }
-  .pill-area-control  { background: #e0e7ff; color: #3730a3; }
-  .pill-area-electrica { background: #cffafe; color: #0e7490; }
-  .pill-area-finanzas { background: #fce7f3; color: #9d174d; }
-  .pill-area-gerencia { background: #fae8ff; color: #86198f; }
-  .pill-area-marketing { background: #e0f2fe; color: #075985; }
-  .pill-area-tramonto { background: #ccfbf1; color: #0f766e; }
-
-  .pill-rol-admin    { background: #dc2626; color: #fff; }
-  .pill-rol-rrhh     { background: #7c3aed; color: #fff; }
-  .pill-rol-usuario  { background: #64748b; color: #fff; }
-  .pill-rol-marketing { background: #0ea5e9; color: #fff; }
-  .pill-rol-gerencia { background: #d97706; color: #fff; }
-
-  .intranet-si { font-size: 1.1rem; color: #16a34a; }
-  .intranet-no { font-size: 1.1rem; color: #dc2626; }
-
-  .fab {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 1000;
-    width: 58px;
-    height: 58px;
-    border: none;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #003a70 0%, #0069c2 100%);
-    color: #fff;
-    font-size: 1.8rem;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    cursor: pointer;
-    font-family: inherit;
-    box-shadow: 0 6px 20px rgba(0,58,112,0.45);
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .fab:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 10px 28px rgba(0,58,112,0.55); color: #fff; }
-  .fab-tooltip {
-    position: fixed;
-    bottom: 34px;
-    right: 100px;
-    z-index: 999;
-    background: #1a202c;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    white-space: nowrap;
-  }
-  .fab:hover + .fab-tooltip { opacity: 1; }
-
-  .popup-notification {
-    position: fixed; top: 20px; right: 20px; z-index: 9999;
-    min-width: 260px; max-width: calc(100% - 40px);
-    padding: 14px 18px; border-radius: 12px;
-    display: none; align-items: center; justify-content: space-between; gap: 12px;
-    color: #fff; font-weight: 700;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-  }
-  .popup-notification.success { background: #16a34a; }
-  .popup-notification.error   { background: #dc2626; }
-  .popup-notification.show    { display: flex; }
-  .popup-notification .popup-close { background: transparent; border: none; color: #fff; font-size: 1.1rem; cursor: pointer; }
-
-  .sort-arrow { font-size: 0.65rem; opacity: 0.45; margin-left: 4px; }
-  .tabla-personal th:hover .sort-arrow { opacity: 0.7; }
-
-  .modal-crear-colaborador {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 2100;
-    align-items: center;
-    justify-content: center;
-    overflow-y: auto;
-    padding: 15px;
-    box-sizing: border-box;
-  }
-
-  .modal-crear-colaborador .modal-content {
-    background: #fff;
-    color: #1a202c;
-    width: 100%;
-    max-width: 620px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 28px 28px 24px;
-    border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-    position: relative;
-    margin: auto;
-  }
-
-  .modal-crear-colaborador .modal-close {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    background: none;
-    border: none;
-    font-size: 1.6rem;
-    line-height: 1;
-    cursor: pointer;
-    color: #94a3b8;
-  }
-
-  .modal-crear-colaborador .modal-close:hover { color: #475569; }
-
-  .modal-crear-colaborador h2 {
-    margin: 0 0 6px;
-    color: #003a70;
-    font-size: 1.35rem;
-  }
-
-  .modal-crear-desc {
-    margin: 0 0 18px;
-    color: #6b7280;
-    font-size: 0.9rem;
-    line-height: 1.45;
-  }
-
-  .modal-crear-error {
-    display: none;
-    margin-bottom: 16px;
-    padding: 12px 14px;
-    border-radius: 8px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #b91c1c;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  .modal-crear-error.show { display: block; }
-
-  .modal-crear-colaborador .campo { margin-bottom: 16px; }
-  .modal-crear-colaborador .campo label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: #374151;
-  }
-  .modal-crear-colaborador .campo input,
-  .modal-crear-colaborador .campo select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    color: #1f2937;
-    box-sizing: border-box;
-  }
-  .modal-crear-colaborador .campo input:focus,
-  .modal-crear-colaborador .campo select:focus {
-    outline: none;
-    border-color: #003a70;
-    box-shadow: 0 0 0 3px rgba(0, 58, 112, 0.12);
-  }
-  .modal-crear-colaborador .campo .phone-field__local { width: auto; }
-  .modal-crear-colaborador .campo .hint {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-top: 4px;
-    display: block;
-  }
-  .modal-crear-colaborador .campo .field-error {
-    font-size: 0.8rem;
-    color: #dc2626;
-    margin-top: 4px;
-    display: none;
-  }
-  .modal-crear-colaborador .campo .field-error.show { display: block; }
-  .modal-crear-colaborador .required-mark { color: #dc2626; margin-left: 2px; }
-
-  .modal-form-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 16px;
-  }
-
-  .modal-form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #e2e8f0;
-  }
-
-  .btn-modal-cancelar,
-  .btn-modal-guardar {
-    padding: 11px 18px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-  }
-
-  .btn-modal-cancelar {
-    background: #f1f5f9;
-    color: #475569;
-  }
-
-  .btn-modal-guardar {
-    background: linear-gradient(135deg, #003a70 0%, #0069c2 100%);
-    color: #fff;
-  }
-
-  .modal-editar-colaborador {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 2100;
-    align-items: center;
-    justify-content: center;
-    overflow-y: auto;
-    padding: 15px;
-    box-sizing: border-box;
-  }
-
-  .modal-editar-colaborador .modal-content {
-    background: #fff;
-    color: #1a202c;
-    width: 100%;
-    max-width: var(--layout-content-max-width, 1200px);
-    max-height: 90vh;
-    padding: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-    position: relative;
-    margin: auto;
-  }
-
-  .modal-editar-colaborador .modal-close {
-    position: absolute;
-    z-index: 3;
-    top: 12px;
-    right: 12px;
-    background: none;
-    border: none;
-    font-size: 1.6rem;
-    line-height: 1;
-    cursor: pointer;
-    color: #94a3b8;
-  }
-
-  .modal-editar-colaborador .modal-close:hover { color: #475569; }
-
-  .modal-editar-layout {
-    display: flex;
-    align-items: stretch;
-    max-height: 90vh;
-  }
-
-  .modal-editar-aside {
-    flex: 0 0 240px;
-    padding: 24px 20px;
-    border-right: 1px solid #e2e8f0;
-    background: #fff;
-    overflow-y: auto;
-  }
-
-  .modal-editar-main {
-    flex: 1;
-    min-width: 0;
-    padding: 24px 28px;
-    overflow-y: auto;
-    max-height: 90vh;
-  }
-
-  .modal-editar-title {
-    color: #003a70;
-    font-size: 1.25rem;
-    margin: 0 0 6px;
-  }
-
-  .modal-loading {
-    text-align: center;
-    padding: 48px 24px;
-    color: #64748b;
-    font-size: 0.95rem;
-  }
-
-  .modal-editar-colaborador .campo { margin-bottom: 16px; }
-  .modal-editar-colaborador .campo label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: #374151;
-  }
-  .modal-editar-colaborador .campo input,
-  .modal-editar-colaborador .campo select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    color: #1f2937;
-    box-sizing: border-box;
-  }
-  .modal-editar-colaborador .campo input:focus,
-  .modal-editar-colaborador .campo select:focus {
-    outline: none;
-    border-color: #003a70;
-    box-shadow: 0 0 0 3px rgba(0, 58, 112, 0.12);
-  }
-  .modal-editar-colaborador .campo .hint {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-top: 4px;
-    display: block;
-  }
-  .modal-editar-colaborador .campo .field-error {
-    font-size: 0.8rem;
-    color: #dc2626;
-    margin-top: 4px;
-    display: none;
-  }
-  .modal-editar-colaborador .campo .field-error.show { display: block; }
-  .modal-editar-colaborador .btn-photo-remove {
-    border: none;
-    background: transparent;
-    color: #b91c1c;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 4px 8px;
-  }
-  .modal-editar-colaborador .zona-peligro {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #fecaca;
-  }
-  .modal-editar-colaborador .zona-peligro h3 {
-    margin: 0 0 6px;
-    font-size: 0.95rem;
-    color: #b91c1c;
-  }
-  .modal-editar-colaborador .zona-peligro p {
-    margin: 0 0 12px;
-    font-size: 0.85rem;
-    color: #6b7280;
-  }
-  .modal-editar-colaborador .btn-eliminar {
-    width: 100%;
-    padding: 11px 16px;
-    border: 1px solid #fca5a5;
-    border-radius: 8px;
-    background: #fef2f2;
-    color: #b91c1c;
-    font-size: 0.95rem;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  @media (max-width: 640px) {
-    .modal-form-grid-2 { grid-template-columns: 1fr; }
-    .modal-form-actions { flex-direction: column-reverse; }
-    .btn-modal-cancelar,
-    .btn-modal-guardar { width: 100%; }
-    .modal-editar-layout { flex-direction: column; }
-    .modal-editar-aside {
-      flex: none;
-      width: 100%;
-      border-right: none;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .modal-editar-main { max-height: none; }
-  }
-</style>
-
+<link rel="stylesheet" href="/css/personal.css">
 <link rel="stylesheet" href="/css/phone-chile.css">
 <% if (puedeEditar) { %>
 <link rel="stylesheet" href="/css/horizontal-forms.css">
@@ -603,16 +39,21 @@
     </div>
     <div class="page-header-actions">
       <a href="/RRHH" class="link-volver">← Volver al menú</a>
+      <% if (puedeEditar) { %>
+      <button type="button" class="btn-agregar-persona" onclick="abrirModalCrear()">
+        <span aria-hidden="true">+</span> Agregar persona
+      </button>
+      <% } %>
     </div>
   </div>
 
   <div class="panel">
     <% if (!personas || personas.length === 0) { %>
-      <p style="text-align:center; color:#718096; padding:30px 0;">No hay colaboradores registrados.</p>
+      <p class="personal-empty">No hay colaboradores registrados.</p>
     <% } else { %>
       <div class="personal-toolbar">
         <label class="personal-search" for="buscarColaborador">
-          <span class="personal-search-icon" aria-hidden="true">🔍</span>
+          <span class="personal-search-icon" aria-hidden="true"><%- include('../partials/icon', { name: 'search' }) %></span>
           <input
             type="search"
             id="buscarColaborador"
@@ -651,13 +92,14 @@
           </tr>
         </thead>
         <tbody>
-          <% personas.forEach(p => { %>
+          <% personas.forEach((p, idx) => { %>
             <%
               const firstName  = p.first_name  || '';
               const lastName   = p.last_name   || '';
               const nombreCompleto = [firstName, lastName].filter(Boolean).join(' ') || '-';
               const sortApellido = (lastName || firstName || '').toLowerCase();
               const inicial    = (firstName || lastName).charAt(0).toUpperCase();
+              const paletaAvatar = 'avatar-fallback--c' + ((idx % 6) + 1);
               const areaNombre = p.area || '-';
               const correo   = p.email    || '-';
               const telefono = p.phone || '-';
@@ -677,7 +119,7 @@
                 <% if (p.photo) { %>
                   <img src="<%= p.photo %>" alt="Foto" class="avatar">
                 <% } else { %>
-                  <div class="avatar-fallback"><%= inicial %></div>
+                  <div class="avatar-fallback <%= paletaAvatar %>"><%= inicial %></div>
                 <% } %>
               </td>
 
@@ -704,9 +146,9 @@
 
               <td class="col-cumple" data-sort="<%= cumpleSort %>">
                 <% if (cumpleFmt !== '-') { %>
-                  🎂 <%= cumpleFmt %>
+                  <%= cumpleFmt %>
                 <% } else { %>
-                  <span style="color:#a0aec0;">-</span>
+                  <span style="color:var(--subtle);">-</span>
                 <% } %>
               </td>
 
@@ -719,7 +161,7 @@
               <% if (puedeEditar) { %>
                 <td style="text-align:center;" data-sort="<%= !tieneCorreo ? 2 : correoVerificado ? 0 : 1 %>">
                   <% if (!tieneCorreo) { %>
-                    <span style="color:#a0aec0;" title="Sin correo registrado">-</span>
+                    <span style="color:var(--subtle);" title="Sin correo registrado">-</span>
                   <% } else if (correoVerificado) { %>
                     <span class="intranet-si" title="Correo verificado">✔</span>
                   <% } else { %>
@@ -743,9 +185,6 @@
 </div>
 
 <% if (puedeEditar) { %>
-  <button type="button" class="fab" title="Agregar colaborador" onclick="abrirModalCrear()">＋</button>
-  <span class="fab-tooltip">Agregar colaborador</span>
-
   <div id="modalCrearColaborador" class="modal-overlay modal-crear-colaborador" aria-hidden="true">
     <div class="modal-content">
       <button type="button" class="modal-close" onclick="cerrarModalCrear()" aria-label="Cerrar">&times;</button>

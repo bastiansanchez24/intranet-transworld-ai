@@ -1,175 +1,15 @@
-<link rel="stylesheet" href="/css/horizontal-forms.css">
-<style>
-  /* --- ESTILOS BASE --- */
-  .panel { background: #fff; border: 1px solid #e0e6ed; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 25px; overflow-x: auto;}
-  
-  /* Tablas */
-  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; text-align: left; }
-  th { background-color: #f8fafc; color: #4a5568; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; padding: 14px 15px; border-bottom: 2px solid #e2e8f0; }
-  td { padding: 14px 15px; border-bottom: 1px solid #edf2f7; color: #2d3748; vertical-align: middle; }
-  tr:hover td { background-color: #f1f5f9; }
-
-  /* Botones */
-  .btn-primario { background: #003a70; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;}
-  .btn-primario:hover { background: #002a52; transform: translateY(-1px); }
-  
-  .btn-descarga { background: #aadd55; color: #003a70; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block; margin: 2px; font-size: 0.85rem; border: 1px solid #99cc44; transition: all 0.2s; cursor: pointer;}
-  .btn-descarga:hover { background: #99cc44; transform: scale(1.05); }
-
-  .btn-secundario { background: #e2e8f0; color: #4a5568; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem;}
-  .btn-secundario:hover { background: #cbd5e0; }
-
-  .btn-danger { background: #fff; color: #dc3545; border: 1px solid #dc3545; padding: 6px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
-  .btn-danger:hover { background: #dc3545; color: white; }
-
-  /* BOTÓN NOTIFICAR */
-  .btn-notificar { background-color: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; }
-  .btn-notificar:hover:not(:disabled) { background-color: #218838; transform: translateY(-1px); }
-  .btn-notificar:disabled { background-color: #94d3a2; cursor: not-allowed; opacity: 0.7; }
-  .textarea-cambios { width: 100%; min-height: 120px; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; margin: 15px 0; box-sizing: border-box; }
-
-  /* Formularios y Categorías */
-  .form-container { display: none; background: var(--color-surface-muted, #f8fafc); padding: 20px; border-radius: 8px; border: 1px solid var(--color-border, #cbd5e0); margin-bottom: 25px; animation: fadeIn 0.3s ease; }
-  .form-group { margin-bottom: 15px; }
-  .form-group label { display: block; margin-bottom: 6px; font-weight: bold; color: #4a5568; font-size: 0.9rem; }
-  .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
-  .form-group textarea { resize: none; min-height: 80px; line-height: 1.4; overflow-y: auto; }
-  .form-group input[type="file"] { background: #fff; padding: 7px; }
-  
-  .categoria-app { border: 1px solid var(--color-border, #e2e8f0); border-radius: 6px; padding: 15px; margin-bottom: 15px; background-color: var(--color-surface, #ffffff); }
-  .categoria-app h4 { margin: 0 0 12px 0; color: var(--color-text, #2d3748); font-size: 0.95rem; border-bottom: 1px solid var(--color-border, #edf2f7); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;}
-  
-  /* Modales — fondos opacos (no heredar glassmorphism del tema) */
-  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; overflow-y: auto; }
-  .modal-content { background: #ffffff; color: #1a202c; padding: 25px; border-radius: 8px; width: 100%; max-width: 600px; max-height: 90vh; box-shadow: 0 8px 32px rgba(0, 58, 112, 0.15); border: 1px solid #e2e8f0; position: relative; margin: auto; overflow-y: auto; box-sizing: border-box; }
-  .modal-content .categoria-app { background-color: #ffffff; border-color: #e2e8f0; }
-  .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #a0aec0; }
-
-  html[data-theme="dark"] .modal-content {
-    background: #1a2332;
-    color: #f8fafc;
-    border-color: #3b4a65;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+<link rel="stylesheet" href="/css/apps.css">
+<%
+  function appInitials(name) {
+    if (!name) return '?';
+    const parts = String(name).trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
   }
-  html[data-theme="dark"] .modal-content .categoria-app {
-    background-color: #0f1e37;
-    border-color: #3b4a65;
+  function jsSafe(str) {
+    return String(str == null ? '' : str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' ');
   }
-  html[data-theme="dark"] .modal-close { color: #94a3b8; }
-  
-  .qr-container { text-align: center; margin: 20px 0; }
-  .qr-container img { max-width: 250px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; background: #fff; }
-
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-  /* --- Vista vertical en móvil --- */
-  @media (max-width: 768px) {
-    .page-header--toolbar .page-header-actions {
-      width: 100%;
-    }
-
-    .page-header--toolbar .page-header-actions .btn-primario {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .apps-panel {
-      overflow-x: visible;
-      padding: 0 !important;
-      border: none;
-      background: transparent;
-      box-shadow: none;
-    }
-
-    .apps-table thead { display: none; }
-
-    .apps-table,
-    .apps-table tbody,
-    .apps-table tr,
-    .apps-table td {
-      display: block;
-      width: 100%;
-    }
-
-    .apps-table tr {
-      background: #fff;
-      border: 1px solid #e0e6ed;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    .apps-table tr:hover td { background: transparent; }
-
-    .apps-table td {
-      padding: 10px 0;
-      border-bottom: 1px solid #edf2f7;
-      text-align: left !important;
-    }
-
-    .apps-table td::before {
-      content: attr(data-label);
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #718096;
-      margin-bottom: 6px;
-      letter-spacing: 0.03em;
-    }
-
-    .apps-table td:first-child {
-      padding-top: 0;
-      border-bottom: none;
-      font-size: 1.05rem;
-    }
-
-    .apps-table td:first-child::before { display: none; }
-
-    .apps-table td:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .apps-table td[data-label="Descargas"] .btn-descarga {
-      margin: 0 6px 6px 0;
-    }
-
-    .apps-table td[data-label="Acciones"] > div {
-      justify-content: flex-start !important;
-    }
-
-    .apps-table tr.apps-empty {
-      padding: 30px 16px;
-    }
-
-    .apps-table tr.apps-empty td {
-      border-bottom: none;
-      padding: 0;
-      text-align: center !important;
-    }
-
-    .apps-table tr.apps-empty td::before { display: none; }
-
-    .apps-form-actions {
-      text-align: center !important;
-    }
-
-    .apps-form-actions .btn-primario {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .modal-content--horizontal {
-      padding: 0 !important;
-    }
-
-    .modal-qr-layout .qr-container img {
-      max-width: min(220px, 70vw);
-    }
-  }
-</style>
+%>
 
 <div class="contenedor">
 
@@ -181,268 +21,251 @@
 
     <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
     <div class="page-header-actions">
-    <button class="btn-primario" onclick="toggleFormulario()">
-      <span>+</span> Ingresar nueva app
-    </button>
+      <button type="button" class="apps-add-btn" onclick="toggleFormulario()">
+        <span aria-hidden="true">+</span> Ingresar nueva app
+      </button>
     </div>
     <% } %>
   </div>
 
   <% if (typeof ok !== 'undefined' && ok) { %>
-    <div style="margin-bottom: 20px; padding: 12px; background-color: #d4edda; color: #155724; border-radius: 4px;"><%= ok %></div>
+    <div class="apps-flash"><%= ok %></div>
   <% } %>
+
+  <div class="apps-grid">
+    <% if (typeof apps !== 'undefined' && apps.length > 0) { %>
+      <% apps.forEach((app, index) => {
+        const iniciales = appInitials(app.name);
+        const tileGreen = (index % 2 === 1);
+        const nombreJs = jsSafe(app.name);
+      %>
+        <article class="app-card">
+          <div class="app-card__header">
+            <div class="app-card__tile<%= tileGreen ? ' app-card__tile--green' : '' %>" aria-hidden="true"><%= iniciales %></div>
+            <div class="app-card__heading">
+              <h3 class="app-card__name"><%= app.name %></h3>
+              <p class="app-card__meta">Última actualización · <%= app.updated_at ? new Date(app.updated_at).toLocaleDateString('es-CL') : '—' %></p>
+            </div>
+          </div>
+
+          <p class="app-card__desc"><%= app.description %></p>
+
+          <div class="app-card__downloads">
+            <span class="app-card__downloads-label">Descargas</span>
+            <% if (app.url_pc || app.url_apk || app.qr_ios) { %>
+              <div class="app-card__badges">
+                <% if (app.url_pc) { %>
+                  <a href="<%= app.url_pc %>" target="_blank" rel="noopener noreferrer" class="app-badge app-badge--pc" title="Descargar para PC"><%- include('partials/icon', { name: 'monitor' }) %> PC</a>
+                <% } %>
+                <% if (app.url_apk) { %>
+                  <button type="button" class="app-badge app-badge--apk" title="Descargar para Android" onclick="manejarDescargaAndroid('<%= app.url_apk %>', '<%= app.qr_apk ? app.qr_apk : '' %>', '<%= nombreJs %>')"><%- include('partials/icon', { name: 'smartphone' }) %> APK</button>
+                <% } %>
+                <% if (app.qr_ios) { %>
+                  <button type="button" class="app-badge app-badge--qr" title="Ver QR iOS" onclick="abrirModalQR('<%= app.qr_ios %>', '<%= nombreJs %> · iOS')"><span aria-hidden="true">▦</span> QR iOS</button>
+                <% } %>
+              </div>
+            <% } else { %>
+              <span class="app-card__no-files">Sin archivos disponibles</span>
+            <% } %>
+          </div>
+
+          <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
+          <div class="app-card__footer">
+            <button type="button" class="app-action app-action--notify"
+                    title="<%= app.notified === false ? 'Enviar cambios por correo a Ventas/Marketing' : 'No hay cambios pendientes' %>"
+                    onclick="abrirModalNotificar('<%= app.id %>', '<%= nombreJs %>')"
+                    <%= app.notified === false ? '' : 'disabled' %>>
+              Notificar
+            </button>
+            <button type="button" class="app-action app-action--edit" title="Editar app"
+                    onclick="abrirModalEditar('<%= app.id %>', '<%= nombreJs %>', '<%= jsSafe(app.description) %>', '<%= app.url_pc || '' %>', '<%= app.url_apk || '' %>')">
+              Editar
+            </button>
+            <form action="/apps/eliminar/<%= app.id %>" method="POST" class="app-card__delete-form" onsubmit="return confirm('¿Estás seguro que deseas eliminar la aplicación? Esta acción es irreversible.');">
+              <button type="submit" class="app-action app-action--delete" title="Eliminar app">Eliminar</button>
+            </form>
+          </div>
+          <% } %>
+        </article>
+      <% }) %>
+    <% } else { %>
+      <div class="apps-empty-state">No hay aplicaciones registradas.</div>
+    <% } %>
+  </div>
+
+  <!-- Modal QR -->
+  <div class="modal-overlay" id="modal-qr" role="dialog" aria-modal="true" aria-labelledby="qr-titulo">
+    <div class="modal-content qr-modal__content">
+      <div class="qr-modal__grid">
+        <aside class="qr-modal__aside">
+          <h3 class="qr-modal__title" id="qr-titulo">Escanea el código</h3>
+          <p class="qr-modal__text">Apunta la cámara de tu teléfono a este código para instalar la aplicación.</p>
+          <div class="qr-modal__actions">
+            <button type="button" id="qr-btn-descarga" class="app-btn-primary" onclick="forzarDescargaQR()">Descargar imagen QR</button>
+            <a id="qr-btn-enlace" href="#" target="_blank" rel="noopener noreferrer" class="app-btn-neutral" style="display: none;">Ir al enlace directo</a>
+          </div>
+        </aside>
+        <div class="qr-modal__main">
+          <button type="button" class="qr-modal__close" onclick="cerrarModal('modal-qr')" aria-label="Cerrar">&times;</button>
+          <div class="qr-modal__card">
+            <img id="qr-imagen" src="" alt="Código QR de instalación">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-  <div class="form-container layout-horizontal-panel" id="panel-nueva-app">
-    <aside class="panel-aside">
-      <h3 style="margin: 0 0 10px; color: #003a70;">Registrar Nueva Aplicación</h3>
-      <p style="color: #718096; font-size: 0.9rem; margin: 0;">Completa los datos y enlaces de descarga para cada plataforma.</p>
-      <button onclick="toggleFormulario()" style="margin-top: 16px; background: none; border: 1px solid #cbd5e0; border-radius: 6px; padding: 8px 14px; cursor: pointer; color: #718096; font-weight: 600;">Cerrar panel</button>
-    </aside>
 
-    <div class="panel-main">
-    <form action="/apps/nueva" method="POST" enctype="multipart/form-data">
-      <div class="form-grid-2" style="margin-bottom: 4px;">
-        <div class="form-group">
-          <label>Nombre de la Aplicación *</label>
-          <input type="text" name="name" required placeholder="Ej: Transworld Lead App">
-        </div>
-        <div class="form-group">
-          <label>Descripción *</label>
-          <textarea name="description" rows="3" required placeholder="Describe para qué sirve la aplicación..."></textarea>
-        </div>
-      </div>
+  <!-- Modal Nueva App -->
+  <div class="modal-overlay" id="modal-nueva" role="dialog" aria-modal="true" aria-labelledby="nueva-titulo">
+    <div class="modal-content app-modal__content">
+      <form action="/apps/nueva" method="POST" enctype="multipart/form-data">
+        <div class="app-modal__grid">
+          <aside class="app-modal__aside">
+            <h3 class="app-modal__title" id="nueva-titulo">Ingresar nueva app</h3>
+            <p class="app-modal__subtitle">Completa los datos y enlaces de descarga para cada plataforma.</p>
+            <div class="app-field">
+              <label for="nueva-nombre">Nombre de la aplicación *</label>
+              <input type="text" id="nueva-nombre" name="name" required placeholder="Ej: Transworld Lead App">
+            </div>
+            <div class="app-field">
+              <label for="nueva-desc">Descripción *</label>
+              <textarea id="nueva-desc" name="description" required placeholder="Describe para qué sirve la aplicación..."></textarea>
+            </div>
+          </aside>
 
-      <div class="modal-platforms-grid">
-        <div class="categoria-app">
-          <h4>Software para PC</h4>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label>Enlace de descarga</label>
-            <input type="url" name="url_pc" placeholder="Link de descarga (ej. MediaFire)">
-          </div>
-        </div>
+          <div class="app-modal__main">
+            <button type="button" class="app-modal__close" onclick="cerrarModal('modal-nueva')" aria-label="Cerrar">&times;</button>
 
-        <div class="categoria-app">
-          <h4>Software para Android</h4>
-          <div class="form-group" style="margin-bottom: 10px;">
-            <label>Enlace de descarga APK</label>
-            <input type="url" name="url_apk" placeholder="Link de descarga (ej. MediaFire)">
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label>Subir código QR Android</label>
-            <input type="file" name="qr_apk" accept="image/png, image/jpeg, image/webp">
-          </div>
-        </div>
-
-        <div class="categoria-app categoria-app--full">
-          <h4>Software para iOS</h4>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label>Subir código QR iOS</label>
-            <input type="file" name="qr_ios" accept="image/png, image/jpeg, image/webp">
-          </div>
-        </div>
-      </div>
-
-      <div class="apps-form-actions" style="text-align: right; margin-top: 15px;">
-        <button type="submit" class="btn-primario" style="background-color: #28a745;">Registrar Aplicación</button>
-      </div>
-    </form>
-    </div>
-  </div>
-  <% } %>
-
-<div class="panel apps-panel" style="padding: 0;">
-    <table class="apps-table">
-      <thead>
-        <tr>
-          <th style="width: 15%;">Nombre</th>
-          <th style="width: 25%;">Descripción</th>
-          <th style="width: 20%; text-align: center;">Descargas</th>
-          <th style="width: 15%; text-align: center;">Última Act.</th>
-          <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-          <th style="width: 25%; text-align: center;">Acciones</th>
-          <% } %>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (typeof apps !== 'undefined' && apps.length > 0) { %>
-          <% apps.forEach(app => { %>
-            <tr>
-              <td data-label="Nombre" style="font-weight: 700; color: #003a70;"><%= app.name %></td>
-              <td data-label="Descripción" style="font-size: 0.9rem;"><%= app.description %></td>
-              <td data-label="Descargas" style="text-align: center;">
-                <% if (app.url_pc) { %>
-                  <a href="<%= app.url_pc %>" target="_blank" class="btn-descarga" title="Descargar para Windows">PC</a>
-                <% } %>
-                
-                <% if (app.url_apk) { %>
-                  <button onclick="manejarDescargaAndroid('<%= app.url_apk %>', '<%= app.qr_apk ? app.qr_apk : '' %>', '<%= app.name.replace(/'/g, "\\'") %>')" class="btn-descarga" title="Descargar para Android">APK</button>
-                <% } %>
-                
-                <% if (app.qr_ios) { %>
-                  <button onclick="abrirModalQR('<%= app.qr_ios %>', '<%= app.name.replace(/'/g, "\\'") %> iOS')" class="btn-descarga" title="Ver QR iOS">QR iOS</button>
-                <% } %>
-                
-                <% if (!app.url_pc && !app.url_apk && !app.qr_ios) { %>
-                  <span style="color: #a0aec0; font-size: 0.85rem; font-style: italic;">Sin archivos</span>
-                <% } %>
-              </td>
-              
-              <td data-label="Última actualización" style="text-align: center; color: #4a5568; font-size: 0.85rem;">
-                <%= app.updated_at ? new Date(app.updated_at).toLocaleDateString('es-CL') : '—' %>
-              </td>
-              
-              <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-              <td data-label="Acciones" style="text-align: center;">
-                <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
-                  <button type="button" class="btn-notificar" 
-                          title="<%= app.notified === false ? 'Enviar cambios por correo a Ventas/Marketing' : 'No hay cambios pendientes' %>"
-                          onclick="abrirModalNotificar('<%= app.id %>', '<%= app.name.replace(/'/g, "\\'") %>')"
-                          <%= app.notified === false ? '' : 'disabled' %>>
-                    Notificar
-                  </button>
-
-                  <button onclick="abrirModalEditar('<%= app.id %>', '<%= app.name.replace(/'/g, "\\'") %>', '<%= app.description.replace(/'/g, "\\'") %>', '<%= app.url_pc %>', '<%= app.url_apk %>')" class="btn-secundario" title="Editar App">Editar</button>
-                  
-                  <form action="/apps/eliminar/<%= app.id %>" method="POST" style="margin: 0;" onsubmit="return confirm('¿Estás seguro que deseas eliminar la aplicación? Esta acción es irreversible.');">
-                    <button type="submit" class="btn-danger" title="Eliminar App">Eliminar</button>
-                  </form>
+            <div class="app-platforms">
+              <div class="app-platform">
+                <h4 class="app-platform__head"><%- include('partials/icon', { name: 'monitor' }) %> Software para PC</h4>
+                <div class="app-field">
+                  <label>Enlace de descarga (opcional)</label>
+                  <input type="url" name="url_pc" placeholder="Link de descarga (ej. MediaFire)">
                 </div>
-              </td>
-              <% } %>
-            </tr>
-          <% }) %>
-        <% } else { %>
-          <tr class="apps-empty">
-            <td colspan="<%= (typeof isAdministrador !== 'undefined' && isAdministrador) ? '5' : '4' %>" style="padding: 30px; text-align: center; color: #718096;">
-              No hay aplicaciones registradas.
-            </td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
-  </div>
+              </div>
 
-<div class="modal-overlay" id="modal-qr">
-  <div class="modal-content modal-content--horizontal modal-qr-layout">
-    <button class="modal-close" onclick="cerrarModal('modal-qr')">&times;</button>
-    <div class="modal-h-layout">
-      <aside class="modal-h-aside">
-        <h3 style="color: #003a70; margin-top: 0;" id="qr-titulo">Escanea el Código</h3>
-        <p style="color: #718096; font-size: 0.9rem; margin-bottom: 20px;">Apunta con la cámara de tu teléfono a este código para instalar la aplicación.</p>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button id="qr-btn-descarga" class="btn-primario" onclick="forzarDescargaQR()" style="width: 100%; justify-content: center;">
-            Descargar Imagen QR
-          </button>
-          <a id="qr-btn-enlace" href="#" target="_blank" class="btn-secundario" style="width: 100%; box-sizing: border-box; text-align: center; text-decoration: none; padding: 10px; display: none;">
-            Ir al enlace directo
-          </a>
-        </div>
-      </aside>
-      <div class="modal-h-main">
-        <div class="qr-container">
-          <img id="qr-imagen" src="" alt="Código QR Instalación">
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+              <div class="app-platform">
+                <h4 class="app-platform__head"><%- include('partials/icon', { name: 'smartphone' }) %> Software para Android</h4>
+                <div class="app-field">
+                  <label>Enlace versión APK (opcional)</label>
+                  <input type="url" name="url_apk" placeholder="Link de descarga (ej. MediaFire)">
+                </div>
+                <div class="app-field">
+                  <label>Subir código QR Android (opcional)</label>
+                  <input class="app-file-input" type="file" name="qr_apk" accept="image/png, image/jpeg, image/webp">
+                </div>
+              </div>
 
-<% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-
-<div class="modal-overlay" id="modal-editar">
-  <div class="modal-content modal-content--horizontal">
-    <button class="modal-close" onclick="cerrarModal('modal-editar')">&times;</button>
-    <div class="modal-h-layout">
-      <aside class="modal-h-aside">
-        <h3 style="color: #003a70; margin-top: 0; margin-bottom: 12px;">Editar Aplicación</h3>
-        <p style="color: #718096; font-size: 0.9rem; margin: 0 0 20px;">Actualiza la información y los enlaces de descarga de la aplicación.</p>
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" name="name" id="edit-nombre" form="form-editar" required>
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Descripción</label>
-          <textarea name="description" id="edit-desc" form="form-editar" rows="4" required></textarea>
-        </div>
-      </aside>
-      <div class="modal-h-main">
-        <form id="form-editar" method="POST" enctype="multipart/form-data">
-          <div class="modal-platforms-grid">
-            <div class="categoria-app">
-              <h4>Software para PC</h4>
-              <div class="form-group" style="margin-bottom: 0;">
-                <label>Enlace de descarga (Opcional)</label>
-                <input type="url" name="url_pc" id="edit-pc">
+              <div class="app-platform app-platform--full">
+                <h4 class="app-platform__head"><%- include('partials/icon', { name: 'tablet' }) %> Software para iOS</h4>
+                <div class="app-field">
+                  <label>Subir código QR iOS (opcional)</label>
+                  <input class="app-file-input" type="file" name="qr_ios" accept="image/png, image/jpeg, image/webp">
+                </div>
               </div>
             </div>
 
-            <div class="categoria-app">
-              <h4>Software para Android</h4>
-              <div class="form-group" style="margin-bottom: 10px;">
-                <label>Enlace versión APK (Opcional)</label>
-                <input type="url" name="url_apk" id="edit-apk">
-              </div>
-              <div class="form-group" style="margin-bottom: 0;">
-                <label>Actualizar QR Android (Opcional)</label>
-                <input type="file" name="qr_apk" accept="image/png, image/jpeg, image/webp">
-              </div>
-            </div>
-
-            <div class="categoria-app categoria-app--full">
-              <h4>Software para iOS</h4>
-              <div class="form-group" style="margin-bottom: 0;">
-                <label>Actualizar QR iOS (Opcional)</label>
-                <input type="file" name="qr_ios" accept="image/png, image/jpeg, image/webp">
-              </div>
+            <div class="app-modal__footer">
+              <button type="button" class="app-btn-neutral" onclick="cerrarModal('modal-nueva')">Cancelar</button>
+              <button type="submit" class="app-btn-primary">Guardar app</button>
             </div>
           </div>
-
-          <div class="apps-form-actions" style="text-align: right; margin-top: 20px;">
-            <button type="submit" class="btn-primario">Actualizar Cambios</button>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   </div>
-</div>
 
-<div class="modal-overlay" id="modal-notificar">
-  <div class="modal-content">
-    <button class="modal-close" onclick="cerrarModal('modal-notificar')">&times;</button>
-    <h3 style="color: #003a70; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #cbd5e0; padding-bottom: 10px;" id="notificar-titulo">
-      Enviar Actualización
-    </h3>
-    <p style="color: #4a5568; font-size: 0.9rem; margin-bottom: 5px;">
-      <strong>Asunto del correo:</strong> <span id="preview-asunto" style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;"></span>
-    </p>
-    <p style="color: #4a5568; font-size: 0.9rem; margin-bottom: 0;">
-      Describe los cambios realizados para notificar a los equipos.
-    </p>
-    
-    <form id="form-notificar" method="POST">
-      <textarea name="cambios_texto" class="textarea-cambios" required placeholder="Ej: Se corrigió el error de inicio de sesión y se añadió el manual de usuario v2..."></textarea>
-      
-      <div style="text-align: right; margin-top: 10px;">
-        <button type="submit" class="btn-primario" style="background-color: #28a745; width: 100%; justify-content: center;">
-          Enviar Correo Masivo
-        </button>
-      </div>
-    </form>
+  <!-- Modal Editar App -->
+  <div class="modal-overlay" id="modal-editar" role="dialog" aria-modal="true" aria-labelledby="editar-titulo">
+    <div class="modal-content app-modal__content">
+      <form id="form-editar" method="POST" enctype="multipart/form-data">
+        <div class="app-modal__grid">
+          <aside class="app-modal__aside">
+            <h3 class="app-modal__title" id="editar-titulo">Editar aplicación</h3>
+            <p class="app-modal__subtitle">Actualiza la información y los enlaces de descarga de la aplicación.</p>
+            <div class="app-field">
+              <label for="edit-nombre">Nombre</label>
+              <input type="text" id="edit-nombre" name="name" required>
+            </div>
+            <div class="app-field">
+              <label for="edit-desc">Descripción</label>
+              <textarea id="edit-desc" name="description" required></textarea>
+            </div>
+          </aside>
+
+          <div class="app-modal__main">
+            <button type="button" class="app-modal__close" onclick="cerrarModal('modal-editar')" aria-label="Cerrar">&times;</button>
+
+            <div class="app-platforms">
+              <div class="app-platform">
+                <h4 class="app-platform__head"><%- include('partials/icon', { name: 'monitor' }) %> Software para PC</h4>
+                <div class="app-field">
+                  <label>Enlace de descarga (opcional)</label>
+                  <input type="url" name="url_pc" id="edit-pc">
+                </div>
+              </div>
+
+              <div class="app-platform">
+                <h4 class="app-platform__head"><%- include('partials/icon', { name: 'smartphone' }) %> Software para Android</h4>
+                <div class="app-field">
+                  <label>Enlace versión APK (opcional)</label>
+                  <input type="url" name="url_apk" id="edit-apk">
+                </div>
+                <div class="app-field">
+                  <label>Actualizar QR Android (opcional)</label>
+                  <input class="app-file-input" type="file" name="qr_apk" accept="image/png, image/jpeg, image/webp">
+                </div>
+              </div>
+
+              <div class="app-platform app-platform--full">
+                <h4 class="app-platform__head"><%- include('partials/icon', { name: 'tablet' }) %> Software para iOS</h4>
+                <div class="app-field">
+                  <label>Actualizar QR iOS (opcional)</label>
+                  <input class="app-file-input" type="file" name="qr_ios" accept="image/png, image/jpeg, image/webp">
+                </div>
+              </div>
+            </div>
+
+            <div class="app-modal__footer">
+              <button type="button" class="app-btn-neutral" onclick="cerrarModal('modal-editar')">Cancelar</button>
+              <button type="submit" class="app-btn-primary">Actualizar cambios</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
-<% } %>
+  <!-- Modal Notificar -->
+  <div class="modal-overlay" id="modal-notificar" role="dialog" aria-modal="true" aria-labelledby="notificar-titulo">
+    <div class="modal-content app-notify__content">
+      <button type="button" class="app-modal__close" onclick="cerrarModal('modal-notificar')" aria-label="Cerrar">&times;</button>
+      <h3 class="app-notify__title" id="notificar-titulo">Enviar actualización</h3>
+      <p class="app-notify__hint">
+        <strong>Asunto del correo:</strong> <span id="preview-asunto" class="app-notify__subject"></span>
+      </p>
+      <p class="app-notify__hint">Describe los cambios realizados para notificar a los equipos.</p>
+
+      <form id="form-notificar" method="POST">
+        <textarea name="cambios_texto" class="app-notify__textarea" required placeholder="Ej: Se corrigió el error de inicio de sesión y se añadió el manual de usuario v2..."></textarea>
+        <div class="app-notify__footer">
+          <button type="submit" class="app-btn-primary">Enviar correo masivo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <% } %>
 
 </div>
 
 <script>
-  // Mostrar/Ocultar formulario de nueva app
+  // Abrir/cerrar el modal de nueva app
   function toggleFormulario() {
-    const panel = document.getElementById('panel-nueva-app');
-    if (panel) {
-      panel.classList.toggle('is-visible');
-    }
+    IntranetModal.open('modal-nueva');
   }
 
   // Cerrar cualquier modal
@@ -450,40 +273,38 @@
     IntranetModal.close(id);
   }
 
-  // Lógica de Descarga Android (Responsivo: QR en PC / Link en Móvil)
+  // Descarga Android (QR en PC / enlace directo en móvil)
   function manejarDescargaAndroid(urlDescarga, urlQr, nombreApp) {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-    
+
     if (isMobile || !urlQr || urlQr.trim() === '') {
       window.open(urlDescarga, '_blank');
     } else {
-      // Si es PC y existe el QR, abrir el modal PASANDO TAMBIÉN EL ENLACE DIRECTO (urlDescarga)
-      abrirModalQR(urlQr, nombreApp + ' Android', urlDescarga);
+      abrirModalQR(urlQr, nombreApp + ' · Android', urlDescarga);
     }
   }
 
-  // Lógica Modal QR genérico
+  // Modal QR genérico
   let qrActualUrl = '';
   function abrirModalQR(urlImagen, nombreApp, urlDirecta = null) {
     qrActualUrl = urlImagen;
     document.getElementById('qr-imagen').src = urlImagen;
     document.getElementById('qr-titulo').innerText = 'QR para ' + nombreApp;
-    
-    // Lógica para mostrar u ocultar el botón de enlace directo
+
     const btnEnlace = document.getElementById('qr-btn-enlace');
     if (urlDirecta && urlDirecta !== 'null' && urlDirecta !== '') {
       btnEnlace.href = urlDirecta;
-      btnEnlace.style.display = 'block'; // Muestra el botón si hay enlace
+      btnEnlace.style.display = 'inline-flex';
     } else {
-      btnEnlace.style.display = 'none'; // Oculta el botón si no hay enlace
+      btnEnlace.style.display = 'none';
     }
 
     IntranetModal.open('modal-qr');
   }
 
-  // Descargar QR
+  // Descargar imagen QR
   function forzarDescargaQR() {
-    if(!qrActualUrl) return;
+    if (!qrActualUrl) return;
     const link = document.createElement('a');
     link.href = qrActualUrl;
     link.setAttribute('download', 'Codigo_QR.png');
@@ -492,31 +313,26 @@
     document.body.removeChild(link);
   }
 
-  // Lógica Modal Editar
+  // Modal Editar
   function abrirModalEditar(id, nombre, desc, pc, apk) {
     const formEditar = document.getElementById('form-editar');
     if (!formEditar) return;
-    
-    // Apuntar el formulario a la ruta de actualización
+
     formEditar.action = '/apps/editar/' + id;
-    // Rellenar los campos
     document.getElementById('edit-nombre').value = nombre;
     document.getElementById('edit-desc').value = desc;
     document.getElementById('edit-pc').value = pc || '';
     document.getElementById('edit-apk').value = apk || '';
-    
-    // Mostrar el modal
+
     IntranetModal.open('modal-editar');
   }
 
-  // Lógica Modal Notificar
+  // Modal Notificar
   function abrirModalNotificar(id, nombre) {
     const form = document.getElementById('form-notificar');
     document.getElementById('notificar-titulo').innerText = 'Notificar cambios: ' + nombre;
-    
-    // Configurar la vista previa del asunto estandarizado
     document.getElementById('preview-asunto').innerText = nombre + ': Nueva actualización.';
-    
+
     form.action = '/apps/notificar/' + id;
     IntranetModal.open('modal-notificar');
   }

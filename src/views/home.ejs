@@ -100,7 +100,7 @@
       <div class="home-widgets">
         <article class="home-glass home-glass--clickable home-widget home-widget--weather" onclick="window.open('https://www.meteored.cl/tiempo-en_Santiago+de+Chile-America+Sur-Chile-Region+Metropolitana+de+Santiago-SCEL-1-18578.html', '_blank')" title="Ver clima detallado">
           <div class="home-widget__icon" aria-hidden="true">
-            <%= (typeof clima !== 'undefined' && clima) ? clima.icon : '☀️' %>
+            <%- include('partials/icon', { name: (typeof clima !== 'undefined' && clima && clima.icon) ? clima.icon : 'sun' }) %>
           </div>
           <div class="home-widget__body">
             <span class="home-widget__label">Clima · <%= (typeof clima !== 'undefined' && clima && clima.ubicacion) ? clima.ubicacion : 'Huechuraba' %></span>
@@ -117,22 +117,22 @@
                   <span class="home-widget__detail">Sensación <%= clima.feelsLike %>°</span>
                 <% } %>
                 <% if (clima.humidity != null) { %>
-                  <span class="home-widget__detail">💧 <%= clima.humidity %>%</span>
+                  <span class="home-widget__detail"><%- include('partials/icon', { name: 'droplet' }) %> <%= clima.humidity %>%</span>
                 <% } %>
                 <% if (clima.wind != null) { %>
-                  <span class="home-widget__detail">💨 <%= clima.wind %> km/h</span>
+                  <span class="home-widget__detail"><%- include('partials/icon', { name: 'wind' }) %> <%= clima.wind %> km/h</span>
                 <% } %>
                 <% if (clima.lluvia != null) { %>
-                  <span class="home-widget__detail">☔ <%= clima.lluvia %>%</span>
+                  <span class="home-widget__detail"><%- include('partials/icon', { name: 'umbrella' }) %> <%= clima.lluvia %>%</span>
                 <% } %>
               </div>
               <% if (clima.sunrise || clima.sunset) { %>
                 <div class="home-widget__extras home-widget__extras--inline">
                   <% if (clima.sunrise) { %>
-                    <span class="home-widget__extra">🌄 <%= clima.sunrise %></span>
+                    <span class="home-widget__extra"><%- include('partials/icon', { name: 'sunrise' }) %> <%= clima.sunrise %></span>
                   <% } %>
                   <% if (clima.sunset) { %>
-                    <span class="home-widget__extra">🌅 <%= clima.sunset %></span>
+                    <span class="home-widget__extra"><%- include('partials/icon', { name: 'sunset' }) %> <%= clima.sunset %></span>
                   <% } %>
                 </div>
               <% } %>
@@ -141,7 +141,7 @@
                   <% clima.semana.slice(1, 6).forEach((dia) => { %>
                     <li class="home-widget__forecast-day">
                       <span class="home-widget__forecast-label"><%= dia.dia %></span>
-                      <span class="home-widget__forecast-icon" aria-hidden="true"><%= dia.icon %></span>
+                      <span class="home-widget__forecast-icon" aria-hidden="true"><%- include('partials/icon', { name: dia.icon }) %></span>
                       <span class="home-widget__forecast-temp"><%= dia.tempMin %>°/<%= dia.tempMax %>°</span>
                     </li>
                   <% }); %>
@@ -153,7 +153,7 @@
 
         <article class="home-glass home-widget home-widget--menu">
           <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-            <button type="button" onclick="IntranetModal.open('modalPlatos')" class="home-widget__edit" title="Editar menú semanal" aria-label="Editar menú semanal">✏️</button>
+            <button type="button" onclick="IntranetModal.open('modalPlatos')" class="home-widget__edit" title="Editar menú semanal" aria-label="Editar menú semanal"><%- include('partials/icon', { name: 'edit' }) %></button>
           <% } %>
           <div class="home-widget__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
@@ -339,7 +339,7 @@
             <% } %>
           <% } else { %>
             <div class="home-gallery__empty">
-              <span class="home-gallery__empty-icon" aria-hidden="true">🖼️</span>
+              <span class="home-gallery__empty-icon" aria-hidden="true"><%- include('partials/icon', { name: 'image' }) %></span>
               <span>No hay imágenes disponibles en la galería por ahora.</span>
             </div>
           <% } %>
@@ -402,35 +402,35 @@
 
     <ol class="home-tutorial__steps">
       <li class="home-tutorial__step">
-        <span class="home-tutorial__icon" aria-hidden="true">🏠</span>
+        <span class="home-tutorial__icon" aria-hidden="true"><%- include('partials/icon', { name: 'home' }) %></span>
         <div>
           <strong>Tu panel de inicio</strong>
           <p>Indicadores financieros, clima, menú del casino y accesos rápidos a cursos y el sitio web.</p>
         </div>
       </li>
       <li class="home-tutorial__step">
-        <span class="home-tutorial__icon" aria-hidden="true">📋</span>
+        <span class="home-tutorial__icon" aria-hidden="true"><%- include('partials/icon', { name: 'clipboard' }) %></span>
         <div>
           <strong>Menú superior</strong>
           <p>Noticias internas, procesos y documentos, RRHH y galería de eventos de la empresa.</p>
         </div>
       </li>
       <li class="home-tutorial__step">
-        <span class="home-tutorial__icon" aria-hidden="true">🎫</span>
+        <span class="home-tutorial__icon" aria-hidden="true"><%- include('partials/icon', { name: 'ticket' }) %></span>
         <div>
           <strong>Soporte TI</strong>
           <p>Usa <em>Soporte</em> en la barra superior para revisar la ticketera y el botón <em>Abrir Ticket</em> para crear un nuevo caso.</p>
         </div>
       </li>
       <li class="home-tutorial__step">
-        <span class="home-tutorial__icon" aria-hidden="true">👤</span>
+        <span class="home-tutorial__icon" aria-hidden="true"><%- include('partials/icon', { name: 'user' }) %></span>
         <div>
           <strong>Tu perfil</strong>
           <p>Haz clic en tu foto para actualizar tus datos, teléfono y foto de perfil.</p>
         </div>
       </li>
       <li class="home-tutorial__step">
-        <span class="home-tutorial__icon" aria-hidden="true">✨</span>
+        <span class="home-tutorial__icon" aria-hidden="true"><%- include('partials/icon', { name: 'sparkles' }) %></span>
         <div>
           <strong>Asistente IA de Transworld</strong>
           <p>El botón flotante en la esquina inferior te ayuda con consultas sobre la intranet.</p>

@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="/css/claude-fab.css">
     <link rel="stylesheet" href="/css/claude-chat.css">
     <% } %>
-    <script src="/js/modal.js"></script>
+    <script src="/js/modal.js" defer></script>
     <script src="/js/ticket-create-form.js" defer></script>
     <script src="/js/ticket-detail.js" defer></script>
 </head>
@@ -102,7 +102,8 @@
       
       <div class="logo-container">
         <a href="/" title="Ir al Inicio">
-          <img src="/img/PNG-LOGO-TW-2.png" alt="Transworld" class="logo-tw">
+          <img src="/img/trw_logohor.png" alt="Transworld" class="logo-tw logo-tw--light">
+          <img src="/img/PNG-LOGO-TW-2.png" alt="Transworld" class="logo-tw logo-tw--dark">
         </a>
       </div>
     </div>
@@ -250,7 +251,26 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', async function() {
-    
+
+    // --- ESTADO ACTIVO DE LA NAVEGACIÓN ---
+    (function markActiveNav() {
+      const path = window.location.pathname;
+      const links = document.querySelectorAll('.main-nav .nav-item > a');
+      let best = null;
+      let bestLen = 0;
+      links.forEach((a) => {
+        let href;
+        try { href = new URL(a.getAttribute('href'), window.location.origin).pathname; }
+        catch (e) { return; }
+        if (href === '/' ) return;
+        if ((path === href || path.startsWith(href + '/') || path.startsWith(href)) && href.length > bestLen) {
+          best = a;
+          bestLen = href.length;
+        }
+      });
+      if (best) best.classList.add('is-active');
+    })();
+
     // --- LÓGICA DE MENÚ MÓVIL PRINCIPAL ---
     const menuToggle = document.getElementById('menu-toggle');
     const closeMenu = document.getElementById('close-menu');

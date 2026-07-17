@@ -1372,7 +1372,10 @@ router.post(
   requireRole.administrador(),
   appUploads,
   async (req, res) => {
-    const { nombre, descripcion, url_pc, url_apk } = req.body;
+    // Form fields match DB columns (name/description); accept Spanish aliases as fallback
+    const name = req.body.name ?? req.body.nombre;
+    const description = req.body.description ?? req.body.descripcion;
+    const { url_pc, url_apk } = req.body;
     let qr_apk_url = null;
     let qr_ios_url = null;
 
@@ -1395,11 +1398,11 @@ router.post(
       }
 
       await db.query(
-        `INSERT INTO applications (name, description, url_pc, url_apk, qr_apk, qr_ios) 
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+        `INSERT INTO applications (name, description, url_pc, url_apk, qr_apk, qr_ios, notified) 
+         VALUES ($1, $2, $3, $4, $5, $6, false)`,
         [
-          nombre,
-          descripcion,
+          name,
+          description,
           url_pc || null,
           url_apk || null,
           qr_apk_url,
@@ -1421,11 +1424,14 @@ router.post(
   appUploads,
   async (req, res) => {
     const { id } = req.params;
-    const { nombre, descripcion, url_pc, url_apk } = req.body;
+    // Form fields match DB columns (name/description); accept Spanish aliases as fallback
+    const name = req.body.name ?? req.body.nombre;
+    const description = req.body.description ?? req.body.descripcion;
+    const { url_pc, url_apk } = req.body;
 
     try {
       let updateQuery = `UPDATE applications SET name = $1, description = $2, url_pc = $3, url_apk = $4, updated_at = NOW(), notified = false`;
-      let queryParams = [nombre, descripcion, url_pc || null, url_apk || null];
+      let queryParams = [name, description, url_pc || null, url_apk || null];
       let paramIndex = 5;
 
       if (req.files && req.files["qr_apk"]) {

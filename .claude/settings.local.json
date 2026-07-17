@@ -4,7 +4,15 @@
       "Bash(dir *)",
       "Skill(claude-api)",
       "PowerShell(node -e \"console.log\\(require\\('@anthropic-ai/sdk/package.json'\\).version\\)\")",
-      "Bash(node *)"
+      "Bash(node *)",
+      "PowerShell(Get-Process *)",
+      "Bash(perl -CSD -i -pe 's/<span aria-hidden=\"true\">🖥<\\\\/span> /<svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"2\" y=\"3\" width=\"20\" height=\"14\" rx=\"2\"\\\\/><line x1=\"8\" y1=\"21\" x2=\"16\" y2=\"21\"\\\\/><line x1=\"12\" y1=\"17\" x2=\"12\" y2=\"21\"\\\\/><\\\\/svg> /g; s/<span aria-hidden=\"true\">🤖<\\\\/span> /<svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"5\" y=\"2\" width=\"14\" height=\"20\" rx=\"2\"\\\\/><line x1=\"12\" y1=\"18\" x2=\"12.01\" y2=\"18\"\\\\/><\\\\/svg> /g; s/<span aria-hidden=\"true\">🍎<\\\\/span> /<svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"2\" width=\"16\" height=\"20\" rx=\"2\"\\\\/><line x1=\"12\" y1=\"18\" x2=\"12.01\" y2=\"18\"\\\\/><\\\\/svg> /g' src/views/ver-apps.ejs)",
+      "Bash(node --check src/app.js)",
+      "Bash(node --check src/services/weatherService.js)",
+      "Bash(node --check src/services/mailer.js)",
+      "Bash(node --check src/services/claudeDailyLimits.js)",
+      "Bash(node --check src/routes/claude.js)",
+      "Bash(node src/app.js)"
     ]
   }
 }

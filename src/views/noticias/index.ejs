@@ -197,7 +197,7 @@
             <% if (n.image) { %>
               <img src="<%= n.image %>" alt="Portada de <%= n.title %>" loading="lazy">
             <% } else { %>
-              <span class="card-thumb-placeholder" aria-hidden="true">📰</span>
+              <span class="card-thumb-placeholder" aria-hidden="true"><%- include('../partials/icon', { name: 'news' }) %></span>
             <% } %>
           </div>
           <div class="card-body">

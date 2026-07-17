@@ -93,7 +93,7 @@ function buildNoticiaEmailHtml(noticia) {
            ${documentosCorreo
              .map(
                (doc) =>
-                 `<a href="${toAbsolute(doc.url)}" target="_blank" style="display:block; margin:0 0 8px 0; padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; text-decoration:none; color:#003a70; font-weight:600; font-size:14px;">📄&nbsp;&nbsp;${doc.nombre || 'Documento'}</a>`,
+                 `<a href="${toAbsolute(doc.url)}" target="_blank" style="display:block; margin:0 0 8px 0; padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; text-decoration:none; color:#003a70; font-weight:600; font-size:14px;">${doc.nombre || 'Documento'}</a>`,
              )
              .join('')}
          </td></tr>`
@@ -112,7 +112,7 @@ function buildNoticiaEmailHtml(noticia) {
         <tr>
           <td style="background-color:#003a70; padding:28px 32px;">
             <p style="color:#9cc3ee; font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin:0 0 6px 0;">Intranet Transworld</p>
-            <h1 style="color:#ffffff; font-size:20px; font-weight:800; margin:0;">📰 Nueva noticia publicada</h1>
+            <h1 style="color:#ffffff; font-size:20px; font-weight:800; margin:0;">Nueva noticia publicada</h1>
           </td>
         </tr>
 

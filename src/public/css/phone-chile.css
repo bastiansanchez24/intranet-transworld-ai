@@ -27,9 +27,9 @@
 }
 
 .phone-field:focus-within .phone-field__prefix {
-  border-color: #003a70;
+  border-color: #0f4c81;
 }
 
 .phone-field:focus-within .phone-field__local {
-  border-color: #003a70;
+  border-color: #0f4c81;
 }

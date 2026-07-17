@@ -6,12 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= formatPageTitle(titulo || "Iniciar sesión") %></title>
   <link rel="stylesheet" href="/css/login.css">
-  <script>document.documentElement.setAttribute('data-theme','light');</script>
-  <% if ((locals.view || 'login') === 'register') { %>
+  <script>
+    document.documentElement.setAttribute('data-theme','light');
+    try {
+      if (sessionStorage.getItem('loginShellReady') === '1') {
+        document.documentElement.classList.add('login-shell-settled');
+      }
+    } catch (_) {}
+  </script>
   <link rel="stylesheet" href="/css/profile-photo-crop.css">
   <link rel="stylesheet" href="/css/phone-chile.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-  <% } %>
 </head>
 <body class="login-split-page">
 
@@ -32,39 +37,39 @@
 
         <div class="login-auth-stage login-auth-stage--enter" id="loginAuthStage">
 
-        <% if (activeView !== 'register') { %>
-        <div class="login-split__brand">
+        <div class="login-split__brand" id="loginAuthBrand"<% if (activeView === 'register') { %> hidden<% } %>>
           <img src="/img/favicon.png" alt="Transworld" class="login-split__logo">
         </div>
-        <% } %>
 
-        <% if (activeView === 'login') { %>
-          <h1 class="login-split__heading">Acceso a la Intranet</h1>
-          <p class="login-split__subheading">Bienvenido a tu Portal de Transworld Chile</p>
-        <% } else if (activeView === 'register') { %>
-          <h1 class="login-split__heading">Crear cuenta</h1>
-          <p class="login-split__subheading">Completa tus datos para unirte a la intranet</p>
-        <% } else if (activeView === 'forgot') { %>
-          <h1 class="login-split__heading">Recuperar contraseña</h1>
-          <p class="login-split__subheading">Ingresa tu correo corporativo y te enviaremos una contraseña temporal</p>
-        <% } else if (activeView === 'verify' && locals.awaitingAdmin) { %>
-          <h1 class="login-split__heading">Correo verificado</h1>
-          <p class="login-split__subheading">Tu correo fue confirmado correctamente</p>
-        <% } else if (activeView === 'verify') { %>
-          <h1 class="login-split__heading">Verificar correo</h1>
-          <p class="login-split__subheading">Enviamos un código de 6 dígitos a tu correo. Ingrésalo para activar tu cuenta.</p>
-        <% } else if (activeView === 'reset') { %>
-          <h1 class="login-split__heading">Crear nueva contraseña</h1>
-          <p class="login-split__subheading">Por seguridad, debes cambiar tu contraseña temporal antes de continuar</p>
-        <% } %>
+        <%
+          const viewCopy = {
+            login: {
+              heading: 'Acceso a la Intranet',
+              subheading: 'Bienvenido a tu Portal de Transworld Chile',
+            },
+            register: {
+              heading: 'Crear cuenta',
+              subheading: 'Completa tus datos para unirte a la intranet',
+            },
+            forgot: {
+              heading: 'Recuperar contraseña',
+              subheading: 'Ingresa tu correo corporativo y te enviaremos una contraseña temporal',
+            },
+            verify: locals.awaitingAdmin
+              ? { heading: 'Correo verificado', subheading: 'Tu correo fue confirmado correctamente' }
+              : { heading: 'Verificar correo', subheading: 'Enviamos un código de 6 dígitos a tu correo. Ingrésalo para activar tu cuenta.' },
+            reset: {
+              heading: 'Crear nueva contraseña',
+              subheading: 'Por seguridad, debes cambiar tu contraseña temporal antes de continuar',
+            },
+          };
+          const copy = viewCopy[activeView] || viewCopy.login;
+        %>
+        <h1 class="login-split__heading" id="loginAuthHeading"><%= copy.heading %></h1>
+        <p class="login-split__subheading" id="loginAuthSubheading"><%= copy.subheading %></p>
 
-        <% if (locals.error) { %>
-          <div class="login-split__alert login-split__alert--error" role="alert"><%= error %></div>
-        <% } %>
-
-        <% if (locals.info) { %>
-          <div class="login-split__alert login-split__alert--info" role="status"><%= info %></div>
-        <% } %>
+        <div class="login-split__alert login-split__alert--error" id="loginAuthError" role="alert"<% if (!locals.error) { %> hidden<% } %>><%= locals.error || '' %></div>
+        <div class="login-split__alert login-split__alert--info" id="loginAuthInfo" role="status"<% if (!locals.info) { %> hidden<% } %>><%= locals.info || '' %></div>
 
         <!-- ── Login ── -->
         <div class="login-view" data-view="login"<% if (activeView !== 'login') { %> hidden<% } %>>
@@ -366,8 +371,8 @@
           </form>
         </div>
 
-        <% if (activeView === 'login' || activeView === 'forgot') { %>
-        <aside class="login-split__help">
+        <% const showAuthHelp = activeView === 'login' || activeView === 'forgot'; %>
+        <aside class="login-split__help" id="loginAuthHelp"<% if (!showAuthHelp) { %> hidden<% } %>>
           <h2 class="login-split__help-title">¿Tienes problema para acceder?</h2>
           <div class="login-split__help-grid">
             <div class="login-split__help-col">
@@ -390,7 +395,6 @@
             </div>
           </div>
         </aside>
-        <% } %>
 
         </div><!-- /.login-auth-stage -->
 
@@ -481,7 +485,6 @@
 
   </div>
 
-  <% if (activeView === 'register') { %>
   <div class="foto-crop-overlay" id="fotoCropOverlay" role="dialog" aria-modal="true" aria-labelledby="fotoCropTitle" hidden>
     <div class="foto-crop-modal">
       <div class="foto-crop-header">
@@ -501,7 +504,6 @@
       </div>
     </div>
   </div>
-  <% } %>
 
   <script>
     function toggleVisibility(inputId, btn) {
@@ -513,33 +515,183 @@
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
     }
 
-    (function initAuthViewTransitions() {
+    (function initAuthShell() {
       const stage = document.getElementById('loginAuthStage');
       if (!stage) return;
 
-      const FADE_MS = 320;
-      const AUTH_ROUTES = new Set(['/login', '/register', '/forgot-password', '/verify-email', '/reset-password']);
+      const FADE_MS = 280;
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const split = document.querySelector('.login-split');
+      const formPanel = document.querySelector('.login-split__form-panel');
+      const brand = document.getElementById('loginAuthBrand');
+      const heading = document.getElementById('loginAuthHeading');
+      const subheading = document.getElementById('loginAuthSubheading');
+      const help = document.getElementById('loginAuthHelp');
+      const errorEl = document.getElementById('loginAuthError');
+      const infoEl = document.getElementById('loginAuthInfo');
+
+      const PATH_TO_VIEW = {
+        '/login': 'login',
+        '/register': 'register',
+        '/forgot-password': 'forgot',
+        '/verify-email': 'verify',
+        '/reset-password': 'reset'
+      };
+
+      const VIEW_META = {
+        login: {
+          path: '/login',
+          title: 'Iniciar sesión',
+          heading: 'Acceso a la Intranet',
+          subheading: 'Bienvenido a tu Portal de Transworld Chile'
+        },
+        register: {
+          path: '/register',
+          title: 'Registro',
+          heading: 'Crear cuenta',
+          subheading: 'Completa tus datos para unirte a la intranet'
+        },
+        forgot: {
+          path: '/forgot-password',
+          title: 'Recuperar contraseña',
+          heading: 'Recuperar contraseña',
+          subheading: 'Ingresa tu correo corporativo y te enviaremos una contraseña temporal'
+        },
+        verify: {
+          path: '/verify-email',
+          title: 'Verificar correo',
+          heading: 'Verificar correo',
+          subheading: 'Enviamos un código de 6 dígitos a tu correo. Ingrésalo para activar tu cuenta.'
+        },
+        reset: {
+          path: '/reset-password',
+          title: 'Crear nueva contraseña',
+          heading: 'Crear nueva contraseña',
+          subheading: 'Por seguridad, debes cambiar tu contraseña temporal antes de continuar'
+        }
+      };
+
+      const SPA_VIEWS = new Set(['login', 'register', 'forgot']);
+      const AUTH_ROUTES = new Set(Object.keys(PATH_TO_VIEW));
+
+      const INFO_BY_QUERY = {
+        confirmed: 'Correo verificado correctamente. Ya puedes iniciar sesión.',
+        pending: 'Debes verificar tu correo con el código de 6 dígitos antes de ingresar.',
+        exists: 'Ese correo ya está registrado. Inicia sesión.',
+        reset: 'Se ha enviado una nueva contraseña a tu correo.',
+        changed: 'Contraseña actualizada correctamente. Ingresa con tu correo y nueva contraseña.'
+      };
+
+      let currentView = document.querySelector('.login-view:not([hidden])')?.dataset.view
+        || PATH_TO_VIEW[normalizePath(window.location.pathname)]
+        || 'login';
+      let transitioning = false;
 
       function normalizePath(pathname) {
-        const path = pathname.replace(/\/$/, '');
+        const path = String(pathname || '').replace(/\/$/, '');
         return path || '/login';
       }
 
-      function isAuthLink(url) {
-        return url.origin === window.location.origin && AUTH_ROUTES.has(normalizePath(url.pathname));
+      function markShellReady() {
+        try { sessionStorage.setItem('loginShellReady', '1'); } catch (_) {}
+        document.documentElement.classList.add('login-shell-settled');
       }
 
       function fadeIn() {
-        if (reducedMotion) {
+        stage.classList.remove('login-auth-stage--exit');
+        if (reducedMotion || document.documentElement.classList.contains('login-shell-settled')) {
           stage.classList.add('login-auth-stage--ready');
+          markShellReady();
           return;
         }
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
             stage.classList.add('login-auth-stage--ready');
+            window.setTimeout(markShellReady, 450);
           });
         });
+      }
+
+      function setAlert(el, message) {
+        if (!el) return;
+        const text = String(message || '').trim();
+        if (!text) {
+          el.hidden = true;
+          el.textContent = '';
+          return;
+        }
+        el.textContent = text;
+        el.hidden = false;
+      }
+
+      function clearAlerts() {
+        setAlert(errorEl, '');
+        setAlert(infoEl, '');
+      }
+
+      function infoFromSearch(search) {
+        const params = new URLSearchParams(search || '');
+        for (const key of Object.keys(INFO_BY_QUERY)) {
+          if (params.get(key) === '1') return INFO_BY_QUERY[key];
+        }
+        return null;
+      }
+
+      function applyViewChrome(view, options) {
+        const meta = VIEW_META[view] || VIEW_META.login;
+        if (heading) heading.textContent = meta.heading;
+        if (subheading) subheading.textContent = meta.subheading;
+        document.title = meta.title + ' | Intranet Transworld Chile';
+
+        const isRegister = view === 'register';
+        if (split) split.classList.toggle('login-split--register', isRegister);
+        if (formPanel) formPanel.classList.toggle('login-split__form-panel--register', isRegister);
+        if (brand) brand.hidden = isRegister;
+        if (help) help.hidden = !(view === 'login' || view === 'forgot');
+
+        if (options && Object.prototype.hasOwnProperty.call(options, 'error')) {
+          setAlert(errorEl, options.error);
+        }
+        if (options && Object.prototype.hasOwnProperty.call(options, 'info')) {
+          setAlert(infoEl, options.info);
+        }
+      }
+
+      function focusFirstField(view) {
+        const panel = document.querySelector('.login-view[data-view="' + view + '"]');
+        if (!panel) return;
+        const field = panel.querySelector('input:not([type="hidden"]):not([disabled]), select, textarea');
+        if (field) {
+          try { field.focus({ preventScroll: true }); } catch (_) { field.focus(); }
+        }
+      }
+
+      function showView(view, options) {
+        options = options || {};
+        const panel = document.querySelector('.login-view[data-view="' + view + '"]');
+        if (!panel) return false;
+
+        document.querySelectorAll('.login-view').forEach(function (el) {
+          el.hidden = el !== panel;
+        });
+
+        currentView = view;
+        applyViewChrome(view, options);
+
+        if (options.push !== false) {
+          const url = new URL((VIEW_META[view] || VIEW_META.login).path, window.location.origin);
+          if (options.search) url.search = options.search;
+          const next = url.pathname + url.search;
+          const curr = window.location.pathname + window.location.search;
+          if (next !== curr) {
+            history.pushState({ authView: view }, '', next);
+          } else {
+            history.replaceState({ authView: view }, '', next);
+          }
+        }
+
+        focusFirstField(view);
+        return true;
       }
 
       function navigateWithFade(url) {
@@ -553,6 +705,51 @@
           window.location.href = url;
         }, FADE_MS);
       }
+
+      function switchView(view, options) {
+        options = options || {};
+        if (!SPA_VIEWS.has(view)) {
+          navigateWithFade((VIEW_META[view] || VIEW_META.login).path + (options.search || ''));
+          return;
+        }
+        if (transitioning) return;
+        if (view === currentView && !options.force && !options.error && !options.info) {
+          if (options.search != null) {
+            showView(view, options);
+          }
+          return;
+        }
+
+        if (reducedMotion) {
+          showView(view, options);
+          return;
+        }
+
+        transitioning = true;
+        stage.classList.remove('login-auth-stage--ready');
+        stage.classList.add('login-auth-stage--exit');
+
+        window.setTimeout(function () {
+          showView(view, options);
+          stage.classList.remove('login-auth-stage--exit');
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              stage.classList.add('login-auth-stage--ready');
+              transitioning = false;
+            });
+          });
+        }, FADE_MS);
+      }
+
+      window.__loginSwitchView = switchView;
+      window.__loginSetAlerts = function (payload) {
+        if (!payload) {
+          clearAlerts();
+          return;
+        }
+        if (Object.prototype.hasOwnProperty.call(payload, 'error')) setAlert(errorEl, payload.error);
+        if (Object.prototype.hasOwnProperty.call(payload, 'info')) setAlert(infoEl, payload.info);
+      };
 
       fadeIn();
 
@@ -569,15 +766,47 @@
           return;
         }
 
-        if (!isAuthLink(url)) return;
+        if (url.origin !== window.location.origin) return;
+        const path = normalizePath(url.pathname);
+        if (!AUTH_ROUTES.has(path)) return;
 
-        const current = normalizePath(window.location.pathname);
-        const target = normalizePath(url.pathname);
-        if (current === target && url.search === window.location.search) return;
+        const view = PATH_TO_VIEW[path];
+        if (!view) return;
 
         e.preventDefault();
-        navigateWithFade(link.href);
+
+        if (!SPA_VIEWS.has(view)) {
+          navigateWithFade(url.pathname + url.search);
+          return;
+        }
+
+        const info = infoFromSearch(url.search);
+        switchView(view, {
+          search: url.search,
+          info: info,
+          error: '',
+          force: true
+        });
       });
+
+      window.addEventListener('popstate', function () {
+        const path = normalizePath(window.location.pathname);
+        const view = PATH_TO_VIEW[path];
+        if (!view || !SPA_VIEWS.has(view)) {
+          window.location.reload();
+          return;
+        }
+        switchView(view, {
+          push: false,
+          search: window.location.search,
+          info: infoFromSearch(window.location.search),
+          error: '',
+          force: true
+        });
+      });
+
+      // Login / recuperar: POST nativo (urlencoded). El fetch+FormData
+      // enviaba multipart y Express dejaba req.body vacío.
     })();
 
     (function initLoginCarousel() {
@@ -763,7 +992,6 @@
 
   </script>
 
-  <% if (activeView === 'register') { %>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="/js/profile-photo-cropper.js"></script>
   <script src="/js/password-strength.js"></script>
@@ -779,6 +1007,8 @@
       const strengthSegments = document.querySelectorAll('.login-password-strength-segment');
       const ruleItems = document.querySelectorAll('#password-rules li');
       const matchMsg = document.getElementById('password-match-msg');
+
+      if (!passwordInput || !password2Input || !submitBtn || !strengthBox || !matchMsg) return;
 
       const photoCropper = ProfilePhotoCropper.init({
         fileInputId: 'foto_file',
@@ -883,7 +1113,6 @@
       password2Input.addEventListener('input', onPasswordChange);
     })();
   </script>
-  <% } %>
 
 </body>
 </html>

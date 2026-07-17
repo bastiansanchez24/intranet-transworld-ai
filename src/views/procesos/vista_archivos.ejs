@@ -145,7 +145,7 @@
   <% if (archivos.length === 0) { %>
     <div class="tabla-archivos-contenedor">
       <div class="empty-state">
-        <div class="empty-state-icon">📂</div>
+        <div class="empty-state-icon"><%- include('../partials/icon', { name: 'folder' }) %></div>
         <h3>No hay documentos</h3>
         <p>Aún no se han subido archivos a esta sección.</p>
       </div>

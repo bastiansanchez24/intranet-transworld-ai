@@ -3,7 +3,7 @@
 <div class="vac-wrap">
   <div class="vac-header">
     <div>
-      <h2 class="vac-title">Mis vacaciones <span class="vac-country"><%= countryFlag %> <%= countryLabel %></span></h2>
+      <h2 class="vac-title">Mis vacaciones <span class="vac-country"><%= countryLabel %></span></h2>
       <p class="vac-subtitle">Saldo expresado en <%= dayUnitLabel %>.</p>
     </div>
     <a href="/RRHH/vacaciones" class="vac-link-volver">← Volver</a>
@@ -87,7 +87,7 @@
               <td><%= p.adjusted %></td>
               <td><%= p.used %></td>
               <td><strong><%= p.available %></strong></td>
-              <td><%= p.expired ? '⚠️ Vencido' : (p.expiresAtFmt || '-') %></td>
+              <td><%= p.expired ? 'Vencido' : (p.expiresAtFmt || '-') %></td>
             </tr>
           <% }) %>
         </tbody>

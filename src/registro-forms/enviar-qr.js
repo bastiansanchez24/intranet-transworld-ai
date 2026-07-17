@@ -1,9 +1,9 @@
 /**
  * Endpoint propio del formulario de registro.
- * Usa BREVO_API_KEY / MAIL_FROM del .env (igual que el mailer de la intranet).
+ * Usa BREVO_API_KEY del .env. Remitente fijo de registro (no MAIL_FROM de tickets).
  */
 const BREVO_API_KEY = (process.env.BREVO_API_KEY || process.env.SMTP_PASS || '').trim();
-const MAIL_FROM = (process.env.MAIL_FROM || 'contacto@transworld.cl').trim();
+const MAIL_FROM = 'contacto@transworld.cl';
 const MAIL_SENDER_NAME = 'Equipo de Transworld';
 
 function escapeHtml(value) {

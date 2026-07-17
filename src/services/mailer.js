@@ -77,11 +77,11 @@ const sendMail = async ({ to, subject, text, html, bcc, skipFooter = false, send
 
   try {
     const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('✅ Correo enviado exitosamente vía API de Brevo');
+    console.log('[Mailer] Correo enviado exitosamente vía API de Brevo');
     return data;
   } catch (error) {
     const detail = error?.response?.data || error?.body || error?.message;
-    console.error('❌ Error al enviar vía API de Brevo:', detail);
+    console.error('[Mailer] Error al enviar vía API de Brevo:', detail);
     throw error;
   }
 };

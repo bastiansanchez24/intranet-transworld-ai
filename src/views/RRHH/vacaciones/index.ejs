@@ -105,7 +105,7 @@
 
   <div class="grid-opciones-exec">
     <a href="/RRHH/vacaciones/mis-vacaciones" class="card-opcion-exec">
-      <div class="card-icon-wrapper">🏖️</div>
+      <div class="card-icon-wrapper"><%- include('../../partials/icon', { name: 'umbrella' }) %></div>
       <div class="card-content">
         <h3 class="card-title">Mis vacaciones</h3>
         <p class="card-desc">Consulta tu saldo, solicita días y revisa tu historial.</p>
@@ -113,7 +113,7 @@
     </a>
 
     <a href="/RRHH/vacaciones/calendario" class="card-opcion-exec">
-      <div class="card-icon-wrapper">📅</div>
+      <div class="card-icon-wrapper"><%- include('../../partials/icon', { name: 'calendar' }) %></div>
       <div class="card-content">
         <h3 class="card-title">Calendario</h3>
         <p class="card-desc">
@@ -124,7 +124,7 @@
 
     <% if (locals.isAdministrador) { %>
       <a href="/RRHH/vacaciones/gestion" class="card-opcion-exec">
-        <div class="card-icon-wrapper">🗂️</div>
+        <div class="card-icon-wrapper"><%- include('../../partials/icon', { name: 'archive' }) %></div>
         <div class="card-content">
           <h3 class="card-title">Gestión RRHH</h3>
           <p class="card-desc">Aprueba o rechaza solicitudes y ajusta saldos.</p>
@@ -132,7 +132,7 @@
       </a>
 
       <a href="/RRHH/vacaciones/feriados" class="card-opcion-exec">
-        <div class="card-icon-wrapper">🎌</div>
+        <div class="card-icon-wrapper"><%- include('../../partials/icon', { name: 'flag' }) %></div>
         <div class="card-content">
           <h3 class="card-title">Feriados</h3>
           <p class="card-desc">Administra los feriados de Chile y Perú.</p>

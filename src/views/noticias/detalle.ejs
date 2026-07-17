@@ -684,7 +684,7 @@
           <div class="grid-documentos">
             <% documentos.forEach(doc => { %>
               <a href="<%= doc.url %>" target="_blank" rel="noopener noreferrer" class="doc-item" title="Descargar <%= doc.nombre %>">
-                <span class="doc-icon">📄</span>
+                <span class="doc-icon"><%- include('../partials/icon', { name: 'file-text' }) %></span>
                 <span class="doc-nombre"><%= doc.nombre || 'Documento' %></span>
                 <span class="doc-accion">Descargar ↓</span>
               </a>

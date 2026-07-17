@@ -22,7 +22,7 @@
   margin: 0 0 6px;
   padding: 0 34px 0 0;
   border-bottom: 0;
-  color: var(--color-heading, #003a70);
+  color: var(--color-heading, #0f4c81);
   font-size: 1.35rem;
   text-align: left;
 }
@@ -58,7 +58,7 @@
 }
 
 .ticket-modal-user-box span {
-  color: var(--color-heading, #003a70);
+  color: var(--color-heading, #0f4c81);
 }
 
 .ticket-modal-form {
@@ -90,8 +90,8 @@
 .ticket-modal-form select:focus,
 .ticket-modal-form textarea:focus {
   outline: none;
-  border-color: var(--color-heading, #003a70);
-  box-shadow: 0 0 0 3px rgba(0, 58, 112, 0.12);
+  border-color: var(--color-heading, #0f4c81);
+  box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
   background: var(--color-surface, #ffffff);
 }
 
@@ -158,12 +158,12 @@
 }
 
 .modal-ticket-navbar .btn-primario {
-  background: #003a70;
+  background: #0f4c81;
   color: #ffffff;
 }
 
 .modal-ticket-navbar .btn-primario:hover {
-  background: #002a52;
+  background: #0b3a63;
 }
 
 .modal-ticket-navbar .btn-secundario {

@@ -78,7 +78,7 @@ async function countUsageFromMessages(userId) {
   const result = await db.query(
     `SELECT
        COUNT(*)::int AS message_count,
-       COUNT(*) FILTER (WHERE m.role = 'user' AND m.content LIKE '📎%')::int AS file_count
+       COUNT(*) FILTER (WHERE m.role = 'user' AND (m.content LIKE '[Adjunto]%' OR m.content LIKE '📎%'))::int AS file_count
      FROM claude_messages m
      INNER JOIN claude_conversations c ON c.id = m.conversation_id
      WHERE c.user_id = $1
