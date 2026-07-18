@@ -322,6 +322,20 @@ async function asegurarColumnaNoticiasDestacada() {
   }
 }
 
+async function asegurarColumnaAppsIconUrl() {
+  try {
+    await db.query(`
+      ALTER TABLE applications
+        ADD COLUMN IF NOT EXISTS icon_url TEXT
+    `);
+  } catch (err) {
+    console.error(
+      "[Apps] No se pudo asegurar la columna icon_url:",
+      err.message,
+    );
+  }
+}
+
 // ================================
 // INICIAR SERVIDOR
 // ================================
@@ -344,6 +358,7 @@ app.listen(PORT, () => {
 Promise.allSettled([
   asegurarCorreoUnico(),
   asegurarColumnaNoticiasDestacada(),
+  asegurarColumnaAppsIconUrl(),
   sincronizarUsuariosDeshabilitados(),
   asegurarSchemaVacaciones(),
 ]).finally(() => {

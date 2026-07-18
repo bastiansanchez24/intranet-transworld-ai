@@ -80,7 +80,7 @@ const EVENTO_VIEW_COLUMNS = `
 
 const APPLICATION_VIEW_COLUMNS = `
   id, name AS nombre, description AS descripcion, url_pc, url_apk, qr_apk, qr_ios,
-  created_at AS fecha_creacion, updated_at AS ultima_actualizacion,
+  icon_url, created_at AS fecha_creacion, updated_at AS ultima_actualizacion,
   changelog AS cambios, notified AS notificado
 `;
 

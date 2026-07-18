@@ -1,4 +1,8 @@
 <link rel="stylesheet" href="/css/apps.css">
+<% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
+<link rel="stylesheet" href="/css/profile-photo-crop.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<% } %>
 <%
   function appInitials(name) {
     if (!name) return '?';
@@ -38,10 +42,17 @@
         const iniciales = appInitials(app.name);
         const tileGreen = (index % 2 === 1);
         const nombreJs = jsSafe(app.name);
+        const iconUrl = app.icon_url || '';
       %>
         <article class="app-card">
           <div class="app-card__header">
-            <div class="app-card__tile<%= tileGreen ? ' app-card__tile--green' : '' %>" aria-hidden="true"><%= iniciales %></div>
+            <% if (iconUrl) { %>
+              <div class="app-card__tile app-card__tile--image" aria-hidden="true">
+                <img src="<%= iconUrl %>" alt="">
+              </div>
+            <% } else { %>
+              <div class="app-card__tile<%= tileGreen ? ' app-card__tile--green' : '' %>" aria-hidden="true"><%= iniciales %></div>
+            <% } %>
             <div class="app-card__heading">
               <h3 class="app-card__name"><%= app.name %></h3>
               <p class="app-card__meta">Última actualización · <%= app.updated_at ? new Date(app.updated_at).toLocaleDateString('es-CL') : '—' %></p>
@@ -78,7 +89,7 @@
               Notificar
             </button>
             <button type="button" class="app-action app-action--edit" title="Editar app"
-                    onclick="abrirModalEditar('<%= app.id %>', '<%= nombreJs %>', '<%= jsSafe(app.description) %>', '<%= app.url_pc || '' %>', '<%= app.url_apk || '' %>')">
+                    onclick="abrirModalEditar('<%= app.id %>', '<%= nombreJs %>', '<%= jsSafe(app.description) %>', '<%= app.url_pc || '' %>', '<%= app.url_apk || '' %>', '<%= jsSafe(iconUrl) %>')">
               Editar
             </button>
             <form action="/apps/eliminar/<%= app.id %>" method="POST" class="app-card__delete-form" onsubmit="return confirm('¿Estás seguro que deseas eliminar la aplicación? Esta acción es irreversible.');">
@@ -125,6 +136,24 @@
           <aside class="app-modal__aside">
             <h3 class="app-modal__title" id="nueva-titulo">Ingresar nueva app</h3>
             <p class="app-modal__subtitle">Completa los datos y enlaces de descarga para cada plataforma.</p>
+
+            <div class="app-icon-upload">
+              <label>Icono de la aplicación</label>
+              <div class="app-icon-preview-wrap">
+                <div class="app-icon-preview" id="nueva-icon-preview">
+                  <img id="nueva-icon-preview-img" alt="" hidden>
+                  <div class="app-icon-placeholder" id="nueva-icon-placeholder">
+                    <span>AA</span>
+                  </div>
+                </div>
+                <div class="app-icon-actions">
+                  <button type="button" class="app-btn-icon-select" id="nueva-icon-select">Subir icono</button>
+                  <span class="app-icon-hint">JPG, PNG o WebP · Máx. 5 MB</span>
+                </div>
+              </div>
+              <input type="file" id="nueva-icon" name="icon" accept="image/*" hidden>
+            </div>
+
             <div class="app-field">
               <label for="nueva-nombre">Nombre de la aplicación *</label>
               <input type="text" id="nueva-nombre" name="name" required placeholder="Ej: Transworld Lead App">
@@ -186,6 +215,24 @@
           <aside class="app-modal__aside">
             <h3 class="app-modal__title" id="editar-titulo">Editar aplicación</h3>
             <p class="app-modal__subtitle">Actualiza la información y los enlaces de descarga de la aplicación.</p>
+
+            <div class="app-icon-upload">
+              <label>Icono de la aplicación</label>
+              <div class="app-icon-preview-wrap">
+                <div class="app-icon-preview" id="edit-icon-preview">
+                  <img id="edit-icon-preview-img" alt="" hidden>
+                  <div class="app-icon-placeholder" id="edit-icon-placeholder">
+                    <span id="edit-icon-initials">AA</span>
+                  </div>
+                </div>
+                <div class="app-icon-actions">
+                  <button type="button" class="app-btn-icon-select" id="edit-icon-select">Subir icono</button>
+                  <span class="app-icon-hint">JPG, PNG o WebP · Máx. 5 MB</span>
+                </div>
+              </div>
+              <input type="file" id="edit-icon" name="icon" accept="image/*" hidden>
+            </div>
+
             <div class="app-field">
               <label for="edit-nombre">Nombre</label>
               <input type="text" id="edit-nombre" name="name" required>
@@ -258,6 +305,50 @@
     </div>
   </div>
 
+  <!-- Crop icono nueva -->
+  <div class="foto-crop-overlay" id="nuevaIconCropOverlay" role="dialog" aria-modal="true" aria-labelledby="nuevaIconCropTitle" hidden>
+    <div class="foto-crop-modal">
+      <div class="foto-crop-header">
+        <h3 id="nuevaIconCropTitle">Recortar icono</h3>
+        <button type="button" class="foto-crop-close" id="nuevaIconCropClose" aria-label="Cerrar">&times;</button>
+      </div>
+      <p class="foto-crop-hint">Arrastra y ajusta el encuadre. El icono se mostrará cuadrado en la tarjeta.</p>
+      <div class="foto-crop-body">
+        <div class="foto-crop-stage">
+          <img id="nuevaIconCropImage" src="" alt="Vista previa para recortar">
+        </div>
+      </div>
+      <p id="nuevaIconCropError" class="foto-crop-error" role="alert"></p>
+      <div class="foto-crop-footer">
+        <button type="button" class="btn-crop-cancel" id="nuevaIconCropCancel">Cancelar</button>
+        <button type="button" class="btn-crop-save" id="nuevaIconCropSave">Aplicar recorte</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crop icono editar -->
+  <div class="foto-crop-overlay" id="editIconCropOverlay" role="dialog" aria-modal="true" aria-labelledby="editIconCropTitle" hidden>
+    <div class="foto-crop-modal">
+      <div class="foto-crop-header">
+        <h3 id="editIconCropTitle">Recortar icono</h3>
+        <button type="button" class="foto-crop-close" id="editIconCropClose" aria-label="Cerrar">&times;</button>
+      </div>
+      <p class="foto-crop-hint">Arrastra y ajusta el encuadre. El icono se mostrará cuadrado en la tarjeta.</p>
+      <div class="foto-crop-body">
+        <div class="foto-crop-stage">
+          <img id="editIconCropImage" src="" alt="Vista previa para recortar">
+        </div>
+      </div>
+      <p id="editIconCropError" class="foto-crop-error" role="alert"></p>
+      <div class="foto-crop-footer">
+        <button type="button" class="btn-crop-cancel" id="editIconCropCancel">Cancelar</button>
+        <button type="button" class="btn-crop-save" id="editIconCropSave">Aplicar recorte</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="/js/profile-photo-cropper.js"></script>
   <% } %>
 
 </div>
@@ -265,6 +356,14 @@
 <script>
   // Abrir/cerrar el modal de nueva app
   function toggleFormulario() {
+    if (window.nuevaAppIconCropper) {
+      window.nuevaAppIconCropper.clearPhoto();
+      const placeholder = document.getElementById('nueva-icon-placeholder');
+      if (placeholder) {
+        const span = placeholder.querySelector('span');
+        if (span) span.textContent = 'AA';
+      }
+    }
     IntranetModal.open('modal-nueva');
   }
 
@@ -313,8 +412,37 @@
     document.body.removeChild(link);
   }
 
+  function appInitialsClient(name) {
+    if (!name) return '?';
+    const parts = String(name).trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  function setEditIconPreview(iconUrl, iniciales) {
+    const previewImg = document.getElementById('edit-icon-preview-img');
+    const placeholder = document.getElementById('edit-icon-placeholder');
+    const initialsEl = document.getElementById('edit-icon-initials');
+    const selectBtn = document.getElementById('edit-icon-select');
+    if (!previewImg || !placeholder) return;
+
+    if (initialsEl) initialsEl.textContent = iniciales || 'AA';
+
+    if (iconUrl) {
+      previewImg.src = iconUrl;
+      previewImg.hidden = false;
+      placeholder.hidden = true;
+      if (selectBtn) selectBtn.textContent = 'Cambiar icono';
+    } else {
+      previewImg.hidden = true;
+      previewImg.removeAttribute('src');
+      placeholder.hidden = false;
+      if (selectBtn) selectBtn.textContent = 'Subir icono';
+    }
+  }
+
   // Modal Editar
-  function abrirModalEditar(id, nombre, desc, pc, apk) {
+  function abrirModalEditar(id, nombre, desc, pc, apk, iconUrl) {
     const formEditar = document.getElementById('form-editar');
     if (!formEditar) return;
 
@@ -323,6 +451,11 @@
     document.getElementById('edit-desc').value = desc;
     document.getElementById('edit-pc').value = pc || '';
     document.getElementById('edit-apk').value = apk || '';
+
+    if (window.editAppIconCropper) {
+      window.editAppIconCropper.clearPhoto();
+    }
+    setEditIconPreview(iconUrl || '', appInitialsClient(nombre));
 
     IntranetModal.open('modal-editar');
   }
@@ -336,4 +469,67 @@
     form.action = '/apps/notificar/' + id;
     IntranetModal.open('modal-notificar');
   }
+
+  <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof ProfilePhotoCropper === 'undefined') return;
+
+    const cropperConfig = {
+      maxSizeMb: 5,
+      outputSize: 256,
+      aspectRatio: 1,
+      selectLabel: 'Subir icono',
+      changeLabel: 'Cambiar icono',
+      outputFilename: 'icono-app.jpg',
+    };
+
+    window.nuevaAppIconCropper = ProfilePhotoCropper.init({
+      ...cropperConfig,
+      fileInputId: 'nueva-icon',
+      previewImgId: 'nueva-icon-preview-img',
+      previewPlaceholderId: 'nueva-icon-placeholder',
+      selectBtnId: 'nueva-icon-select',
+      overlayId: 'nuevaIconCropOverlay',
+      cropImgId: 'nuevaIconCropImage',
+      closeBtnId: 'nuevaIconCropClose',
+      cancelBtnId: 'nuevaIconCropCancel',
+      saveBtnId: 'nuevaIconCropSave',
+      errorElId: 'nuevaIconCropError',
+    });
+
+    window.editAppIconCropper = ProfilePhotoCropper.init({
+      ...cropperConfig,
+      fileInputId: 'edit-icon',
+      previewImgId: 'edit-icon-preview-img',
+      previewPlaceholderId: 'edit-icon-placeholder',
+      selectBtnId: 'edit-icon-select',
+      overlayId: 'editIconCropOverlay',
+      cropImgId: 'editIconCropImage',
+      closeBtnId: 'editIconCropClose',
+      cancelBtnId: 'editIconCropCancel',
+      saveBtnId: 'editIconCropSave',
+      errorElId: 'editIconCropError',
+    });
+
+    const nuevaNombre = document.getElementById('nueva-nombre');
+    const nuevaPlaceholder = document.querySelector('#nueva-icon-placeholder span');
+    if (nuevaNombre && nuevaPlaceholder) {
+      nuevaNombre.addEventListener('input', function () {
+        const img = document.getElementById('nueva-icon-preview-img');
+        if (img && !img.hidden && img.getAttribute('src')) return;
+        nuevaPlaceholder.textContent = appInitialsClient(nuevaNombre.value);
+      });
+    }
+
+    const editNombre = document.getElementById('edit-nombre');
+    const editInitials = document.getElementById('edit-icon-initials');
+    if (editNombre && editInitials) {
+      editNombre.addEventListener('input', function () {
+        const img = document.getElementById('edit-icon-preview-img');
+        if (img && !img.hidden && img.getAttribute('src')) return;
+        editInitials.textContent = appInitialsClient(editNombre.value);
+      });
+    }
+  });
+  <% } %>
 </script>

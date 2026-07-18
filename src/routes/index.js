@@ -1363,6 +1363,7 @@ const uploadFileLocally = async (buffer, folder, fileName) => {
 };
 
 const appUploads = upload.fields([
+  { name: "icon", maxCount: 1 },
   { name: "qr_apk", maxCount: 1 },
   { name: "qr_ios", maxCount: 1 },
 ]);
@@ -1376,10 +1377,19 @@ router.post(
     const name = req.body.name ?? req.body.nombre;
     const description = req.body.description ?? req.body.descripcion;
     const { url_pc, url_apk } = req.body;
+    let icon_url = null;
     let qr_apk_url = null;
     let qr_ios_url = null;
 
     try {
+      if (req.files && req.files["icon"]) {
+        const result = await uploadFileLocally(
+          req.files["icon"][0].buffer,
+          "apps_icons",
+          req.files["icon"][0].originalname || "icono-app.jpg",
+        );
+        icon_url = result.secure_url;
+      }
       if (req.files && req.files["qr_apk"]) {
         const result = await uploadFileLocally(
           req.files["qr_apk"][0].buffer,
@@ -1398,8 +1408,8 @@ router.post(
       }
 
       await db.query(
-        `INSERT INTO applications (name, description, url_pc, url_apk, qr_apk, qr_ios, notified) 
-         VALUES ($1, $2, $3, $4, $5, $6, false)`,
+        `INSERT INTO applications (name, description, url_pc, url_apk, qr_apk, qr_ios, icon_url, notified) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, false)`,
         [
           name,
           description,
@@ -1407,6 +1417,7 @@ router.post(
           url_apk || null,
           qr_apk_url,
           qr_ios_url,
+          icon_url,
         ],
       );
 
@@ -1434,6 +1445,16 @@ router.post(
       let queryParams = [name, description, url_pc || null, url_apk || null];
       let paramIndex = 5;
 
+      if (req.files && req.files["icon"]) {
+        const result = await uploadFileLocally(
+          req.files["icon"][0].buffer,
+          "apps_icons",
+          req.files["icon"][0].originalname || "icono-app.jpg",
+        );
+        updateQuery += `, icon_url = $${paramIndex}`;
+        queryParams.push(result.secure_url);
+        paramIndex++;
+      }
       if (req.files && req.files["qr_apk"]) {
         const result = await uploadFileLocally(
           req.files["qr_apk"][0].buffer,

@@ -102,6 +102,111 @@
   color: var(--green-deep);
 }
 
+.app-card__tile--image {
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface2);
+  color: transparent;
+}
+
+.app-card__tile--image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Icono en modal crear/editar ── */
+.app-icon-upload {
+  margin-bottom: 18px;
+}
+
+.app-icon-upload > label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.app-icon-preview-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-icon-preview {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--brand-soft);
+  border: 1px solid var(--color-border);
+}
+
+.app-icon-preview img,
+.app-icon-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.app-icon-preview img {
+  object-fit: cover;
+  display: block;
+}
+
+.app-icon-preview img:not([hidden]) ~ .app-icon-placeholder {
+  display: none;
+}
+
+.app-icon-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.app-icon-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.app-btn-icon-select {
+  border: none;
+  border-radius: 9px;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--brand);
+  color: #fff;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.app-btn-icon-select:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.app-icon-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--subtle);
+  line-height: 1.35;
+}
+
 .app-card__heading {
   min-width: 0;
 }
