@@ -11,7 +11,13 @@ const FALLBACK_IMAGE = "/img/fondo-home.png";
 const LINKEDIN_PLACEHOLDER_IMAGE = "/img/linkedin_off.jpg";
 const LINKEDIN_COMPANY_URL =
   "https://www.linkedin.com/company/transworldpowerandtelecom";
-const LINKEDIN_ENABLED = process.env.LINKEDIN_ENABLED === "true";
+function isLinkedInExplicitlyDisabled() {
+  return process.env.LINKEDIN_ENABLED === "false";
+}
+
+function isLinkedInConfigured() {
+  return Boolean(CLIENT_ID && CLIENT_SECRET && ORG_ID);
+}
 const LINKEDIN_API_VERSION =
   process.env.LINKEDIN_API_VERSION?.trim() || "202601";
 
@@ -78,6 +84,27 @@ const TOKEN_KEY = "linkedin_token";
 const REFRESH_KEY = "linkedin_refresh_token";
 const EXPIRES_KEY = "linkedin_token_expires_at";
 const TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken";
+
+/** Evita seguir golpeando /rest/images tras un 429 APPLICATION DAY. */
+let imagesApiBlockedUntil = 0;
+
+function markImagesApiThrottled(error) {
+  const retryAfterSec = Number(error.response?.headers?.["retry-after"]);
+  const cooldownMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0
+    ? retryAfterSec * 1000
+    : 6 * 60 * 60 * 1000; // 6h por defecto (límite diario LinkedIn)
+  imagesApiBlockedUntil = Date.now() + cooldownMs;
+  console.warn(
+    `[LINKEDIN] Images API en throttle diario (429). Sin más llamadas hasta ${new Date(imagesApiBlockedUntil).toISOString()}.`,
+  );
+}
+
+function isUsableCachedImage(url) {
+  if (!url || url === FALLBACK_IMAGE || url === LINKEDIN_PLACEHOLDER_IMAGE) {
+    return false;
+  }
+  return isSharePointImageUrl(url) || String(url).startsWith("/");
+}
 
 function getLinkedInHeaders(accessToken) {
   return {
@@ -299,6 +326,13 @@ async function fetchImageDownloadUrls(accessToken, imageUrns) {
   const uniqueUrns = [...new Set(imageUrns)].slice(0, 5);
   if (!uniqueUrns.length) return {};
 
+  if (Date.now() < imagesApiBlockedUntil) {
+    console.warn(
+      "[LINKEDIN] Saltando resolución de imágenes (throttle diario activo).",
+    );
+    return {};
+  }
+
   const idsParam = `List(${uniqueUrns.map((urn) => encodeURIComponent(urn)).join(",")})`;
 
   try {
@@ -314,6 +348,9 @@ async function fetchImageDownloadUrls(accessToken, imageUrns) {
     }
     return map;
   } catch (error) {
+    if (error.response?.status === 429) {
+      markImagesApiThrottled(error);
+    }
     logLinkedInError("Error resolviendo imágenes", error);
     return {};
   }
@@ -377,7 +414,7 @@ async function getPostsFromDb() {
     );
 
     return rows
-      .filter((row) => isSharePointImageUrl(row.image_url))
+      .filter((row) => row.image_url && row.link_url)
       .map((row) => normalizeLinkedInPost(row));
   } catch (error) {
     console.warn("[LINKEDIN] No se pudo leer linkedin_posts:", error.message);
@@ -402,38 +439,112 @@ async function syncPostsToDb(posts) {
   }
 }
 
+function postFingerprint(posts) {
+  return posts
+    .map((post) => post.link_url || post.enlace_url || "")
+    .filter(Boolean)
+    .join("|");
+}
+
+/**
+ * Si los posts de la API coinciden con el caché local y ya tienen imagen
+ * usable (SharePoint), no vuelve a llamar Images API ni re-sube archivos.
+ */
+function reuseCachedPostsIfUnchanged(parsed, cached) {
+  if (!parsed.length || !cached.length) return null;
+  if (postFingerprint(parsed) !== postFingerprint(cached)) return null;
+  if (!cached.every((post) => isUsableCachedImage(post.image_url))) return null;
+  return cached.map(normalizeLinkedInPost);
+}
+
 async function fetchPostsFromApi(accessToken) {
   const response = await fetchOrganizationPosts(accessToken);
+  const cached = await getPostsFromDb();
+
+  // Resolver imágenes solo si hay posts nuevos/cambiados o el caché no sirve.
+  // parsePosts llama a Images API; si el fingerprint coincide, lo evitamos.
+  const published = (response.data?.elements || []).filter(
+    (post) => post.lifecycleState === "PUBLISHED",
+  );
+  const previewLinks = published.slice(0, 3).map(
+    (post) =>
+      `https://www.linkedin.com/feed/update/${encodeURIComponent(post.id)}`,
+  );
+  const previewFingerprint = previewLinks.join("|");
+  const cachedFingerprint = postFingerprint(cached);
+
+  if (
+    previewFingerprint &&
+    previewFingerprint === cachedFingerprint &&
+    cached.every((post) => isUsableCachedImage(post.image_url))
+  ) {
+    console.log(
+      "[LINKEDIN] Posts sin cambios; reutilizando imágenes en caché (sin Images API).",
+    );
+    return cached.map(normalizeLinkedInPost);
+  }
+
   const parsed = await parsePosts(response, accessToken);
   if (!parsed.length) return [];
 
+  const reused = reuseCachedPostsIfUnchanged(parsed, cached);
+  if (reused) {
+    console.log(
+      "[LINKEDIN] Reutilizando imágenes en caché tras fallo/throttle de Images API.",
+    );
+    return reused;
+  }
+
   const posts = await enrichPostsWithSharePointImages(parsed);
+  const hasUsableImages = posts.some((post) =>
+    isUsableCachedImage(post.image_url),
+  );
+
+  // No pisar un buen caché con placeholders si LinkedIn no entregó imágenes.
+  if (!hasUsableImages && cached.some((post) => isUsableCachedImage(post.image_url))) {
+    console.warn(
+      "[LINKEDIN] Sin imágenes nuevas (posible throttle); manteniendo caché local.",
+    );
+    return cached.map(normalizeLinkedInPost);
+  }
+
   await syncPostsToDb(posts);
   return posts;
 }
 
+async function resolvePostsFallback() {
+  const cached = await getPostsFromDb();
+  if (cached.length) return cached;
+  return getPlaceholderPosts();
+}
+
 async function getCompanyPosts() {
-  if (!LINKEDIN_ENABLED) {
+  if (isLinkedInExplicitlyDisabled()) {
     return getPlaceholderPosts();
+  }
+
+  if (!isLinkedInConfigured()) {
+    return resolvePostsFallback();
   }
 
   let accessToken = await getAccessToken();
   if (!accessToken) {
     const cached = await getPostsFromDb();
     if (cached.length) {
-      console.log("[LINKEDIN] Sin token activo; usando caché en SharePoint.");
+      console.log("[LINKEDIN] Sin token activo; usando caché local.");
+      return cached;
     }
-    return cached;
+    return getPlaceholderPosts();
   }
 
   try {
     const posts = await fetchPostsFromApi(accessToken);
     if (posts.length) return posts;
-    return getPostsFromDb();
+    return resolvePostsFallback();
   } catch (error) {
     if (error.response?.status !== 401) {
       logLinkedInError("Error obteniendo posts", error);
-      return getPostsFromDb();
+      return resolvePostsFallback();
     }
 
     const refreshToken = await getRefreshToken();
@@ -441,31 +552,20 @@ async function getCompanyPosts() {
       console.warn(
         `[LINKEDIN] Token expirado y sin refresh token. Reautorice en ${getReauthUrl()}.`,
       );
-      const cached = await getPostsFromDb();
-      if (cached.length) {
-        console.warn("[LINKEDIN] Mostrando caché en SharePoint mientras tanto.");
-      }
-      return cached;
+      return resolvePostsFallback();
     }
 
     try {
       accessToken = await refreshAccessToken();
       const posts = await fetchPostsFromApi(accessToken);
       if (posts.length) return posts;
-      return getPostsFromDb();
+      return resolvePostsFallback();
     } catch (refreshError) {
       logLinkedInError("Renovación automática fallida", refreshError);
-      const cached = await getPostsFromDb();
-      if (cached.length) {
-        console.warn(
-          `[LINKEDIN] Token expirado; mostrando caché en SharePoint. Reautorice en ${getReauthUrl()}.`,
-        );
-        return cached;
-      }
-      console.error(
-        `[LINKEDIN] Token inválido y sin caché en SharePoint. Reautorice en ${getReauthUrl()}`,
+      console.warn(
+        `[LINKEDIN] Token inválido; mostrando caché local. Reautorice en ${getReauthUrl()}.`,
       );
-      return [];
+      return resolvePostsFallback();
     }
   }
 }

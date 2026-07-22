@@ -19,6 +19,10 @@
     return `${dia}-${mes.replace('.', '')}`;
   }
 
+  function formatNewsDate(dateString) {
+    return formatDateShort(dateString).replace('-', ' ').toUpperCase();
+  }
+
   function getInitials(name) {
     if (!name) return '?';
     const parts = String(name).trim().split(/\s+/).filter(Boolean);
@@ -27,9 +31,9 @@
   }
 
   function financeTrendClass(tendencia) {
-    if (tendencia === 'alcista') return 'home-finance__item--up';
-    if (tendencia === 'bajista') return 'home-finance__item--down';
-    return 'home-finance__item--equal';
+    if (tendencia === 'alcista') return 'home-indicator--up';
+    if (tendencia === 'bajista') return 'home-indicator--down';
+    return 'home-indicator--equal';
   }
 
   function financeTrendSymbol(tendencia) {
@@ -65,177 +69,118 @@
   const imagenesGaleria = (typeof eventosCarousel !== 'undefined' && eventosCarousel)
     ? eventosCarousel
     : [];
+
+  const saludoTexto = (typeof saludo !== 'undefined' && saludo) ? saludo : 'Hola';
+  const nombreSaludo = (typeof nombrePila !== 'undefined' && nombrePila) ? nombrePila : '';
+  const fechaEncabezado = (typeof fechaLarga !== 'undefined' && fechaLarga) ? fechaLarga : '';
+
+  const dolarUrl = 'https://si3.bcentral.cl/indicadoressiete/secure/Serie.aspx?gcode=PRE_TCO&param=RABmAFYAWQB3AGYAaQBuAEkALQAzADUAbgBNAGgAaAAkADUAVwBQAC4AbQBYADAARwBOAGUAYwBjACMAQQBaAHAARgBhAGcAUABTAGUAdwA1ADQAMQA0AE0AawBLAF8AdQBDACQASABzAG0AXwA2AHQAawBvAFcAZwBKAEwAegBzAF8AbgBMAHIAYgBDAC4ARQA3AFUAVwB4AFIAWQBhAEEAOABkAHkAZwAxAEEARAA=';
+  const euroUrl = 'https://si3.bcentral.cl/IndicadoresSiete/secure/Serie.aspx?gcode=PRE_EUR&param=cgBnAE8AOQBlAGcAIwBiAFUALQBsAEcAYgBOAEkASQBCAEcAegBFAFkAeABkADgASAA2AG8AdgB2AFMAUgBYADIAQwBzAEEARQBMAG8ASgBWADQATABrAGQAZAB1ADIAeQBBAFAAZwBhADIAbABWAHcAXwBXAGgATAAkAFIAVAB1AEIAbAB3AFoAdQBRAFgAZwA5AHgAdgAwACQATwBZADcAMwAuAGIARwBFAFIASwAuAHQA';
+  const ufUrl = 'https://si3.bcentral.cl/IndicadoresSiete/secure/Serie.aspx?gcode=UF&param=RABmAFYAWQB3AGYAaQBuAEkALQAzADUAbgBNAGgAaAAkADUAVwBQAC4AbQBYADAARwBOAGUAYwBjACMAQQBaAHAARgBhAGcAUABTAGUAYwBsAEMAMQA0AE0AawBLAF8AdQBDACQASABzAG0AXwA2AHQAawBvAFcAZwBKAEwAegBzAF8AbgBMAHIAYgBDAC4ARQA3AFUAVwB4AFIAWQBhAEEAOABkAHkAZwAxAEEARAA=';
 %>
 
 <div class="home-page">
 
-  <!-- Fila superior: indicadores, widgets y accesos rápidos -->
-  <section class="home-dash" aria-label="Panel principal">
-
-    <div class="home-dash__main">
-      <div class="home-finance" role="list" aria-label="Indicadores financieros">
-        <a href="https://si3.bcentral.cl/indicadoressiete/secure/Serie.aspx?gcode=PRE_TCO&param=RABmAFYAWQB3AGYAaQBuAEkALQAzADUAbgBNAGgAaAAkADUAVwBQAC4AbQBYADAARwBOAGUAYwBjACMAQQBaAHAARgBhAGcAUABTAGUAdwA1ADQAMQA0AE0AawBLAF8AdQBDACQASABzAG0AXwA2AHQAawBvAFcAZwBKAEwAegBzAF8AbgBMAHIAYgBDAC4ARQA3AFUAVwB4AFIAWQBhAEEAOABkAHkAZwAxAEEARAA=" target="_blank" rel="noopener noreferrer" class="home-finance__item <%= financeTrendClass(finanzas.dolar.tendencia) %>" role="listitem">
-          <span class="home-finance__label">Dólar USD</span>
-          <span class="home-finance__value">
-            <span><%= (finanzas.dolar && finanzas.dolar.valor) ? finanzas.dolar.valor : '---' %></span>
-            <span class="home-finance__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.dolar.tendencia) %></span>
-          </span>
-        </a>
-        <a href="https://si3.bcentral.cl/IndicadoresSiete/secure/Serie.aspx?gcode=PRE_EUR&param=cgBnAE8AOQBlAGcAIwBiAFUALQBsAEcAYgBOAEkASQBCAEcAegBFAFkAeABkADgASAA2AG8AdgB2AFMAUgBYADIAQwBzAEEARQBMAG8ASgBWADQATABrAGQAZAB1ADIAeQBBAFAAZwBhADIAbABWAHcAXwBXAGgATAAkAFIAVAB1AEIAbAB3AFoAdQBRAFgAZwA5AHgAdgAwACQATwBZADcAMwAuAGIARwBFAFIASwAuAHQA" target="_blank" rel="noopener noreferrer" class="home-finance__item <%= financeTrendClass(finanzas.euro.tendencia) %>" role="listitem">
-          <span class="home-finance__label">Euro EUR</span>
-          <span class="home-finance__value">
-            <span><%= (finanzas.euro && finanzas.euro.valor) ? finanzas.euro.valor : '---' %></span>
-            <span class="home-finance__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.euro.tendencia) %></span>
-          </span>
-        </a>
-        <a href="https://si3.bcentral.cl/IndicadoresSiete/secure/Serie.aspx?gcode=UF&param=RABmAFYAWQB3AGYAaQBuAEkALQAzADUAbgBNAGgAaAAkADUAVwBQAC4AbQBYADAARwBOAGUAYwBjACMAQQBaAHAARgBhAGcAUABTAGUAYwBsAEMAMQA0AE0AawBLAF8AdQBDACQASABzAG0AXwA2AHQAawBvAFcAZwBKAEwAegBzAF8AbgBMAHIAYgBDAC4ARQA3AFUAVwB4AFIAWQBhAEEAOABkAHkAZwAxAEEARAA=" target="_blank" rel="noopener noreferrer" class="home-finance__item <%= financeTrendClass(finanzas.uf.tendencia) %>" role="listitem">
-          <span class="home-finance__label">UF</span>
-          <span class="home-finance__value">
-            <span><%= (finanzas.uf && finanzas.uf.valor) ? finanzas.uf.valor : '---' %></span>
-            <span class="home-finance__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.uf.tendencia) %></span>
-          </span>
-        </a>
-      </div>
-
-      <div class="home-widgets">
-        <article class="home-glass home-glass--clickable home-widget home-widget--weather" onclick="window.open('https://www.meteored.cl/tiempo-en_Santiago+de+Chile-America+Sur-Chile-Region+Metropolitana+de+Santiago-SCEL-1-18578.html', '_blank')" title="Ver clima detallado">
-          <div class="home-widget__icon" aria-hidden="true">
-            <%- include('partials/icon', { name: (typeof clima !== 'undefined' && clima && clima.icon) ? clima.icon : 'sun' }) %>
-          </div>
-          <div class="home-widget__body">
-            <span class="home-widget__label">Clima · <%= (typeof clima !== 'undefined' && clima && clima.ubicacion) ? clima.ubicacion : 'Huechuraba' %></span>
-            <div class="home-widget__headline">
-              <div class="home-widget__value"><%= (typeof clima !== 'undefined' && clima) ? clima.temp : '--' %>°C</div>
-              <% if (typeof clima !== 'undefined' && clima && clima.tempMin != null && clima.tempMax != null) { %>
-                <span class="home-widget__range"><%= clima.tempMin %>° / <%= clima.tempMax %>°</span>
-              <% } %>
-            </div>
-            <div class="home-widget__sub"><%= (typeof clima !== 'undefined' && clima && clima.desc) ? clima.desc : 'Santiago' %></div>
-            <% if (typeof clima !== 'undefined' && clima) { %>
-              <div class="home-widget__details">
-                <% if (clima.feelsLike != null) { %>
-                  <span class="home-widget__detail">Sensación <%= clima.feelsLike %>°</span>
-                <% } %>
-                <% if (clima.humidity != null) { %>
-                  <span class="home-widget__detail"><%- include('partials/icon', { name: 'droplet' }) %> <%= clima.humidity %>%</span>
-                <% } %>
-                <% if (clima.wind != null) { %>
-                  <span class="home-widget__detail"><%- include('partials/icon', { name: 'wind' }) %> <%= clima.wind %> km/h</span>
-                <% } %>
-                <% if (clima.lluvia != null) { %>
-                  <span class="home-widget__detail"><%- include('partials/icon', { name: 'umbrella' }) %> <%= clima.lluvia %>%</span>
-                <% } %>
-              </div>
-              <% if (clima.sunrise || clima.sunset) { %>
-                <div class="home-widget__extras home-widget__extras--inline">
-                  <% if (clima.sunrise) { %>
-                    <span class="home-widget__extra"><%- include('partials/icon', { name: 'sunrise' }) %> <%= clima.sunrise %></span>
-                  <% } %>
-                  <% if (clima.sunset) { %>
-                    <span class="home-widget__extra"><%- include('partials/icon', { name: 'sunset' }) %> <%= clima.sunset %></span>
-                  <% } %>
-                </div>
-              <% } %>
-              <% if (clima.semana && clima.semana.length > 1) { %>
-                <ul class="home-widget__forecast" aria-label="Pronóstico semanal">
-                  <% clima.semana.slice(1, 6).forEach((dia) => { %>
-                    <li class="home-widget__forecast-day">
-                      <span class="home-widget__forecast-label"><%= dia.dia %></span>
-                      <span class="home-widget__forecast-icon" aria-hidden="true"><%- include('partials/icon', { name: dia.icon }) %></span>
-                      <span class="home-widget__forecast-temp"><%= dia.tempMin %>°/<%= dia.tempMax %>°</span>
-                    </li>
-                  <% }); %>
-                </ul>
-              <% } %>
-            <% } %>
-          </div>
-        </article>
-
-        <article class="home-glass home-widget home-widget--menu">
-          <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
-            <button type="button" onclick="IntranetModal.open('modalPlatos')" class="home-widget__edit" title="Editar menú semanal" aria-label="Editar menú semanal"><%- include('partials/icon', { name: 'edit' }) %></button>
-          <% } %>
-          <div class="home-widget__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-          </div>
-          <div class="home-widget__body">
-            <span class="home-widget__label">Menú semanal</span>
-            <ul class="home-menu-week" aria-label="Menú de la semana">
-              <% for (let i = 1; i <= 5; i++) { %>
-                <% const platoDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.day_number === i) : null; %>
-                <li class="home-menu-week__day<%= i === diaActualMenu ? ' home-menu-week__day--today' : '' %>">
-                  <span class="home-menu-week__label"><%= nombresDiasMenu[i - 1] %></span>
-                  <span class="home-menu-week__dish"><%= platoDia && platoDia.dish_name ? platoDia.dish_name : 'No definido' %></span>
-                </li>
-              <% } %>
-            </ul>
-          </div>
-        </article>
-      </div>
+  <!-- Encabezado: saludo + indicadores financieros -->
+  <div class="home-hero">
+    <div class="home-hero__intro">
+      <h1 class="home-hero__greeting"><%= saludoTexto %><%= nombreSaludo ? ', ' + nombreSaludo : '' %></h1>
+      <span class="home-hero__meta"><%= fechaEncabezado ? fechaEncabezado + ' · ' : '' %>Huechuraba, Santiago</span>
     </div>
 
-    <aside class="home-quick" aria-label="Accesos rápidos">
-      <a href="https://www.transworld.cl/" target="_blank" rel="noopener noreferrer" class="home-glass home-glass--clickable home-quick__card">
-        <img src="/img/trw_logohor.png" alt="Transworld">
-        <span class="home-quick__title">Sitio Web</span>
-        <span class="home-quick__sub">transworld.cl</span>
+    <div class="home-hero__indicators" role="list" aria-label="Indicadores financieros">
+      <a href="<%= dolarUrl %>" target="_blank" rel="noopener noreferrer" class="home-indicator <%= financeTrendClass(finanzas.dolar.tendencia) %>" role="listitem">
+        <span class="home-indicator__label">USD</span>
+        <span class="home-indicator__value"><%= (finanzas.dolar && finanzas.dolar.valor) ? finanzas.dolar.valor : '---' %></span>
+        <span class="home-indicator__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.dolar.tendencia) %></span>
       </a>
-      <a href="/cursos" class="home-glass home-glass--clickable home-quick__card home-quick__card--academy">
-        <img src="/img/LOGO-TRANSWORLD-ACADEMY.png" alt="Transworld Academy">
-        <span class="home-quick__title">Cursos</span>
-        <span class="home-quick__sub">Capacitaciones</span>
+      <a href="<%= euroUrl %>" target="_blank" rel="noopener noreferrer" class="home-indicator <%= financeTrendClass(finanzas.euro.tendencia) %>" role="listitem">
+        <span class="home-indicator__label">EUR</span>
+        <span class="home-indicator__value"><%= (finanzas.euro && finanzas.euro.valor) ? finanzas.euro.valor : '---' %></span>
+        <span class="home-indicator__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.euro.tendencia) %></span>
       </a>
-    </aside>
-  </section>
+      <a href="<%= ufUrl %>" target="_blank" rel="noopener noreferrer" class="home-indicator <%= financeTrendClass(finanzas.uf.tendencia) %>" role="listitem">
+        <span class="home-indicator__label">UF</span>
+        <span class="home-indicator__value"><%= (finanzas.uf && finanzas.uf.valor) ? finanzas.uf.valor : '---' %></span>
+        <span class="home-indicator__trend" aria-hidden="true"><%= financeTrendSymbol(finanzas.uf.tendencia) %></span>
+      </a>
+    </div>
+  </div>
 
-  <!-- Fila inferior: noticias, cumpleaños y comunicaciones -->
-  <section class="home-dash home-dash--bottom" aria-label="Noticias y comunicaciones">
+  <div class="home-dash">
 
-    <div class="home-dash__col">
-      <!-- Noticias -->
-      <section class="home-section home-news" aria-labelledby="home-news-title">
-        <div class="home-section__head">
-          <h2 class="home-section__title" id="home-news-title">Noticias internas</h2>
-          <a href="/noticias" class="home-section__link">Ver todas →</a>
+    <!-- ── Columna principal ── -->
+    <div class="home-dash__main">
+
+      <!-- Accesos rápidos -->
+      <section class="home-section home-quick-section" aria-label="Accesos rápidos">
+        <div class="home-quick">
+          <a href="https://www.transworld.cl/" target="_blank" rel="noopener noreferrer" class="home-quick__item">
+            <span class="home-quick__glyph home-quick__glyph--brand">tw</span>
+            <span class="home-quick__label">Sitio Web</span>
+          </a>
+          <a href="/cursos" class="home-quick__item">
+            <span class="home-quick__glyph home-quick__glyph--green">A</span>
+            <span class="home-quick__label">Academy</span>
+          </a>
+          <a href="https://transworld.mirexmas.com/" target="_blank" rel="noopener noreferrer" class="home-quick__item">
+            <span class="home-quick__glyph home-quick__glyph--sky">R+</span>
+            <span class="home-quick__label">Rex+</span>
+          </a>
+          <a href="https://www.achs.cl/" target="_blank" rel="noopener noreferrer" class="home-quick__item">
+            <span class="home-quick__glyph home-quick__glyph--mint">AC</span>
+            <span class="home-quick__label">ACHS</span>
+          </a>
+          <a href="https://www.cajalosandes.cl/" target="_blank" rel="noopener noreferrer" class="home-quick__item">
+            <span class="home-quick__glyph home-quick__glyph--indigo">CA</span>
+            <span class="home-quick__label">Caja L.A.</span>
+          </a>
+          <a href="/sistemas/tickets" class="home-quick__item ticket-notif-target">
+            <span class="home-quick__glyph home-quick__glyph--muted">✚</span>
+            <span class="home-quick__label">Tickets</span>
+          </a>
         </div>
+      </section>
 
-        <div class="home-glass home-news__card">
-          <% if (tieneDestacada) { %>
-            <a href="<%= destacada.link %>" class="home-news__featured">
-              <div class="home-news__featured-media">
-                <img
-                  src="<%= destacada.image || '/img/fondo-home.png' %>"
-                  alt="<%= destacada.title %>"
-                  class="home-news__featured-img"
-                  loading="eager"
-                  onerror="this.src='/img/fondo-home.png'"
-                >
-                <span class="home-news__featured-badge">Destacada</span>
-                <div class="home-news__featured-body">
-                  <time class="home-news__featured-date" datetime="<%= destacada.fecha.toISOString() %>">
-                    <%= formatDateShort(destacada.fecha) %>
-                  </time>
-                  <h3 class="home-news__featured-title"><%= destacada.title %></h3>
-                  <% if (destacada.subtitle) { %>
-                    <p class="home-news__featured-sub"><%= destacada.subtitle %></p>
-                  <% } %>
-                </div>
-              </div>
-            </a>
-          <% } %>
+      <!-- Noticia destacada -->
+      <% if (tieneDestacada) { %>
+        <a href="<%= destacada.link %>" class="home-featured">
+          <span class="home-featured__glow home-featured__glow--1" aria-hidden="true"></span>
+          <span class="home-featured__glow home-featured__glow--2" aria-hidden="true"></span>
+          <div class="home-featured__content">
+            <div class="home-featured__head">
+              <span class="home-featured__badge">Destacada</span>
+              <time class="home-featured__date" datetime="<%= destacada.fecha.toISOString() %>"><%= formatNewsDate(destacada.fecha) %></time>
+            </div>
+            <h2 class="home-featured__title"><%= destacada.title %></h2>
+            <% if (destacada.subtitle) { %>
+              <p class="home-featured__sub"><%= destacada.subtitle %></p>
+            <% } %>
+            <span class="home-featured__cta">Leer comunicado →</span>
+          </div>
+        </a>
+      <% } %>
 
+      <!-- Lista de noticias -->
+      <section class="home-section" aria-labelledby="home-news-title">
+        <div class="home-card home-news">
+          <div class="home-card__head">
+            <h2 class="home-card__title" id="home-news-title">Noticias internas</h2>
+            <a href="/noticias" class="home-card__link">Ver todas →</a>
+          </div>
           <% if (listaNoticias.length > 0) { %>
-            <ul class="home-news__list" aria-label="<%= tieneDestacada ? 'Más noticias' : 'Noticias recientes' %>">
+            <ul class="home-news__list">
               <% listaNoticias.forEach((news) => { %>
-                <li class="home-news__list-item">
-                  <a href="<%= news.link %>" class="home-news__list-link">
-                    <% if (news.image) { %>
-                      <span class="home-news__list-thumb">
-                        <img src="<%= news.image %>" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
-                      </span>
-                    <% } %>
-                    <span class="home-news__list-date"><%= formatDateShort(news.fecha).toUpperCase() %></span>
-                    <span class="home-news__list-title" title="<%= news.title %>"><%= news.title %></span>
+                <li class="home-news__item">
+                  <a href="<%= news.link %>" class="home-news__row">
+                    <span class="home-news__dot" aria-hidden="true"></span>
+                    <span class="home-news__texts">
+                      <span class="home-news__title" title="<%= news.title %>"><%= news.title %></span>
+                      <% if (news.subtitle) { %>
+                        <span class="home-news__sub"><%= news.subtitle %></span>
+                      <% } %>
+                    </span>
+                    <time class="home-news__date"><%= formatNewsDate(news.fecha) %></time>
                   </a>
                 </li>
               <% }); %>
@@ -246,64 +191,23 @@
         </div>
       </section>
 
-      <!-- Cumpleaños -->
-      <section class="home-section home-birthdays" aria-labelledby="home-birthdays-title">
-        <div class="home-section__head">
-          <h2 class="home-section__title" id="home-birthdays-title">Cumpleaños <%= (typeof mesNombre !== 'undefined') ? mesNombre : '' %></h2>
-        </div>
-
-        <div class="home-glass home-birthdays__card">
-          <% if (!cumpleaniosOrdenados || cumpleaniosOrdenados.length === 0) { %>
-            <p class="home-birthdays__empty">No hay cumpleaños registrados.</p>
-          <% } else { %>
-            <% const hoyDia = new Date().getDate(); %>
-            <div id="lista-cumpleanos" class="home-birthdays__list">
-              <% cumpleaniosOrdenados.forEach((p, index) => {
-                const ocultoClass = (index >= 3) ? 'is-hidden' : '';
-                const esHoy = (Number(p.dia) === hoyDia);
-                const iniciales = getInitials(p.nombre);
-              %>
-                <article class="home-birthday item-cumple<%= esHoy ? ' home-birthday--today' : '' %> <%= ocultoClass %>" aria-label="Cumpleaños de <%= titleCase(p.nombre) %>">
-                  <div class="home-birthday__avatar-wrap">
-                    <% if (p.photo || p.foto) { %>
-                      <img src="<%= p.photo || p.foto %>" alt="" class="home-birthday__avatar" loading="lazy">
-                    <% } else { %>
-                      <div class="home-birthday__avatar home-birthday__avatar--initials" aria-hidden="true"><%= iniciales %></div>
-                    <% } %>
-                    <% if (esHoy) { %><span class="home-birthday__dot" title="¡Cumpleaños hoy!"></span><% } %>
-                  </div>
-                  <div class="home-birthday__info">
-                    <h3 class="home-birthday__name"><%= titleCase(p.nombre) %></h3>
-                    <p class="home-birthday__area"><%= titleCase(p.area) %></p>
-                  </div>
-                  <div class="home-birthday__date" aria-label="<%= p.dia %> de <%= mesCorto %>">
-                    <span class="home-birthday__date-day"><%= p.dia %></span>
-                    <span class="home-birthday__date-month"><%= mesCorto %></span>
-                  </div>
-                </article>
-              <% }); %>
-            </div>
-            <% if (cumpleaniosOrdenados.length > 3) { %>
-              <button type="button" id="btn-ver-mas-cumple" class="home-birthdays__more" onclick="toggleCumpleanios()">Ver más...</button>
-            <% } %>
-          <% } %>
-        </div>
-      </section>
-    </div>
-
-    <div class="home-dash__col">
       <!-- Galería Transworld -->
       <section class="home-section home-gallery" aria-labelledby="home-gallery-title">
-        <div class="home-section__head">
+        <div class="home-card__head home-card__head--bare">
           <div>
-            <h2 class="home-section__title" id="home-gallery-title">Galería Transworld</h2>
-            <p class="home-section__sub">Disfruta de los momentos más especiales de nuestra empresa</p>
+            <h2 class="home-card__title" id="home-gallery-title">Galería Transworld</h2>
+            <p class="home-card__sub">Disfruta de los momentos más especiales de nuestra empresa</p>
           </div>
-          <a href="/marketing/eventos" class="home-section__link">Ver galería →</a>
+          <a href="/marketing/eventos" class="home-card__link">Ver galería →</a>
         </div>
 
-        <div class="home-glass home-gallery__card" id="homeGalleryCarousel">
+        <div class="home-glass home-gallery__card<%= imagenesGaleria.length === 0 ? ' is-ready' : '' %>" id="homeGalleryCarousel"<%= imagenesGaleria.length > 0 ? ' aria-busy="true"' : '' %>>
           <% if (imagenesGaleria.length > 0) { %>
+            <div class="home-gallery__loading" role="status" aria-live="polite">
+              <span class="home-gallery__spinner" aria-hidden="true"></span>
+              <span class="home-gallery__loading-text">Cargando fotos…</span>
+            </div>
+
             <% if (imagenesGaleria.length > 1) { %>
               <button type="button" class="home-gallery__nav home-gallery__nav--prev" onclick="moveHomeGallery(-1)" aria-label="Imagen anterior">&#10094;</button>
               <button type="button" class="home-gallery__nav home-gallery__nav--next" onclick="moveHomeGallery(1)" aria-label="Imagen siguiente">&#10095;</button>
@@ -346,10 +250,141 @@
         </div>
       </section>
 
-      <!-- Comunicaciones -->
+    </div>
+
+    <!-- ── Columna lateral (superior) ── -->
+    <div class="home-dash__side">
+
+      <!-- Menú semanal (protagonista) -->
+      <section class="home-section">
+        <div class="home-card home-menu">
+          <div class="home-menu__head">
+            <div class="home-menu__head-text">
+              <h2 class="home-menu__title">Menú semanal</h2>
+              <span class="home-menu__sub">Casino · <%= (typeof mesNombre !== 'undefined') ? mesNombre : '' %></span>
+            </div>
+            <div class="home-menu__head-actions">
+              <span class="home-menu__badge">HOY</span>
+              <% if (typeof isAdministrador !== 'undefined' && isAdministrador) { %>
+                <button type="button" onclick="IntranetModal.open('modalPlatos')" class="home-menu__edit" title="Editar menú semanal" aria-label="Editar menú semanal"><%- include('partials/icon', { name: 'edit' }) %></button>
+              <% } %>
+            </div>
+          </div>
+          <ul class="home-menu__list" aria-label="Menú de la semana">
+            <% for (let i = 1; i <= 5; i++) { %>
+              <% const platoDia = (typeof menuSemanal !== 'undefined' && menuSemanal) ? menuSemanal.find(p => p.day_number === i) : null; %>
+              <li class="home-menu__day<%= i === diaActualMenu ? ' home-menu__day--today' : '' %>">
+                <span class="home-menu__label"><%= nombresDiasMenu[i - 1] %></span>
+                <span class="home-menu__dish"><%= platoDia && platoDia.dish_name ? platoDia.dish_name : 'No definido' %></span>
+              </li>
+            <% } %>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Clima -->
+      <section class="home-section">
+        <article class="home-card home-weather home-card--clickable" onclick="window.open('https://www.meteored.cl/tiempo-en_Santiago+de+Chile-America+Sur-Chile-Region+Metropolitana+de+Santiago-SCEL-1-18578.html', '_blank')" title="Ver clima detallado">
+          <div class="home-weather__top">
+            <div class="home-weather__lead">
+              <span class="home-weather__label">Clima · <%= (typeof clima !== 'undefined' && clima && clima.ubicacion) ? clima.ubicacion : 'Huechuraba' %></span>
+              <div class="home-weather__headline">
+                <span class="home-weather__temp"><%= (typeof clima !== 'undefined' && clima) ? clima.temp : '--' %>°</span>
+                <span class="home-weather__desc">
+                  <%= (typeof clima !== 'undefined' && clima && clima.desc) ? clima.desc : 'Santiago' %><% if (typeof clima !== 'undefined' && clima && clima.tempMin != null && clima.tempMax != null) { %> · <%= clima.tempMin %>° / <%= clima.tempMax %>°<% } %>
+                </span>
+              </div>
+            </div>
+            <span class="home-weather__icon" aria-hidden="true">
+              <%- include('partials/icon', { name: (typeof clima !== 'undefined' && clima && clima.icon) ? clima.icon : 'sun' }) %>
+            </span>
+          </div>
+
+          <% if (typeof clima !== 'undefined' && clima) { %>
+            <% if (clima.feelsLike != null || clima.humidity != null || clima.wind != null || clima.lluvia != null || clima.sunrise || clima.sunset) { %>
+              <div class="home-weather__details">
+                <% if (clima.feelsLike != null) { %>
+                  <span class="home-weather__detail">Sensación <%= clima.feelsLike %>°</span>
+                <% } %>
+                <% if (clima.humidity != null) { %>
+                  <span class="home-weather__detail"><%- include('partials/icon', { name: 'droplet' }) %> <%= clima.humidity %>%</span>
+                <% } %>
+                <% if (clima.wind != null) { %>
+                  <span class="home-weather__detail"><%- include('partials/icon', { name: 'wind' }) %> <%= clima.wind %> km/h</span>
+                <% } %>
+                <% if (clima.lluvia != null) { %>
+                  <span class="home-weather__detail"><%- include('partials/icon', { name: 'umbrella' }) %> <%= clima.lluvia %>%</span>
+                <% } %>
+                <% if (clima.sunrise) { %>
+                  <span class="home-weather__detail"><%- include('partials/icon', { name: 'sunrise' }) %> <%= clima.sunrise %></span>
+                <% } %>
+                <% if (clima.sunset) { %>
+                  <span class="home-weather__detail"><%- include('partials/icon', { name: 'sunset' }) %> <%= clima.sunset %></span>
+                <% } %>
+              </div>
+            <% } %>
+            <% if (clima.semana && clima.semana.length > 1) { %>
+              <ul class="home-weather__forecast" aria-label="Pronóstico semanal">
+                <% clima.semana.slice(1, 6).forEach((dia) => { %>
+                  <li class="home-weather__forecast-day">
+                    <span class="home-weather__forecast-label"><%= dia.dia %></span>
+                    <span class="home-weather__forecast-icon" aria-hidden="true"><%- include('partials/icon', { name: dia.icon }) %></span>
+                    <span class="home-weather__forecast-temp"><%= dia.tempMin %>°/<%= dia.tempMax %>°</span>
+                  </li>
+                <% }); %>
+              </ul>
+            <% } %>
+          <% } %>
+        </article>
+      </section>
+
+      <!-- Cumpleaños -->
+      <section class="home-section">
+        <div class="home-card home-bdays">
+          <span class="home-bdays__glow" aria-hidden="true"></span>
+          <div class="home-bdays__head">
+            <span class="home-bdays__emoji" aria-hidden="true">🎉</span>
+            <h2 class="home-card__title">Cumpleaños de <%= (typeof mesNombre !== 'undefined') ? mesNombre : '' %></h2>
+          </div>
+
+          <% if (!cumpleaniosOrdenados || cumpleaniosOrdenados.length === 0) { %>
+            <p class="home-bdays__empty">No hay cumpleaños registrados.</p>
+          <% } else { %>
+            <% const hoyDia = new Date().getDate(); %>
+            <div id="lista-cumpleanos" class="home-bdays__list">
+              <% cumpleaniosOrdenados.forEach((p, index) => {
+                const ocultoClass = (index >= 3) ? 'is-hidden' : '';
+                const esHoy = (Number(p.dia) === hoyDia);
+                const iniciales = getInitials(p.nombre);
+              %>
+                <article class="home-bday item-cumple<%= esHoy ? ' home-bday--today' : '' %> <%= ocultoClass %>" aria-label="Cumpleaños de <%= titleCase(p.nombre) %>">
+                  <span class="home-bday__avatar">
+                    <% if (p.photo || p.foto) { %>
+                      <img src="<%= p.photo || p.foto %>" alt="" class="home-bday__img" loading="lazy">
+                    <% } else { %>
+                      <span class="home-bday__initials" aria-hidden="true"><%= iniciales %></span>
+                    <% } %>
+                  </span>
+                  <span class="home-bday__info">
+                    <span class="home-bday__name"><%= titleCase(p.nombre) %></span>
+                    <span class="home-bday__area"><%= titleCase(p.area) %></span>
+                  </span>
+                  <span class="home-bday__date<%= esHoy ? ' home-bday__date--today' : '' %>" aria-label="<%= p.dia %> de <%= mesCorto %>"><%= p.dia %> <%= mesCorto.toUpperCase() %></span>
+                </article>
+              <% }); %>
+            </div>
+            <% if (cumpleaniosOrdenados.length > 3) { %>
+              <button type="button" id="btn-ver-mas-cumple" class="home-bdays__more" onclick="toggleCumpleanios()">Ver más...</button>
+            <% } %>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- Comunicaciones (LinkedIn) -->
       <section class="home-section home-comms" aria-labelledby="home-comms-title">
-        <div class="home-section__head">
-          <h2 class="home-section__title" id="home-comms-title">Comunicaciones</h2>
+        <div class="home-card__head home-card__head--bare home-comms__head">
+          <h2 class="home-card__title" id="home-comms-title">Comunicaciones</h2>
+          <a href="https://www.linkedin.com/company/transworldpowerandtelecom" target="_blank" rel="noopener noreferrer" class="home-card__link">Ver LinkedIn →</a>
         </div>
 
         <div class="home-glass home-comms__frame" id="homeCommsCarousel">
@@ -364,14 +399,14 @@
                     <% const parrafos = (post.text || '').split('\n').filter(p => p.trim().length > 0); %>
                     <% const textoResumen = parrafos.slice(0, 2).join('<br><br>'); %>
                     <div class="home-comms__text-card">
-                      <div class="home-comms__text-summary"><%- textoResumen %></div>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="56" height="56" fill="#0a66c2" class="home-comms__linkedin-icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="#ffffff" class="home-comms__linkedin-icon" aria-hidden="true">
                         <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"></path>
                       </svg>
-                      <p class="home-comms__cta">Haga click para ver más...</p>
+                      <div class="home-comms__text-summary"><%- textoResumen %></div>
+                      <p class="home-comms__cta">Ver más →</p>
                     </div>
                   <% } else { %>
-                    <img src="<%= post.image_url %>" alt="Publicación LinkedIn" class="home-comms__img<%= post.image_url === '/img/linkedin_off.jpg' ? ' home-comms__img--cover' : '' %>" onerror="this.src='/img/fondo-home.png'">
+                    <img src="<%= post.image_url %>" alt="Publicación LinkedIn" class="home-comms__img" onerror="this.src='/img/fondo-home.png'">
                   <% } %>
                 </a>
               </div>
@@ -383,9 +418,9 @@
           <% } %>
         </div>
       </section>
-    </div>
-  </section>
 
+    </div>
+  </div>
 </div>
 
 <% if (typeof showHomeTutorial !== 'undefined' && showHomeTutorial) { %>
@@ -512,6 +547,48 @@
   }
 
   let homeGalleryIndex = 0;
+  let homeGalleryTimer = null;
+
+  function isHorizontalGalleryImage(img) {
+    return new Promise(function (resolve) {
+      const src = img && (img.currentSrc || img.src);
+      if (!src) {
+        resolve(false);
+        return;
+      }
+
+      const probe = new Image();
+      probe.onload = function () {
+        resolve(probe.naturalWidth > 0 && probe.naturalWidth >= probe.naturalHeight);
+      };
+      probe.onerror = function () {
+        resolve(false);
+      };
+      probe.src = src;
+    });
+  }
+
+  function markHomeGalleryReady(gallery) {
+    gallery.classList.add('is-ready');
+    gallery.removeAttribute('aria-busy');
+    const loading = gallery.querySelector('.home-gallery__loading');
+    if (loading) loading.remove();
+  }
+
+  function showHomeGalleryEmpty(gallery) {
+    gallery.innerHTML =
+      '<div class="home-gallery__empty">' +
+      '<span class="home-gallery__empty-icon" aria-hidden="true">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<rect x="3" y="3" width="18" height="18" rx="2"/>' +
+      '<circle cx="8.5" cy="8.5" r="1.5"/>' +
+      '<polyline points="21 15 16 10 5 21"/>' +
+      '</svg>' +
+      '</span>' +
+      '<span>No hay imágenes disponibles en la galería por ahora.</span>' +
+      '</div>';
+    markHomeGalleryReady(gallery);
+  }
 
   function preloadHomeGalleryImage(index) {
     const slides = document.querySelectorAll('.home-gallery__slide');
@@ -549,31 +626,88 @@
     setHomeGallerySlide(index);
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const gallery = document.getElementById('homeGalleryCarousel');
-    const slides = document.querySelectorAll('.home-gallery__slide');
-    if (!gallery || slides.length <= 1) return;
+  function startHomeGalleryCarousel(gallery) {
+    const slides = gallery.querySelectorAll('.home-gallery__slide');
+    if (slides.length <= 1) return;
 
     gallery.querySelectorAll('.home-gallery__dot').forEach(function (dot) {
       dot.addEventListener('click', function () {
         goHomeGallery(Number(dot.dataset.galleryIndex || 0));
       });
     });
+
     preloadHomeGalleryImage(homeGalleryIndex + 1);
 
-    let timer = window.setInterval(function () {
+    homeGalleryTimer = window.setInterval(function () {
       moveHomeGallery(1);
     }, 6500);
 
     gallery.addEventListener('mouseenter', function () {
-      window.clearInterval(timer);
+      window.clearInterval(homeGalleryTimer);
     });
 
     gallery.addEventListener('mouseleave', function () {
-      timer = window.setInterval(function () {
+      homeGalleryTimer = window.setInterval(function () {
         moveHomeGallery(1);
       }, 6500);
     });
+  }
+
+  document.addEventListener('DOMContentLoaded', async function () {
+    const gallery = document.getElementById('homeGalleryCarousel');
+    if (!gallery) return;
+
+    const slides = Array.from(gallery.querySelectorAll('.home-gallery__slide'));
+    if (!slides.length) {
+      markHomeGalleryReady(gallery);
+      return;
+    }
+
+    const checks = await Promise.all(slides.map(async function (slide) {
+      const img = slide.querySelector('.home-gallery__img');
+      const horizontal = img ? await isHorizontalGalleryImage(img) : false;
+      return { slide, horizontal };
+    }));
+
+    const dotsWrap = gallery.querySelector('.home-gallery__dots');
+    const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.home-gallery__dot')) : [];
+
+    checks.forEach(function (item, index) {
+      if (!item.horizontal) {
+        item.slide.remove();
+        dots[index]?.remove();
+      }
+    });
+
+    const remaining = Array.from(gallery.querySelectorAll('.home-gallery__slide'));
+    if (!remaining.length) {
+      showHomeGalleryEmpty(gallery);
+      return;
+    }
+
+    const remainingDots = dotsWrap
+      ? Array.from(dotsWrap.querySelectorAll('.home-gallery__dot'))
+      : [];
+
+    remaining.forEach(function (slide, index) {
+      slide.classList.toggle('is-active', index === 0);
+    });
+
+    remainingDots.forEach(function (dot, index) {
+      dot.dataset.galleryIndex = String(index);
+      dot.classList.toggle('is-active', index === 0);
+    });
+
+    if (remaining.length <= 1) {
+      gallery.querySelectorAll('.home-gallery__nav').forEach(function (nav) {
+        nav.remove();
+      });
+      dotsWrap?.remove();
+    }
+
+    homeGalleryIndex = 0;
+    markHomeGalleryReady(gallery);
+    startHomeGalleryCarousel(gallery);
   });
 
   window.addEventListener('click', function (event) {

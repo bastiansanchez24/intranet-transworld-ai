@@ -71,8 +71,8 @@
   /* Sombras */
   --shadow: var(--glass-shadow);
   --shadow-lg: var(--glass-shadow-lg);
-  --shadow-card: var(--glass-shadow);
-  --shadow-card-lg: var(--glass-shadow-lg);
+  --shadow-card: 0 2px 8px rgba(13, 31, 51, 0.05), 0 8px 22px rgba(13, 31, 51, 0.06);
+  --shadow-card-lg: 0 8px 20px rgba(13, 31, 51, 0.08), 0 16px 34px rgba(13, 31, 51, 0.08);
 
   /* Indicadores de estado */
   --up: #3c9a5f;
@@ -140,6 +140,8 @@ html[data-theme="dark"] {
 
   --shadow: var(--glass-shadow);
   --shadow-lg: var(--glass-shadow-lg);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.2), 0 8px 22px rgba(0, 0, 0, 0.18);
+  --shadow-card-lg: 0 8px 22px rgba(0, 0, 0, 0.28), 0 16px 36px rgba(0, 0, 0, 0.24);
 
   --up: #6cc78d;
   --down: #e07f7f;
@@ -174,7 +176,7 @@ main {
   outline: 1px solid var(--glass-border-outer);
   outline-offset: -1px;
   border-radius: var(--glass-radius);
-  box-shadow: var(--glass-shadow), var(--glass-inset);
+  box-shadow: var(--shadow-card);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -278,12 +280,15 @@ main {
   box-shadow: var(--shadow-card) !important;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
 }
 
 .card-opcion-exec:hover,
 .folder-card-exec:hover {
   background: var(--color-surface-elevated) !important;
   border-color: var(--color-border-strong) !important;
+  box-shadow: var(--shadow-card-lg) !important;
+  transform: translateY(-2px) scale(1.015);
 }
 
 .card-opcion-exec .card-title,

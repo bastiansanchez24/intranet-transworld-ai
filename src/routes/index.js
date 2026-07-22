@@ -285,6 +285,28 @@ router.get("/", async (req, res) => {
     const mesNombre =
       mesNombreRaw.charAt(0).toUpperCase() + mesNombreRaw.slice(1);
 
+    // Saludo dinámico y fecha larga para el encabezado del home
+    const horaActual = hoy.getHours();
+    const saludo =
+      horaActual < 12
+        ? "Buenos días"
+        : horaActual < 19
+          ? "Buenas tardes"
+          : "Buenas noches";
+    const fechaLargaRaw = new Intl.DateTimeFormat("es-CL", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(hoy);
+    const fechaLarga =
+      fechaLargaRaw.charAt(0).toUpperCase() + fechaLargaRaw.slice(1);
+    const nombrePila = (() => {
+      const u = req.session.user || {};
+      const base = u.nombre || u.first_name || u.name || u.username || "";
+      const primer = String(base).trim().split(/\s+/)[0] || "";
+      return primer.charAt(0).toUpperCase() + primer.slice(1).toLowerCase();
+    })();
+
     // FIX: LEFT JOIN en vez de INNER JOIN para no romper si area_trabajo_id es NULL
     const sqlMes = `
       SELECT
@@ -352,6 +374,9 @@ router.get("/", async (req, res) => {
       titulo: "Home | Intranet Transworld Chile",
       finanzas: dataFinanciera,
       clima: dataClima,
+      saludo,
+      fechaLarga,
+      nombrePila,
       mesNombre,
       diaHoy,
       cumpleaniosMes: resultsMes,
